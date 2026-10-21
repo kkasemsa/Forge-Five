@@ -427,6 +427,9 @@ static int page_visible(uint32_t i)
 {
     if (PAGES[i].scope == SC_TRACK && PAGES[i].id[0] >= P_LN0 && PAGES[i].id[0] <= P_LN7)
         return TSEL->eng_req % NENGINES == ENGI_DRUM;
+    if (PAGES[i].scope == SC_TRACK && PAGES[i].fam == FAM_EDIT && PAGES[i].graph == GR_NONE &&
+        PAGES[i].id[0] >= P_X0 && PAGES[i].id[0] <= P_X19 && !str_eq(PAGES[i].title, "OP LEVEL"))
+        return eng_idx(TSEL->eng_req) == ENGI_LADDER;  /* LADDER's pages (OSC 1-2 .. MOD; OP LEVEL is DIGITAL's) */
     if (PAGES[i].id[0] == P_FTYPE)                    /* FILTER (1.5, #104): ANALOG's */
         return ENGINES[TSEL->eng_req % NENGINES] == &ENG_ANALOG;
     if (PAGES[i].graph >= GR_FMOP && PAGES[i].graph <= GR_FMENV)
@@ -1370,6 +1373,8 @@ static void apply_preset_to(track_t *t, uint32_t pi)
     t->p[P_REL] = e->presets[pi].env[3];
     t->p[P_ED_FLT] = e->presets[pi].fenv;
     t->p[P_VOICE] = e->presets[pi].mono ? V_LEGATO : V_POLY;   /* mono presets keep the legato feel */
+    if (eng_idx(t->eng_req) == ENGI_LADDER)            /* its twenty extra values and GLIDE (eng_ladder.c) */
+        ladder_load(t, (int32_t)pi);
     {   /* the sends */
         static const uint8_t FX_DEF[4] = {0, 24, 28, 36};
         const preset_t *pr = &e->presets[pi];
@@ -1440,6 +1445,8 @@ static void clean_engine_of(track_t *t)
         t->p[P_SUS] = TP[P_SUS].max;
         t->p[P_REL] = CLEAN_REL;
     }
+    if (ei == ENGI_LADDER)                             /* its extra values at their defaults */
+        ladder_load(t, -1);
     fm1_irq_on();
     if (ei == ENGI_FM6) {                             /* the init voice as the track's own patch (SLOT: OWN) */
         uint8_t v[FP_SIZE + 1u];

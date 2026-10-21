@@ -5044,10 +5044,15 @@ static int test_fm4_retired(void)
         seen |= 1u << TSEL->eng_req;
     }
     bad += check("PRESETS KNOB 2: the engines in order, DIGITAL skipped, back to the first",
-                 seen == all && TSEL->eng_req == 0u && eng_step(0, 1) == ENGI_FM6 && eng_step(ENGI_FM6, 1) == 2u &&
+                 seen == all && TSEL->eng_req == 0u && eng_step(0, 1) == ENGI_FM6 &&
+                 eng_step(ENGI_FM6, 1) == (FELUCCA_LADDER ? ENGI_LADDER : 2u) &&   /* (this fork: LADDER after FM6) */
                  eng_step(ENGI_FM6, -1) == 0u && eng_step(0, -1) == ENGI_DRUM);
     {   /* the display order (engines.c ENGINE_ORDER): every engine one can pick once; the PRESETS list follows it */
-        static const char *const ORDER[] = {"ANALOG", "FM6", "PHASE", "LOFI", "SAMPLE", "VOICE", "TRIO", "WHEEL", "GRAIN",
+        static const char *const ORDER[] = {"ANALOG", "FM6",
+#if FELUCCA_LADDER
+                                            "LADDER",   /* (this fork) */
+#endif
+                                            "PHASE", "LOFI", "SAMPLE", "VOICE", "TRIO", "WHEEL", "GRAIN",
                                             "PHYS", "NOISE", "SLICE", "DRUM"};
         uint32_t last = 0xFFu, r = 0, n = 0;
         ok = NENG_SHOWN == NELEM(ORDER);
@@ -5127,8 +5132,14 @@ static int test_fm4_retired(void)
         pe.panel = PANEL_DEFAULT;
         pe.favorites.factory[ENGI_DIGITAL][0] = 1u << 5 | 1u << 7;   /* PAD, FUNK KEY */
         settings_import(&pe, (int)sizeof pe);
+#if FELUCCA_LADDER   /* this fork: row 1 holds LADDER's stars now (favorites.c fav_row): kept, never moved to FM6 */
+        bad += check("favourites: row 1 is LADDER's (bits 5 and 7: its presets 5 and 7), FM6's untouched",
+                     favorite_has(ENGI_LADDER, 5) && favorite_has(ENGI_LADDER, 7) && !favorite_has(ENGI_FM6, 4) &&
+                     !favorite_has(ENGI_DIGITAL, 5));
+#else
         bad += check("favourites: DIGITAL PAD / FUNK KEY -> FM6 PAD / PLUCK, engine 1's cleared",
                      favorite_has(ENGI_FM6, 4) && favorite_has(ENGI_FM6, 7) && !favorites.factory[ENGI_DIGITAL][0]);
+#endif
         memset(&favorites, 0, sizeof favorites);
     }
     return bad;

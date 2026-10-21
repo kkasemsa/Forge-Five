@@ -40,6 +40,7 @@ static uint8_t eng_mem_owner[NPART];       /* engine index + 1 whose state is in
 #if FELUCCA_SLICE
 #include "eng_slice.c"
 #endif
+#include "eng_ladder.c"         /* LADDER: three VCOs into a four-pole ladder (this fork) */
 
 /* the editor protocol, user presets and projects store these indices: append, never reorder */
 static const engine_t *const ENGINES[NENGINES] = {
@@ -62,6 +63,9 @@ static const engine_t *const ENGINES[NENGINES] = {
     &ENG_FM6,                    /* 12 (ENGI_FM6) */
 #if FELUCCA_SLICE
     &ENG_SLICE,                  /* 13 (FELUCCA_SLICE=0 builds without it) */
+#endif
+#if FELUCCA_LADDER
+    &ENG_LADDER,                 /* ENGI_LADDER: 14 (13 without SLICE) */
 #endif
 };
 
@@ -114,6 +118,9 @@ static const char *snd_missing(const track_t *t, uint32_t *code)
 static const uint8_t ENGINE_ORDER[NENG_SHOWN] = {
     0,                           /* ANALOG */
     12,                          /* FM6 */
+#if FELUCCA_LADDER
+    ENGI_LADDER,                 /* LADDER (this fork) */
+#endif
 #if FELUCCA_FM4
     1,                           /* DIGITAL */
 #endif

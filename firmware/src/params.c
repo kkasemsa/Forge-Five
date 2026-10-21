@@ -75,6 +75,9 @@ static const char *const N_ENGNAME[] = {"ANALOG", FELUCCA_FM4 ? "DIGITAL" : "-",
 #if FELUCCA_SLICE
                                              "SLICE",
 #endif
+#if FELUCCA_LADDER
+                                             "LADDER",
+#endif
 };
 
 #define PD(l, f, mn, mx, df) {l, f, mn, mx, df, 0, 0}
@@ -224,6 +227,8 @@ static const param_desc_t GP[G_COUNT] = {
 
 static const param_desc_t *track_desc(const track_t *t, uint32_t id)
 {
+    if (id >= P_X0 && id <= P_X19 && eng_idx(t->eng_req) == ENGI_LADDER)   /* LADDER's extra values */
+        return &LADDER_X[id - P_X0];
     if (id >= P_E0 && id <= P_E7) {                   /* the engine asked for (t->engine follows after a fade) */
         const engine_t *e = ENGINES[eng_idx(t->eng_req)];
         const param_desc_t *d = e->desc ? e->desc(t, id - P_E0) : 0;   /* a mode-dependent label / names */
@@ -240,6 +245,8 @@ static const param_desc_t *track_desc(const track_t *t, uint32_t id)
  * only; range and default are the same): what the editor protocol, user presets and projects use */
 static const param_desc_t *param_desc_of(uint32_t e, uint32_t id)
 {
+    if (id >= P_X0 && id <= P_X19 && e == ENGI_LADDER)   /* LADDER's extra values: their ranges (stores clamp to them) */
+        return &LADDER_X[id - P_X0];
     return id >= P_E0 ? &ENGINES[e]->edit[id - P_E0] : &TP[id];
 }
 
@@ -384,6 +391,18 @@ static void param_format(const param_desc_t *d, int32_t v, char *val, const char
             *unit = "dB";
         }
         break;
+    case F_ST8: {                                   /* LADDER's FREQ (eng_ladder.c ladder_cents): semitones, 2 decimals */
+        int32_t c = ladder_cents(v);
+        fmt_fix(val, c, 2);
+        if (c > 0) {
+            char t[10];
+            str_cpy(t, val, sizeof t);
+            val[0] = '+';
+            str_cpy(val + 1, t, 9);
+        }
+        *unit = "st";
+        break;
+    }
     case F_SEMI:
         fmt_int(val, v);
         if (v > 0) {
@@ -462,6 +481,14 @@ static const page_t PAGES[] = {
     {"EDIT 1", FAM_EDIT, SC_ENGINE, GR_NONE, {P_E0, P_E1, P_E2, P_E3}},
     {"EDIT 2", FAM_EDIT, SC_ENGINE, GR_NONE, {P_E4, P_E5, P_E6, P_E7}},
     {"FILTER", FAM_EDIT, SC_TRACK, GR_NONE, {P_FTYPE, P_E4, P_E5, P_E7}},   /* ANALOG only (1.5, #104): TYPE CUT RES KTR */
+    /* LADDER only (eng_ladder.c): its extra values after its FILTER and CONTOUR (EDIT 1 and 2): the OSCILLATOR BANK,
+     * the MIXER, the CONTROLLERS; hidden on every other engine (ui.c page_visible). (Titles of their own: tests and
+     * the UI find pages by title) */
+    {"OSC 1-2", FAM_EDIT, SC_TRACK, GR_NONE, {P_X0 + 0, P_X0 + 1, P_X0 + 2, P_X0 + 3}},
+    {"OSC 2-3", FAM_EDIT, SC_TRACK, GR_NONE, {P_X0 + 4, P_X0 + 5, P_X0 + 6, P_X0 + 7}},
+    {"MIX", FAM_EDIT, SC_TRACK, GR_NONE, {P_X0 + 8, P_X0 + 9, P_X0 + 10, P_X0 + 11}},
+    {"MIX 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_X0 + 12, P_X0 + 13, P_X0 + 14, P_X0 + 15}},
+    {"CTRL", FAM_EDIT, SC_TRACK, GR_NONE, {P_X0 + 16, P_X0 + 17, P_X0 + 18, P_X0 + 19}},
     {"LANES", FAM_EDIT, SC_TRACK, GR_NONE, {P_LN0, P_LN1, P_LN2, P_LN3}},   /* DRUM only: the lane levels */
     {"LANES 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_LN4, P_LN5, P_LN6, P_LN7}},
     {"SLICES", FAM_EDIT, SC_TRACK, GR_SLICES, {0xFF, 0xFF, 0xFF, 0xFF}},   /* SLICE only: the slices by hand (ui_slice.c) */

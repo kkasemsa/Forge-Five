@@ -28,7 +28,11 @@
                                             * second core (mod.c, voice.c SPREAD, eng_formant.c): one each with two cores,
                                             * one for all with one, as up to 1.6 */
 #define C1_PI(t) ((uint32_t)((t) - trk) % C1_NP)   /* a part's copy */
-#define NENGINES (13 + FELUCCA_SLICE)   /* SLICE (13) comes last: the other engines keep their numbers */
+/* LADDER (eng_ladder.c), appended after SLICE. It keeps its extra values in the track parameters DIGITAL kept its own in,
+ * so a FELUCCA_FM4 build (DIGITAL back, the tests') has no LADDER: there ENGI_LADDER is past the last engine (never one) */
+#define FELUCCA_LADDER (!FELUCCA_FM4)
+#define NENGINES (13 + FELUCCA_SLICE + FELUCCA_LADDER)   /* SLICE (13), then LADDER: the others keep their numbers */
+#define ENGI_LADDER (13u + FELUCCA_SLICE)
 #define ENGI_DIGITAL 1u          /* reserved without FELUCCA_FM4: never selectable (eng_ok), its sounds load as FM6 */
 #define NENG_SHOWN (NENGINES - !FELUCCA_FM4)   /* the engines one can pick: PRESETS, the EDIT layer, the editor,
                                                 * in the display order of engines.c ENGINE_ORDER */
@@ -72,6 +76,11 @@ enum {                          /* per-track parameters */
     P_E0, P_E1, P_E2, P_E3, P_E4, P_E5, P_E6, P_E7,
     P_COUNT
 };
+/* LADDER's twenty extra values (eng_ladder.c) are the track parameters DIGITAL (retired) held: stored by every format,
+ * read by no other engine; their pages and descriptors are LADDER's on a LADDER track (params.c) */
+#define P_X0 P_FM1_ATK
+#define P_X19 P_FM4_LEVEL
+typedef char p_x_fit[P_X19 - P_X0 == 19 ? 1 : -1];
 
 enum {                          /* global parameters */
     G_BPM, G_SWING, G_CLOCK, G_TUNE,

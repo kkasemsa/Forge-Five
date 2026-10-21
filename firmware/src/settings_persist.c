@@ -77,8 +77,9 @@ static int settings_import(persist_t *p, int n)
 #ifdef FELUCCA_FAVORITES
     memcpy(&favorites, &p->favorites, sizeof favorites);
     favorites.filter = favorites.filter == 1u;
-#if defined(FM4_NPRESETS) && !FELUCCA_FM4
-    {   /* DIGITAL's starred presets (engine 1, retired) -> the FM6 presets that cover them (fm4_convert.c) */
+#if defined(FM4_NPRESETS) && !FELUCCA_FM4 && !defined(ENGI_LADDER)
+    {   /* DIGITAL's starred presets (engine 1, retired) -> the FM6 presets that cover them (fm4_convert.c). Not in this
+         * fork: LADDER's stars are in that row now (favorites.c fav_row) */
         uint32_t k;
         for (k = 0; k < FM4_NPRESETS; k++)
             if ((favorites.factory[ENGI_DIGITAL][0] >> k) & 1u)
