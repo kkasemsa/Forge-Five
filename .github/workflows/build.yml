@@ -83,8 +83,8 @@ jobs:
       - name: Build
         run: |
           set -o pipefail
-          case "$GITHUB_REF_NAME" in ff-*) ./build.sh --release "${GITHUB_REF_NAME#ff-}" 2>&1 | tee build.log ;;
-                                       *) ./build.sh 2>&1 | tee build.log ;; esac
+          case "$GITHUB_REF_NAME" in ff-*) sh build.sh --release "${GITHUB_REF_NAME#ff-}" 2>&1 | tee build.log ;;
+                                       *) sh build.sh 2>&1 | tee build.log ;; esac
           # (the memory budget as a notice: readable without the log)
           grep -o "image [0-9]* B; RAM .* of [0-9]*" build.log | sed 's/^/::notice title=Memory::/' || true
 
