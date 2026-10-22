@@ -96,9 +96,11 @@ jobs:
           set -o pipefail
           sh tests/run_tests.sh 2>&1 | tee build/test.log
 
-      - name: Report test failures
+      - name: Report build and test failures   # (as annotations: readable on the run page and through the API)
         if: failure()
-        run: '[ -f build/test.log ] && python3 .github/scripts/test_failures.py build/test.log || true'
+        run: |
+          [ -f build.log ] && python3 .github/scripts/build_failures.py build.log || true
+          [ -f build/test.log ] && python3 .github/scripts/test_failures.py build/test.log || true
 
       # The installable firmware is published only after the build AND the host tests passed (a failed run keeps its
       # logs under another name, below). dist/ is what a release ships: the package, the app, the loader, checksums,
