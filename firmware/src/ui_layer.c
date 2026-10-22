@@ -74,9 +74,13 @@ static const page_t *ly_page(uint32_t l) { return l == LAYER_SCL ? &LY_SCL : l =
 #define LY_OPEN 2u                     /* ui.ly_t0: the map opened (no tap any more) */
 #define LY_COMBO 4u                    /* .. by a combo */
 #define LY_DEAD 8u                     /* .. pressed where there is no layer: does nothing */
-#define LY_INIT ((uint32_t)NENG_SHOWN) /* EDIT: the white key of INIT, the one after the engines (13: E5), its map cell */
-#define LY_CLEAN (LY_INIT + 1u)         /* .. and CLEAN INIT's, the next (1.5.5, #190: F5) */
-typedef char ly_init_fits[LY_CLEAN < 16u ? 1 : -1];   /* (a white key: F3 .. G5) */
+/* EDIT: the white key of INIT, the one after the engines (Felucca, 13: E5), its map cell; CLEAN INIT's the next (1.5.5,
+ * #190: F5). Forge Five shows 15 engines: they fill F3 .. F5, INIT is G5 (the last white key) and CLEAN INIT moves to
+ * the black key beside it, F#5 (LY_CLEAN_BLACK: its place among the black keys, 10) */
+#define LY_INIT ((uint32_t)NENG_SHOWN)
+#define LY_CLEAN_BLACK (NENG_SHOWN >= 15u)
+#define LY_CLEAN (LY_CLEAN_BLACK ? 10u : LY_INIT + 1u)
+typedef char ly_init_fits[LY_INIT < 16u ? 1 : -1];   /* (a white key: F3 .. G5) */
 #define layer_seen (favorites.factory[15][31])   /* bit l: layer l opened once (a byte no engine uses) */
 static const khint_t FX_LATCH_FOOT[3] = {{KC_KEYS, "ON / OFF"}, {KC_K14, "MACROS"}, {KC_OCTDN, "ALL OFF"}};
 static const khint_t FX_KEY_FOOT[3] = {{KC_PRESETS, "ASSIGN"}, {KC_EDIT, "DEFAULT"}, {KC_K14, "MACROS"}};   /* (a key held) */
@@ -652,16 +656,14 @@ static void layer_key(uint32_t l, uint32_t k)
         }
     } else if (l == LAYER_SCL) {
         TSEL->p[P_ROOT] = (int16_t)((k + 5u) % 12u);    /* the key's note name (F3 = F) */
-    } else if (l == LAYER_EDIT && !key_black(k)) {
-        if (p < NENG_SHOWN && p < LY_INIT)
+    } else if (l == LAYER_EDIT && (!key_black(k) || (LY_CLEAN_BLACK && p == LY_CLEAN))) {
+        if (!key_black(k) && p < NENG_SHOWN)
             edit_load(eng_vis(p), 0);
-        else if (p == LY_INIT && chain_busy())
+        else if (chain_busy())
             ui_message("STOP TO EDIT");
-        else if (p == LY_INIT)
+        else if (!key_black(k) && p == LY_INIT)
             confirm_open(CF_INIT_SOUND, song.sel);      /* (the dialog closes the layer) */
-        else if (p == LY_CLEAN && chain_busy())
-            ui_message("STOP TO EDIT");
-        else if (p == LY_CLEAN)
+        else if (key_black(k) == LY_CLEAN_BLACK && p == LY_CLEAN)
             confirm_open(CF_CLEAN_SOUND, song.sel);
     } else if (l == LAYER_EDIT) {
         eqa_key(k, p);                                  /* (black keys: the engine's quick actions) */
@@ -853,9 +855,9 @@ static uint32_t layer_leds(uint32_t *br)
             e = (k + 5u + 12u - root) % 12u;
             on = e == 0u;
             can = (mask >> e) & 1u;
-        } else if (l == LAYER_EDIT && !b) {             /* the engine lit, the others and INIT breathe */
-            on = p < NENG_SHOWN && p < LY_INIT && eng_vis(p) == TSEL->eng_req % NENGINES;
-            can = p < NENG_SHOWN && p < LY_INIT ? 1u : (p == LY_INIT || p == LY_CLEAN) && !chain_busy();
+        } else if (l == LAYER_EDIT && (!b || (LY_CLEAN_BLACK && p == LY_CLEAN))) {   /* the engine lit, the others, */
+            on = !b && p < NENG_SHOWN && eng_vis(p) == TSEL->eng_req % NENGINES;    /* INIT and CLEAN INIT breathe */
+            can = !b && p < NENG_SHOWN ? 1u : ((!b && p == LY_INIT) || (b == LY_CLEAN_BLACK && p == LY_CLEAN)) && !chain_busy();
         } else if (l == LAYER_EDIT && (a = eqa_of(TSEL, p)) != 0) {   /* the quick actions: on lit (DRUM: sounding), */
             on = a->on(TSEL, a->arg) != 0u;             /* a HOLD one off breathes, none dark */
             can = a->kind == LK_HOLD;
@@ -1049,8 +1051,9 @@ static void eqa_row(uint32_t n)
 }
 static void layer_edit(void)                            /* the engines from F3, INIT next (LY_INIT), CLEAN INIT after */
 {                                                        /* it (1.5.5), the sound under them (cells show the engine's
-                                                         * icon, not the key's note) */
-    uint32_t n = NENG_SHOWN < LY_INIT ? NENG_SHOWN : LY_INIT, cells = n + 2u, i, h = cells > 12u ? 20u : 28u;   /* 4 rows of 20: 8 px clear above the sound row */
+                                                         * icon, not the key's note); 17 cells (Forge Five): 5 rows of
+                                                         * 16, the last CLEAN (its key F#5, LY_CLEAN_BLACK) */
+    uint32_t n = NENG_SHOWN, cells = n + 2u, i, h = cells > 16u ? 15u : cells > 12u ? 20u : 28u;   /* 4 rows of 20: 8 px clear above the sound row; 5 of 15: 5 px above the quick actions */
     uint32_t na = eqa_count(TSEL);
     for (i = 0; i < cells; i++) {
         int32_t x = LC_X(i % 4u), y = 4 + (int32_t)(h + 4u) * (int32_t)(i / 4u);
@@ -1059,8 +1062,9 @@ static void layer_edit(void)                            /* the engines from F3, 
             lcell(x, y, (int32_t)h, 0, engine_icon(en->name), 0, h > 24u ? en->name : eng_abbr(en->name),
                   eng_vis(i) == TSEL->eng_req % NENGINES ? LS_SEL : LS_OFF, 0);
         else
-            lcell(x, y, (int32_t)h, 0, i == n ? ICON_X_WARN : ICON_COUNT, 0, i == n ? "INIT" : "CLEAN",   /* (CLEAN: no
-                                                                                    * icon, the word fills the cell) */
+            lcell(x, y, (int32_t)h, 0, i == n ? ICON_X_WARN : ICON_COUNT, 0,            /* (CLEAN: no icon, the word */
+                  i == n ? "INIT" : LY_CLEAN_BLACK ? "F#5 CLN" : "CLEAN",            /* fills the cell; its key named
+                                                                                        * when it is a black one) */
                   chain_busy() ? LS_DIM : LS_OFF, 0);
     }
     if (na)                                             /* the black keys' quick actions in the sound's place (KNOB 2 */

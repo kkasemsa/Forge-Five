@@ -76,8 +76,8 @@ static const char *const N_ENGNAME[] = {"ANALOG", FELUCCA_FM4 ? "DIGITAL" : "-",
 #if FELUCCA_SLICE
                                              "SLICE",
 #endif
-#if FELUCCA_LADDER
-                                             "LADDER",
+#if FELUCCA_FORGE
+                                             "LADDER", "SEM",
 #endif
 };
 

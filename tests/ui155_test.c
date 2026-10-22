@@ -441,9 +441,9 @@ static int clean_init(void)
 
     ui_power_on();
     go_home(); frame();
-    lay_combo(B_EDIT, white(LY_CLEAN));
-    ok = ui.confirm == CF_CLEAN_SOUND && LY_CLEAN == LY_INIT + 1u && LY_CLEAN < 16u;
-    key_up(white(LY_CLEAN)); btn_up(B_EDIT); frame();
+    lay_combo(B_EDIT, LY_CLEAN_BLACK ? black(LY_CLEAN) : white(LY_CLEAN));   /* (Forge Five: F#5, beside INIT's G5) */
+    ok = ui.confirm == CF_CLEAN_SOUND && (LY_CLEAN_BLACK ? LY_INIT == 15u && LY_CLEAN == 10u : LY_CLEAN == LY_INIT + 1u && LY_CLEAN < 16u);
+    key_up(LY_CLEAN_BLACK ? black(LY_CLEAN) : white(LY_CLEAN)); btn_up(B_EDIT); frame();
     confirm_text(a, b);
     ok &= str_eq(a, "CLEAN INIT SOUND?") && str_eq(b, "NO FX, NO MOD");
     dress(TSEL);

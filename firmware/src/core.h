@@ -31,8 +31,10 @@
 /* LADDER (eng_ladder.c), appended after SLICE. It keeps its extra values in the track parameters DIGITAL kept its own in,
  * so a FELUCCA_FM4 build (DIGITAL back, the tests') has no LADDER: there ENGI_LADDER is past the last engine (never one) */
 #define FELUCCA_LADDER (!FELUCCA_FM4)
-#define NENGINES (13 + FELUCCA_SLICE + FELUCCA_LADDER)   /* SLICE (13), then LADDER: the others keep their numbers */
+#define FELUCCA_FORGE FELUCCA_LADDER                /* the Forge Five engines: LADDER, SEM (eng_sem.c) */
+#define NENGINES (13 + FELUCCA_SLICE + 2 * FELUCCA_FORGE)   /* SLICE (13), then LADDER, SEM: the others keep their numbers */
 #define ENGI_LADDER (13u + FELUCCA_SLICE)
+#define ENGI_SEM (14u + FELUCCA_SLICE)
 #define ENGI_DIGITAL 1u          /* reserved without FELUCCA_FM4: never selectable (eng_ok), its sounds load as FM6 */
 #define NENG_SHOWN (NENGINES - !FELUCCA_FM4)   /* the engines one can pick: PRESETS, the EDIT layer, the editor,
                                                 * in the display order of engines.c ENGINE_ORDER */

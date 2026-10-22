@@ -38,6 +38,8 @@ static const char *const PRESET_CAT[16] = {
 #ifdef ENGI_LADDER
     [ENGI_LADDER] = "BLBULLBLBFBPLB",   /* 14 LADDER: BERLIN BASS, FAT LEAD, PEDAL SUB, SEQ PLUCK, BRASS, WHISTLE, WOBBLE,
                                   * VIBRATO LEAD, FM GROWL, NOISE RISER, OVERDRIVE, DRONE, FLUTE, KICK BASS */
+    [ENGI_SEM] = "LLPPBPLPLUPBUKPU",   /* 15 SEM: OB BRASS, JUMP STAB, OBX PAD, STRINGS 8, SEM BASS, NOTCH SWEEP, SYNC LEAD,
+                                  * PWM PAD, UNISON LEAD, BP PLUCK, FILM PAD, POLY BASS, SYNC BELL, TRI ORGAN, DRONE, ARP PLUCK */
 #endif
 };
 static uint32_t preset_cat(uint32_t e, uint32_t k)    /* factory preset k of engine e */

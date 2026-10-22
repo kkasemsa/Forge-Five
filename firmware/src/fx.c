@@ -869,8 +869,9 @@ static const uint16_t ENG_VCOST[NENGINES] = {163, FELUCCA_FM4 ? 181 : 0, 162, 67
 #if FELUCCA_SLICE
                                              129,
 #endif
-#if FELUCCA_LADDER
-                                             440                 /* LADDER: ANALOG x 2.7 (tests/ladder_test.c) */
+#if FELUCCA_FORGE
+                                             440,                /* LADDER: ANALOG x 2.7 (tests/ladder_test.c) */
+                                             250                 /* SEM: ANALOG x 1.5 (tests/sem_test.c) */
 #endif
 };
 #endif

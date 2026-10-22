@@ -206,7 +206,8 @@ static int midi_track_held(uint32_t track)
     return 0;
 }
 
-/* The standard CC map (#103): always on, these CCs only, on the track the channel plays (ROUT as notes). A CC
+/* The standard CC map (#103; Forge Five: and CC 16..19, the engine's four HOME knobs as macros 1..4, midi_cc_map): always
+ * on, these CCs only, on the track the channel plays (ROUT as notes). A CC
  * sets its parameter as a knob would, 0..127 over the parameter's range (64: the middle of a bipolar one), and
  * AUTOMATION records it as a knob move (motion_capture: the selected track, armed and playing). CC74 / CC71 are
  * the engine's own brightness / resonance (MIDI_CC_ENG); an engine without one ignores them. CC121 resets none
@@ -225,8 +226,9 @@ static const uint8_t MIDI_CC_ENG[NENGINES] = {
 #if FELUCCA_SLICE
     0x80,                                             /* SLICE TONE */
 #endif
-#if FELUCCA_LADDER
+#if FELUCCA_FORGE
     0x12,                                             /* LADDER CUTOFF EMPH */
+    0x12,                                             /* SEM CUTOFF RESO */
 #endif
 };
 /* a CC sets parameter id of track t as a knob would: 0..127 over its range */
@@ -291,6 +293,13 @@ static void __attribute__((noinline)) midi_cc_map(track_t *t, uint32_t cc, uint3
     uint32_t i, id = 0xFFFFu, e;
     if (midi_learned(cc, value))                /* (a learned CC is the user's: not the map's) */
         return;
+    if (cc >= 16u && cc <= 19u) {              /* Forge Five: macros 1..4 = the engine's HOME knobs (engine_t.knob), per part,
+                                                * on CC 16..19 (Move's knobs on a MIDI track, a DAW's macro lane) */
+        id = ENGINES[eng_idx(t->eng_req)]->knob[cc - 16u];
+        if (id < P_COUNT)
+            midi_cc_set(t, id, value);
+        return;
+    }
     for (i = 0; i < NELEM(MIDI_CC_MAP); i++)
         if (MIDI_CC_MAP[i][0] == cc)
             id = MIDI_CC_MAP[i][1];

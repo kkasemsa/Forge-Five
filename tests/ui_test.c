@@ -4902,6 +4902,12 @@ static int test_bughunt_ui2(void)
             ok &= (ui.confirm == CF_INIT_SOUND) == (p == LY_INIT);
             key_up(white(p)); btn_up(B_EDIT); frame();
         }
+        for (p = 0; p < 11u; p++) {                    /* the black keys: CLEAN INIT on F#5 alone (Forge Five), else none */
+            ui_power_on(); go_home(); frame();
+            btn_down(B_EDIT); key_down(black(p)); frame(); frames(50);
+            ok &= (ui.confirm == CF_CLEAN_SOUND) == (LY_CLEAN_BLACK && p == LY_CLEAN);
+            key_up(black(p)); btn_up(B_EDIT); frame();
+        }
         bad += check("EDIT: INIT's map cell (after the engines) and its key agree", ok);
     }
     return bad;
@@ -5046,12 +5052,12 @@ static int test_fm4_retired(void)
     }
     bad += check("PRESETS KNOB 2: the engines in order, DIGITAL skipped, back to the first",
                  seen == all && TSEL->eng_req == 0u && eng_step(0, 1) == ENGI_FM6 &&
-                 eng_step(ENGI_FM6, 1) == (FELUCCA_LADDER ? ENGI_LADDER : 2u) &&   /* (this fork: LADDER after FM6) */
+                 eng_step(ENGI_FM6, 1) == (FELUCCA_FORGE ? ENGI_LADDER : 2u) &&   /* (Forge Five: LADDER, SEM after FM6) */
                  eng_step(ENGI_FM6, -1) == 0u && eng_step(0, -1) == ENGI_DRUM);
     {   /* the display order (engines.c ENGINE_ORDER): every engine one can pick once; the PRESETS list follows it */
         static const char *const ORDER[] = {"ANALOG", "FM6",
-#if FELUCCA_LADDER
-                                            "LADDER",   /* (this fork) */
+#if FELUCCA_FORGE
+                                            "LADDER", "SEM",   /* (Forge Five) */
 #endif
                                             "PHASE", "LOFI", "SAMPLE", "VOICE", "TRIO", "WHEEL", "GRAIN",
                                             "PHYS", "NOISE", "SLICE", "DRUM"};
@@ -5133,7 +5139,7 @@ static int test_fm4_retired(void)
         pe.panel = PANEL_DEFAULT;
         pe.favorites.factory[ENGI_DIGITAL][0] = 1u << 5 | 1u << 7;   /* PAD, FUNK KEY */
         settings_import(&pe, (int)sizeof pe);
-#if FELUCCA_LADDER   /* this fork: row 1 holds LADDER's stars now (favorites.c fav_row): kept, never moved to FM6 */
+#if FELUCCA_FORGE   /* Forge Five: row 1 holds LADDER's and SEM's stars now (favorites.c fav_row): kept, never moved to FM6 */
         bad += check("favourites: row 1 is LADDER's (bits 5 and 7: its presets 5 and 7), FM6's untouched",
                      favorite_has(ENGI_LADDER, 5) && favorite_has(ENGI_LADDER, 7) && !favorite_has(ENGI_FM6, 4) &&
                      !favorite_has(ENGI_DIGITAL, 5));
@@ -9688,8 +9694,9 @@ static int test_edit_quick_actions(void)
     ok = drum_track(TSEL) && !drum_mute[3];
     btn_down(B_EDIT); frames(500);
     a = leds_at(0); b2 = leds_at(250);
-    for (i = 0; i < 11u; i++)                         /* 1..8 lit, steady; 9..11 dark */
-        ok &= (((a & b2) >> black(i)) & 1u) == (i < NLANE) && !(((a ^ b2) >> black(i)) & 1u);
+    for (i = 0; i < 11u; i++)                         /* 1..8 lit, steady; 9..11 dark (Forge Five: 11, F#5, CLEAN INIT: breathes) */
+        if (!(LY_CLEAN_BLACK && i == LY_CLEAN))
+            ok &= (((a & b2) >> black(i)) & 1u) == (i < NLANE) && !(((a ^ b2) >> black(i)) & 1u);
     key_down(black(0)); frame(); key_up(black(0)); frame();
     key_down(black(5)); frame(); key_up(black(5)); frame();
     ok &= drum_mute[3] == (1u | 32u) && msg_is("TOM MUTED") && !gates() && ui.layer == LAYER_EDIT;
@@ -9708,14 +9715,17 @@ static int test_edit_quick_actions(void)
     key_down(white(0)); frame(); key_up(white(0)); frame();
     ok = TSEL->eng_req == eng_vis(0) && !drum_mute[3] && eqa_count(TSEL) == 0u;
     a = leds_at(0); b2 = leds_at(250);
-    for (i = 0; i < 11u; i++)                         /* (ANALOG: no actions, the black keys dark and inert) */
-        ok &= !(((a | b2) >> black(i)) & 1u);
+    for (i = 0; i < 11u; i++)                         /* (ANALOG: no actions, the black keys dark and inert; F#5 apart) */
+        if (!(LY_CLEAN_BLACK && i == LY_CLEAN))
+            ok &= !(((a | b2) >> black(i)) & 1u);
     {
         track_t before = *TSEL;
         uint8_t m[NPART];
         memcpy(m, drum_mute, sizeof m);
         ui.msg_t = 0;
         for (i = 0; i < 11u; i++) {
+            if (LY_CLEAN_BLACK && i == LY_CLEAN)
+                continue;
             key_down(black(i)); frame(); key_up(black(i)); frame();
         }
         ok &= !memcmp(m, drum_mute, sizeof m) && !ui.msg_t && !gates() && before.eng_req == TSEL->eng_req &&

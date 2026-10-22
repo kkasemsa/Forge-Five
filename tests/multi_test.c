@@ -51,6 +51,9 @@ int main(void)
         mcheck("KNOB 1 steps the part's engine (ANALOG -> FM6, the display order)", trk[0].eng_req == ENGI_FM6 && e0 == 0u);
         turn(EN_K1, 1);
         mcheck("  again: LADDER", trk[0].eng_req == ENGI_LADDER);
+        turn(EN_K1, 1);
+        mcheck("  again: SEM", trk[0].eng_req == ENGI_SEM);
+        turn(EN_K1, -1);
         turn(EN_K1, -1);
         turn(EN_K1, -1);
         mcheck("  back: ANALOG", trk[0].eng_req == 0u);
@@ -107,8 +110,8 @@ int main(void)
 
     /* the budget in weights: 8 units; ANALOG 1.0, LADDER 2.5 */
     ui_power_on();
-    mcheck("weights: Felucca's engines 1.0 (16), LADDER 2.5 (40); the budget 8.0", eng_weight(0) == 16u && eng_weight(ENGI_FM6) == 16u &&
-           eng_weight(ENGI_LADDER) == 40u && VOICE_BUDGET == 128u);
+    mcheck("weights: Felucca's engines 1.0 (16), LADDER 2.5 (40), SEM 1.5 (24); the budget 8.0", eng_weight(0) == 16u &&
+           eng_weight(ENGI_FM6) == 16u && eng_weight(ENGI_LADDER) == 40u && eng_weight(ENGI_SEM) == 24u && VOICE_BUDGET == 128u);
     for (k = 0; k < NTRK; k++) {
         trk[k].p[P_VOICE] = V_POLY;
         trk[k].p[P_REL] = 127;

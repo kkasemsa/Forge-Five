@@ -39,9 +39,9 @@ int main(void)
     uint32_t k, n;
     setvbuf(stdout, NULL, _IONBF, 0);
     ui_power_on();
-    xcheck("LADDER has an engine patch of 20 values on 5 pages; FM6 and ANALOG none",
+    xcheck("LADDER has an engine patch of 20 values on 5 pages, SEM 16 on 4; FM6 and ANALOG none",
            trk_xp(&trk[0]) == 0 && eng_xp(ENGI_FM6) == 0 && eng_xp(ENGI_LADDER) && eng_xp(ENGI_LADDER)->n == 20u &&
-           xp_title(&trk[0], 0) == 0);
+           eng_xp(ENGI_SEM) && eng_xp(ENGI_SEM)->n == 16u && xp_title(&trk[0], 0) == 0);
     for (k = 0; k < NENGINES; k++) {                   /* every value's range fits a 7-bit byte */
         const xp_info_t *x = eng_xp(k);
         uint32_t j;

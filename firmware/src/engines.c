@@ -43,7 +43,8 @@ static inline uint32_t eng_idx(uint32_t e) { return e < NENGINES ? e : 0u; }
 #if FELUCCA_SLICE
 #include "eng_slice.c"
 #endif
-#include "eng_ladder.c"         /* LADDER: three VCOs into a four-pole ladder (this fork) */
+#include "eng_ladder.c"         /* LADDER: three VCOs into a four-pole ladder (Forge Five) */
+#include "eng_sem.c"            /* SEM: two VCOs into a state-variable filter with a MODE knob (Forge Five) */
 
 /* the editor protocol, user presets and projects store these indices: append, never reorder */
 static const engine_t *const ENGINES[NENGINES] = {
@@ -67,8 +68,9 @@ static const engine_t *const ENGINES[NENGINES] = {
 #if FELUCCA_SLICE
     &ENG_SLICE,                  /* 13 (FELUCCA_SLICE=0 builds without it) */
 #endif
-#if FELUCCA_LADDER
+#if FELUCCA_FORGE
     &ENG_LADDER,                 /* ENGI_LADDER: 14 (13 without SLICE) */
+    &ENG_SEM,                    /* ENGI_SEM: 15 */
 #endif
 };
 
@@ -77,9 +79,11 @@ static const engine_t *const ENGINES[NENGINES] = {
  * mixed engines fit the CPU. Felucca's own engines all weigh 16: their voice counts are as they were */
 static uint32_t eng_weight(uint32_t e)
 {
-#if FELUCCA_LADDER
+#if FELUCCA_FORGE
     if (e == ENGI_LADDER)
         return 40u;                                   /* 2.5: ANALOG x 2.7 measured (tests/ladder_test.c), 3 voices of 8 */
+    if (e == ENGI_SEM)
+        return 24u;                                   /* 1.5: ANALOG x 1.35 .. 1.8 measured (tests/sem_test.c): 5 voices of 8 */
 #endif
     (void)e;
     return 16u;
@@ -88,9 +92,11 @@ static uint32_t eng_weight(uint32_t e)
 /* the engines' extra values (engine_xp.c): LADDER's; the others none */
 static const xp_info_t *eng_xp(uint32_t e)
 {
-#if FELUCCA_LADDER
+#if FELUCCA_FORGE
     if (e == ENGI_LADDER)
         return &LADDER_XPI;
+    if (e == ENGI_SEM)
+        return &SEM_XPI;
 #endif
     (void)e;
     return 0;
@@ -142,8 +148,9 @@ static const char *snd_missing(const track_t *t, uint32_t *code)
 static const uint8_t ENGINE_ORDER[NENG_SHOWN] = {
     0,                           /* ANALOG */
     12,                          /* FM6 */
-#if FELUCCA_LADDER
-    ENGI_LADDER,                 /* LADDER (this fork) */
+#if FELUCCA_FORGE
+    ENGI_LADDER,                 /* LADDER, SEM (Forge Five) */
+    ENGI_SEM,
 #endif
 #if FELUCCA_FM4
     1,                           /* DIGITAL */

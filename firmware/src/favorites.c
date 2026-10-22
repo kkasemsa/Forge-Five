@@ -12,33 +12,44 @@ static favorites_t favorites __attribute__((section(".pool")));
 static uint32_t fav_row(uint32_t e)
 {
 #ifdef ENGI_LADDER
-    if (FELUCCA_LADDER && e == ENGI_LADDER)
-        return ENGI_DIGITAL;
+    if (FELUCCA_FORGE && (e == ENGI_LADDER || e == ENGI_SEM))
+        return ENGI_DIGITAL;                          /* (shared: LADDER's presets at bits 0.., SEM's at 128..: fav_base) */
     if (e == ENGI_DIGITAL && !FELUCCA_FM4)
         return 16u;
 #endif
     return e < 14u ? e : 16u;
+}
+static uint32_t fav_base(uint32_t e)                  /* the first bit of engine e's presets in its row */
+{
+#ifdef ENGI_SEM
+    return FELUCCA_FORGE && e == ENGI_SEM ? 128u : 0u;
+#else
+    (void)e;
+    return 0u;
+#endif
 }
 static int favorite_has(uint32_t engine, uint32_t preset)
 {
     uint32_t r = fav_row(engine);
     if (engine == NENGINES)
         return preset < UP_SLOTS && ((favorites.user >> preset) & 1u);
+    preset += fav_base(engine);
     return engine < NENGINES && r < 16u && preset < 256u &&
         ((favorites.factory[r][preset / 8u] >> (preset % 8u)) & 1u);
 }
 static int favorite_set(uint32_t engine, uint32_t preset, int on)
 {
-    if (engine > NENGINES || (engine == NENGINES ? preset >= UP_SLOTS : fav_row(engine) >= 16u || preset >= 256u))
+    if (engine > NENGINES || (engine == NENGINES ? preset >= UP_SLOTS : fav_row(engine) >= 16u || preset + fav_base(engine) >= 256u))
         return 0;
     if (favorite_has(engine, preset) == !!on) return 0;
     if (engine == NENGINES) {
         if (on) favorites.user |= 1u << preset;
         else favorites.user &= ~(1u << preset);
     } else {
-        uint8_t *b = &favorites.factory[fav_row(engine)][preset / 8u];
-        if (on) *b |= (uint8_t)(1u << (preset % 8u));
-        else *b &= (uint8_t)~(1u << (preset % 8u));
+        uint32_t q = preset + fav_base(engine);
+        uint8_t *b = &favorites.factory[fav_row(engine)][q / 8u];
+        if (on) *b |= (uint8_t)(1u << (q % 8u));
+        else *b &= (uint8_t)~(1u << (q % 8u));
     }
     return 1;
 }
