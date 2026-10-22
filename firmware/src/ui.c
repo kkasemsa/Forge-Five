@@ -469,7 +469,11 @@ static void track_defaults_steps(track_t *t) { steps_clear(t); }
 static int param_kept(uint32_t i)
 {
     return i == P_LEVEL || i == P_PAN || i == P_MUTE || (i >= P_SLEN && i <= P_SGATE) ||
-           (i >= P_ROOT && i <= P_QUANT) || i == P_CHORD || i == P_TFLT || i == P_STRUM || i == P_VLEAD;
+           (i >= P_ROOT && i <= P_QUANT) || i == P_CHORD || i == P_TFLT || i == P_STRUM || i == P_VLEAD
+#if FORGE_FIVE
+           || i == P_MAXV                                /* (the part's, not the sound's) */
+#endif
+           ;
 }
 
 /* preset pi of the engine the track asked for: the whole sound (not the pattern parameters) */

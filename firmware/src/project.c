@@ -18,7 +18,17 @@
  *
  * Built on the host too (tests/project_test.c, -DPROJ_HOST): the part above the #ifndef
  * PROJ_HOST needs core.h, params.c (TP), drums.c (the lanes), the engines and trk_def_engine (ui.c). */
+#if FORGE_FIVE
+/* Forge Five (spec v0.3, Phase 1): its own record, "FFP1": every parameter of each part as it is (P_COUNT of them,
+ * no mapping by count, no values in another track's lock slots or nudges), the engine and preset, and the part's
+ * engine patch (PROJ_XP bytes, engine_xp.c); no steps, nudges, locks or fill conditions: Forge Five has no
+ * sequencer. Nothing shipped before it, so nothing older is read (proj_import: FFP1 alone). The web editor keeps it
+ * as opaque bytes (its backup objects) */
+#define PROJ_MAGIC 0x31504646u                 /* "FFP1" */
+#define PROJ_XP 128u
+#else
 #define PROJ_MAGIC 0x46554E35u                 /* "FUN5": format 4 + per-step nudge, parameter locks, fill conditions (SLOOP 2.4) */
+#endif
 #define PROJ_MAGIC_V4 0x46554E34u              /* "FUN4": four tracks, P_COUNT parameters each, 10-byte steps; read only */
 #define PROJ_MAGIC_V3 0x46554E33u              /* "FUN3": SLOOP 1.x; read only */
 #define PROJ_MAGIC_V2 0x46554E32u              /* "FUN2": four tracks, PROJ_NP_V2 parameters; read only */
@@ -39,12 +49,18 @@ _Static_assert(G_DRDLY == PROJ_NG && G_COUNT == PROJ_NG + 1u + (CLIPPER_SYNTH ? 
  * and val bytes (marked CLIPPER_PROJ_MARK: proj_capture, proj_apply). The format and its size do not change: SLOOP
  * reads a Clipper project as before, tracks 3 and 4 as they are. (Clipper 0.4's first build, CLIPPER_PROJ_MARK_04,
  * put them in tracks 3 and 4's p[], where SLOOP took them for their sounds: read too) */
+#if FORGE_FIVE
+#define PROJ_NP ((uint32_t)P_COUNT)
+#define PROJ_E0 ((uint32_t)P_E0)
+#define PROJ_NX 0u
+#else
 #define PROJ_NP 61u
 #define PROJ_E0 53u
 #define PROJ_NX (P_E0 - PROJ_E0)
 _Static_assert(P_COUNT == PROJ_NP || (CLIPPER_SYNTH && P_COUNT == PROJ_NP + PROJ_NX && P_COUNT < 128 && NTRK == 4),
                "a track's parameters as stored (Clipper: track 3's lock slots hold the rest: PROJ_XM3 below)");
-#if CLIPPER_SYNTH
+#endif
+#if CLIPPER_SYNTH && !FORGE_FIVE
 /* tracks 1 and 2's LFO 2, ENV 2 and matrix (0.4: PROJ_XA values each) and INSERT (0.6: PROJ_XI each) <-> bytes in the
  * free lock slots of track 3 (lk): 3 bytes a slot (param, val low, val high), value - its minimum (every range fits a
  * byte). The 0.4 part first, as 0.4 / 0.5 wrote it (2 x PROJ_XA bytes, then CLIPPER_PROJ_MARK), then 0.6's (2 x PROJ_XI
@@ -184,6 +200,13 @@ static int proj_ms_get(const plock_t *lk, uint32_t j, track_t *t)   /* track j's
     return 0;
 }
 #endif
+#if FORGE_FIVE
+typedef struct {                               /* one part (Forge Five): its parameters, engine, preset, engine patch */
+    int16_t p[PROJ_NP];
+    uint8_t engine, preset;
+    uint8_t xp[PROJ_XP];
+} proj_trk_t;
+#else
 typedef struct {                               /* one track; the drum track ignores engine / preset */
     int16_t p[PROJ_NP];
     uint8_t engine, preset;
@@ -195,7 +218,8 @@ typedef struct {                               /* one track; the drum track igno
     plock_t lock[NLOCK];                       /* and its parameter locks (step LOCK_FREE = none) */
     uint8_t fill[NSTEP / 4];                   /* and its fill condition, 2 bits a step (FC_*) */
 } proj_trk_t;
-#if CLIPPER_SYNTH
+#endif
+#if CLIPPER_SYNTH && !FORGE_FIVE
 /* 1.0: SPREAD .. the matrix's slot 12 of both (PROJ_X10 each, value - its minimum) and G_DMODE, in track 3's nudges
  * (micro: SLOOP plays them on track 3's steps; Clipper writes them only while track 3 has none, so they nudge nothing
  * there): byte 0 CLIPPER_PROJ_MARK_10, then track 1's, track 2's, G_DMODE, a check byte */
@@ -238,6 +262,7 @@ typedef struct {
     proj_trk_t t[NTRK];
     uint32_t sum;
 } project_t;
+#if !FORGE_FIVE                                /* (the older formats: nothing Forge Five reads) */
 typedef struct {                               /* a track of format 4 (SLOOP 2.0 .. 2.3), read only */
     int16_t p[PROJ_NP_V4];
     uint8_t engine, preset;
@@ -312,7 +337,8 @@ typedef struct {
 _Static_assert(sizeof(project_v6_t) == 3816u, "format 6 as SLOOP 2.6 stores it");
 _Static_assert(sizeof(project_v2_t) == 2552u && sizeof(project_v1_t) == 688u && sizeof(project_v3_t) == 2584u &&
                sizeof(project_v4_t) == 3112u, "formats 1 / 2 / 3 / 4 as they were stored");
-_Static_assert(sizeof(project_t) <= 3840u, "format 5 fits one flash object (storage.c ST_PAYLOAD_MAX)");
+#endif
+_Static_assert(sizeof(project_t) <= 3840u, "the project fits one flash object (storage.c ST_PAYLOAD_MAX)");
 project_t proj_slot[4] __attribute__((section(".noinit")));
 
 static uint32_t proj_hash(const void *p, uint32_t n)   /* FNV-1a over n bytes */
@@ -326,6 +352,7 @@ static uint32_t proj_hash(const void *p, uint32_t n)   /* FNV-1a over n bytes */
 static uint32_t proj_sum(const project_t *p) { return proj_hash(p, sizeof *p - 4u); }
 static int proj_ok(const project_t *q) { return q->magic == PROJ_MAGIC && q->size == sizeof *q && q->sum == proj_sum(q); }
 
+#if !FORGE_FIVE
 /* ---- old formats -> format 5 */
 /* an old step into a synth step (no level, no ratchet) */
 static void step_from8(step_t *d, const step8_t *s)
@@ -562,20 +589,85 @@ static int proj_from_v1(project_t *q, const project_v1_t *v1, int n)
     return 1;
 }
 
+#endif
 /* n bytes of a stored project (any format) -> slot q as format 5; 0 = not a project */
 static int proj_import(project_t *q, const void *b, int n)
 {
+#if !FORGE_FIVE
     proj_v6_ins_ok[proj_v6_at(q)] = 0;                 /* (proj_from_v6 sets it again) */
+#endif
     if (n == (int)sizeof *q && proj_ok((const project_t *)b)) {
         memcpy(q, b, sizeof *q);
         return 1;
     }
+#if FORGE_FIVE
+    return 0;                                          /* (FFP1 alone) */
+#else
     return proj_from_v6(q, (const project_v6_t *)b, n) || proj_from_v4(q, (const project_v4_t *)b, n) ||
            proj_from_v3(q, (const project_v3_t *)b, n) ||
            proj_from_v2(q, (const project_v2_t *)b, n) || proj_from_v1(q, (const project_v1_t *)b, n);
+#endif
 }
 
 /* ---- the working project <-> a project_t */
+#if FORGE_FIVE
+static void proj_capture(project_t *p)        /* what is playing now, as a project */
+{
+    uint32_t i, k;
+    memset(p, 0, sizeof *p);
+    p->magic = PROJ_MAGIC;
+    p->size = sizeof *p;
+    for (i = 0; i < PROJ_NG; i++)
+        p->g[i] = song.g[i];
+    p->sel = song.sel;
+    p->drdly = (uint8_t)song.g[G_DRDLY];
+    for (i = 0; i < NTRK; i++) {
+        for (k = 0; k < PROJ_NP; k++)
+            p->t[i].p[k] = trk[i].p[k];
+        p->t[i].engine = trk[i].eng_req;
+        p->t[i].preset = trk[i].preset;
+        xp_pack(&trk[i], p->t[i].xp);         /* (engine_xp.c: the part's engine patch, or zeros) */
+    }
+    p->sum = proj_sum(p);
+}
+/* a project's parts and globals into the working ones, every value back inside its range. The audio ISR must not
+ * run meanwhile (a load: IRQ off). No steps: the sequencer's are cleared */
+static void proj_apply(const project_t *p, int all)
+{
+    uint32_t i, k;
+    for (i = 0; i < PROJ_NG; i++)
+        if (all && i != G_SLOT && i != G_LOAD && i != G_SAVE && i != G_SYNC && i != G_MIDI && i != G_ROUTE)
+            song.g[i] = (int16_t)clamp(p->g[i], GP[i].min, GP[i].max);
+    if (all)
+        song.g[G_DRDLY] = (int16_t)clamp(p->drdly, GP[G_DRDLY].min, GP[G_DRDLY].max);
+    for (k = 0; k < NTRK; k++) {
+        track_t *t = &trk[k];
+        const proj_trk_t *s = &p->t[k];
+        uint32_t e = k < NPART ? s->engine % NENGINES : 0u;
+        t->eng_req = (uint8_t)e;
+        t->user = 0;
+        t->lk_n = 0;
+        for (i = 0; i < P_COUNT; i++) {
+            const param_desc_t *d = k == TRK_DRUM && i == P_E0 ? &DRUM_KIT_DESC :
+                                    i >= P_E0 && i <= P_E7 ? &ENGINES[e]->edit[i - P_E0] : &TP[i];
+            t->p[i] = (int16_t)clamp(s->p[i], d->min, d->max);
+        }
+        t->preset = (uint8_t)(ENGINES[e]->npresets ? (s->preset == 0xFFu ? 0u : s->preset) % ENGINES[e]->npresets : 0u);
+        arp_snd[k % NTRK] = (uint8_t)t->p[P_AMODE];
+        memset(t->step, 0, sizeof t->step);
+        memset(t->micro, 0, sizeof t->micro);
+        memset(t->fill, 0, sizeof t->fill);
+        for (i = 0; i < NLOCK; i++) {
+            t->lock[i].step = LOCK_FREE;
+            t->lock[i].param = 0;
+            t->lock[i].val = 0;
+        }
+        xp_unpack(t, s->xp);                    /* (the engine patch, or the engine's defaults) */
+        if (k < 2u)
+            mseq_init(t);
+    }
+}
+#else
 static void proj_capture(project_t *p)        /* what is playing now, as a project */
 {
     uint32_t i;
@@ -719,6 +811,7 @@ static void proj_apply(const project_t *p, int all)
 #endif
 }
 
+#endif
 #ifndef PROJ_HOST
 #if FELUCCA_ARRANGER
 #include "arranger_scene.c"
@@ -728,11 +821,14 @@ static uint8_t sec_dirty, song_dirty;           /* live sections / the song: in 
 /* slot from flash into RAM (format 5, or an old one converted) */
 static union {
     project_t v5;
+#if !FORGE_FIVE
     project_v6_t v6;
     project_v4_t v4;
     project_v3_t v3;
     project_v2_t v2;
     project_v1_t v1;
+#endif
+    uint8_t raw[3840];                          /* (storage.c ST_PAYLOAD_MAX: the editor's backup staging, any object) */
 } proj_tmp;
 static void proj_fetch(uint32_t slot)
 {
@@ -1195,8 +1291,10 @@ static uint32_t project_restore(uint32_t slot, const void *raw, uint32_t n)
     if (!flash_ok || st_save(OBJ_PROJECT0 + slot, &autosave_buf, sizeof autosave_buf))
         return 4;
     memcpy(&proj_slot[slot], &autosave_buf, sizeof proj_slot[slot]);
+#if !FORGE_FIVE
     proj_v6_ins_ok[slot] = proj_v6_ins_ok[4];           /* (a SLOOP 2.6 project's INSERT goes with it) */
     memcpy(proj_v6_ins[slot], proj_v6_ins[4], sizeof proj_v6_ins[slot]);
+#endif
     sec_dirty &= (uint8_t)~(1u << slot);
     return 0;
 }

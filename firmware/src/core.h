@@ -139,6 +139,10 @@ enum {                          /* per-track parameters */
     P_M10SRC, P_M10DST, P_M10AMT,
     P_M11SRC, P_M11DST, P_M11AMT,
     P_M12SRC, P_M12DST, P_M12AMT,
+#if FORGE_FIVE
+    P_MAXV,                                    /* Forge Five: VOICES, the most voices this part may hold (0 ALL: the
+                                                * engine's cap; the part's, not the sound's: ui.c param_kept) */
+#endif
 #endif
     P_E0, P_E1, P_E2, P_E3, P_E4, P_E5, P_E6, P_E7,
     P_COUNT
@@ -362,6 +366,9 @@ enum { FC_NORM, FC_FILL, FC_NOFILL };     /* (3: as FC_NORM) */
 
 typedef struct track {
     int16_t p[P_COUNT];
+#if FORGE_FIVE
+    int16_t xp[64];              /* Forge Five: the engine patch, the engine's extra values (engine_xp.c NXP) */
+#endif
     uint8_t engine, preset;      /* engine: what the audio ISR renders */
     uint8_t eng_req;             /* engine the UI asked for (the ISR switches at a block start) */
     uint8_t user;                /* user preset slot + 1 the sound came from (UI), 0 = none */

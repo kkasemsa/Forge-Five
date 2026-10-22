@@ -490,7 +490,7 @@ static uint32_t ed_bk_commit(void)
         const up_bank_t *b = (const up_bank_t *)raw;
         if (ed_flash_busy())
             return 3;
-#if CLIPPER_SYNTH
+#if CLIPPER_SYNTH && !FORGE_FIVE
         if (n == 8u + UP_PER_BANK * UP_RSIZE_04 && b->magic == UP_BANK_MAGIC && b->rsize == UP_RSIZE_04 &&
             b->nslot == UP_PER_BANK) {                    /* a Clipper 0.4 backup's bank: made today's, then stored */
             up_bank_import(id - 6u, raw, (int)n);
@@ -893,8 +893,13 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
         for (i = 0; i < P_COUNT; i++)
             ed_v(u ? v[i] : 0);
         for (i = 0; i < 16u; i++) {
+#if FORGE_FIVE
+            ed_b(0);                                       /* (no pattern in a Forge Five preset) */
+            ed_b(0);
+#else
             ed_b(u ? r->note[i] : 0u);
             ed_b(u ? r->flags[i] : 0u);
+#endif
         }
         break;
     }

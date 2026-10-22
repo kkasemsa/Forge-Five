@@ -83,7 +83,9 @@ static void track_lfo_tick(track_t *t)
 static uint32_t trk_nvoice(const track_t *t)
 {
 #if FORGE_FIVE
-    uint32_t c = ENGINES[t->engine]->poly;
+    uint32_t c = ENGINES[t->engine]->poly, mv = (uint32_t)clamp(t->p[P_MAXV], 0, (int32_t)NPOLY);   /* VOICES: the part's cap */
+    if (mv && (!c || mv < c))
+        c = mv;
 #else
     uint32_t c = ENGINES[t->engine] == &ENG_PHYS ? phys_poly(t) : ENGINES[t->engine]->poly;   /* (PHYS: by MODEL) */
 #endif
@@ -91,14 +93,22 @@ static uint32_t trk_nvoice(const track_t *t)
 }
 
 /* ------------------------------------------------- the shared voice budget --- */
-static uint32_t voices_busy(void)                       /* sounding voices of all parts (not the fading ones) */
+/* Forge Five: the budget is NVOICE units of 16 (VOICE_BUDGET), and a voice costs its engine's weight (engines.c
+ * eng_weight, Q4: 16 = one unit, Clipper's engines; the heavy ones more, LADDER 40 = 2.5). voices_cost sums the
+ * sounding voices; voice_fits says whether one more of part t goes in. Without FORGE_FIVE every voice is one unit:
+ * the count as before. */
+#define VOICE_BUDGET ((uint32_t)NVOICE * 16u)
+static uint32_t voices_cost(void)                       /* the cost of the sounding voices of all parts (not the fading ones) */
 {
     uint32_t p, i, n = 0;
-    for (p = 0; p < NPART; p++)
+    for (p = 0; p < NPART; p++) {
+        uint32_t w = eng_weight(trk[p].engine);
         for (i = 0; i < NVOICE; i++)
-            n += trk[p].v[i].active && trk[p].v[i].stage != 4u;
+            n += (trk[p].v[i].active && trk[p].v[i].stage != 4u) ? w : 0u;
+    }
     return n;
 }
+static int voice_fits(const track_t *t) { return voices_cost() + eng_weight(t->engine) <= VOICE_BUDGET; }
 
 static uint32_t lowest_held(const track_t *t)           /* index of the lowest held note (the bass), NVOICE = none */
 {
@@ -192,17 +202,21 @@ static void shed_voice(void)
     }
 }
 
-/* the budget is full: free a voice for part t. 0 = nothing to take (soft) */
+/* the budget is full: free a voice for part t. 0 = nothing to take (soft). Forge Five: as many as a voice of t's
+ * engine needs (a heavy voice takes several light ones) */
 static int voice_room(track_t *t, int soft)
 {
-    track_t *vp = 0;
-    uint32_t k;
-    if (voices_busy() < NVOICE)
-        return 1;
-    k = voice_victim(t, soft, &vp);
-    if (k == NVOICE)
-        return !soft;                                   /* hard: over the budget (cannot happen with 3 parts) */
-    voice_kill(&vp->v[k]);
+    uint32_t n;
+    for (n = 0; n < NVOICE * NPART; n++) {
+        track_t *vp = 0;
+        uint32_t k;
+        if (voice_fits(t))
+            return 1;
+        k = voice_victim(t, soft, &vp);
+        if (k == NVOICE)
+            return !soft;                               /* hard: over the budget (cannot happen with 3 parts) */
+        voice_kill(&vp->v[k]);
+    }
     return 1;
 }
 
@@ -222,13 +236,16 @@ static voice_t *voice_alloc(track_t *t, uint32_t note)
             return &t->v[i];
         nfree += !t->v[i].active;
     }
-    if (nfree && voices_busy() >= NVOICE) {
+    if (nfree && !voice_fits(t)) {
         track_t *vp = 0;
         uint32_t k = voice_victim(t, 0, &vp);
         if (k < np && vp == t)
             return &t->v[k];                            /* our own: restart it in place (no click) */
-        if (k < NVOICE)
+        if (k < NVOICE) {
             voice_kill(&vp->v[k]);
+            while (!voice_fits(t) && (k = voice_victim(t, 0, &vp)) < NVOICE && vp != t)   /* (a heavy voice: more) */
+                voice_kill(&vp->v[k]);
+        }
     }
     if (t->p[P_ALLOC] || t->p[P_GLIDE]) {
         for (i = 0; i < np; i++) {
@@ -442,7 +459,7 @@ static int puni_taken(const uint32_t *idx, uint32_t n, uint32_t i)
 static uint32_t puni_pick(track_t *t, const uint32_t *idx, uint32_t n, uint32_t np)
 {
     uint32_t i, best = np, low = lowest_held(t);
-    if (voices_busy() < NVOICE)
+    if (voice_fits(t))
         for (i = 0; i < np; i++)
             if (!t->v[i].active && !puni_taken(idx, n, i))
                 return i;

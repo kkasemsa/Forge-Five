@@ -176,6 +176,22 @@ _Static_assert(ENGI_GRAIN == 8u && ENGI_PHYS == 10u && ENGI_NOISE == 11u && ENGI
 #if CLIPPER_SYNTH
 #include "preset_trim_clipper.h"
 #endif
+#if FORGE_FIVE
+#include "engine_xp.c"           /* Forge Five: the engine patch (a part's extra values) */
+static const xp_info_t *eng_xp(uint32_t e)   /* the engine's extra values, 0 = none (Clipper's engines) */
+{
+    (void)e;
+    return 0;
+}
+#endif
+/* Forge Five: the cost of one voice of engine e in the shared budget (voice.c), Q4: 16 = one unit (Clipper's engines,
+ * measured as about ANALOG's); the engines to come: LADDER 40 (2.5), BRASS 24 (1.5), RIBBON 32 (2.0), WAVE-P 21 (1.3),
+ * CHORD-D 16 (spec v0.3 section 3: to be measured on the unit) */
+static uint32_t eng_weight(uint32_t e)
+{
+    (void)e;
+    return 16u;
+}
 static int16_t preset_trim(uint32_t e, uint32_t pi)
 {
     if (CLIPPER_SYNTH && !FORGE_FIVE && (ENGINES[e % NENGINES] == &ENG_SAMPLE || ENGINES[e % NENGINES] == &ENG_GRAIN))

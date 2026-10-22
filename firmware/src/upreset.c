@@ -14,6 +14,9 @@
  *
  * With -DUP_HOST (host test) only the part above #ifndef UP_HOST is built;
  * it needs nothing but core.h. */
+#if FORGE_FIVE
+#include "upreset_ff.c"          /* Forge Five: its own record (every parameter, the engine patch; no pattern), the same API */
+#else
 #define UP_PER_BANK 16u
 #define UP_PMAX 72u                              /* room for P_COUNT to grow */
 #define UP_USED 0xA5u
@@ -656,4 +659,5 @@ static void up_ui(uint32_t op, uint32_t k)     /* 0 load, 1 erase, 2 save */
         ui_say(op == 1u ? "ERASED " : "SAVED ", l);
     ui.force = 1;
 }
+#endif
 #endif

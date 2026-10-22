@@ -108,6 +108,8 @@ SYN="$CCS -O2 -w -DCLIPPER_SYNTH=1 -Ibuild/gen -Ifirmware/src -Ifirmware/hal"
 # Forge Five: the tests of the engines the synth leaves out (core.h FF_ENG) build all of Clipper (FORGE_FIVE=0)
 SYNALL="$SYN -DFORGE_FIVE=0"
 mkdir -p "$OUT/clipper"
+$SYN -o "$OUT/ff_store_test" tests/ff_store_test.c -lm
+run "Forge Five stores: the FFP1 project and UPF1 user preset records, VOICES, the voice budget in units" "$OUT/ff_store_test"
 $SYN -o "$OUT/clipper_ui_test" tests/clipper_ui_test.c -lm
 run "Clipper synth: HOME, presets, keys, pages, one track, MIDI omni, no drums / song" "$OUT/clipper_ui_test" "$OUT/clipper"
 $SYN -o "$OUT/clipper_stress" tests/stress_test.c -lm
@@ -137,15 +139,15 @@ if $SYN_UB -o "$OUT/synth3_ub" tests/synth3_test.c -lm 2>/dev/null; then
     mkdir -p "$OUT/synth3_asan"
     run "Clipper 0.3 under ASan + UBSan" sh -c "'$OUT/synth3_ub' '$OUT/synth3_asan' >/dev/null && echo clean"
 fi
-$SYN -o "$OUT/synth4_test" tests/synth4_test.c -lm
+$SYNALL -o "$OUT/synth4_test" tests/synth4_test.c -lm
 run "Clipper 0.4: the matrix on every engine (LFO 2, ENV 2, VEL, KEY, RAND, MW, AT, SLIDE), MPE, projects, user presets" "$OUT/synth4_test"
-if $SYN_UB -o "$OUT/synth4_ub" tests/synth4_test.c -lm 2>/dev/null; then
+if $SYN_UBALL -o "$OUT/synth4_ub" tests/synth4_test.c -lm 2>/dev/null; then
     run "Clipper 0.4 under ASan + UBSan" sh -c "'$OUT/synth4_ub' >/dev/null && echo clean"
 fi
 mkdir -p build/eng3_demo
-$SYN -o "$OUT/synth6_test" tests/synth6_test.c -lm
+$SYNALL -o "$OUT/synth6_test" tests/synth6_test.c -lm
 run "Clipper 0.6: an INSERT per sound (bypass bit for bit, every type, fades, tail, the layer's own, projects, user presets, SLOOP 2.6's), MULTI (the layer on its own channel)" "$OUT/synth6_test"
-if $SYN_UB -o "$OUT/synth6_ub" tests/synth6_test.c -lm 2>/dev/null; then
+if $SYN_UBALL -o "$OUT/synth6_ub" tests/synth6_test.c -lm 2>/dev/null; then
     run "Clipper 0.6 under ASan + UBSan" sh -c "'$OUT/synth6_ub' >/dev/null && echo clean"
 fi
 $SYNALL -o "$OUT/fmx_test" tests/fmx_test.c -lm
@@ -181,14 +183,14 @@ fi
 mkdir -p "$OUT/mseq_ui"
 $SYN -o "$OUT/mseq_ui_test" tests/mseq_ui_test.c -lm -lpthread
 run "Clipper 0.8 / 0.9 on the FM-1: MOD SEQ pages (lane, step, value, SHAPE), MOD SEQ 2, SPICE, UNDO of a step, the layer SWAP, JUNO / VECTOR in the browser, TUNING, VINTG, MODL, TURNG's labels" "$OUT/mseq_ui_test" "$OUT/mseq_ui"
-$SYN -o "$OUT/synth9_test" tests/synth9_test.c -lm
+$SYNALL -o "$OUT/synth9_test" tests/synth9_test.c -lm
 run "Clipper 0.9: the filter MODELs (SVF MOOG MS20 DIODE SEM NOTCH BP HP: bounded, responses, switch without a click), VINTAGE, the TUNING (JUST, 19-EDO, RAST, a USER scale), the TURNG arp and LOOP, projects and user presets" "$OUT/synth9_test"
-if $SYN_UB -o "$OUT/synth9_ub" tests/synth9_test.c -lm 2>/dev/null; then
+if $SYN_UBALL -o "$OUT/synth9_ub" tests/synth9_test.c -lm 2>/dev/null; then
     run "Clipper 0.9 under ASan + UBSan" sh -c "'$OUT/synth9_ub' >/dev/null && echo clean"
 fi
-$SYN -o "$OUT/synth10_test" tests/synth10_test.c -lm
+$SYNALL -o "$OUT/synth10_test" tests/synth10_test.c -lm
 run "Clipper 1.0: SPREAD (left = right at 0, the middle kept), the matrix's 12 slots, LFO 3, ENV 2 LOOP, the MACROS (and CC 16..19), HALL and SHIMMER, the delay's PING and TAPE (a change of MODE: no click), projects and user presets (the tail), the pages" "$OUT/synth10_test"
-if $SYN_UB -o "$OUT/synth10_ub" tests/synth10_test.c -lm 2>/dev/null; then
+if $SYN_UBALL -o "$OUT/synth10_ub" tests/synth10_test.c -lm 2>/dev/null; then
     run "Clipper 1.0 under ASan + UBSan" sh -c "'$OUT/synth10_ub' >/dev/null && echo clean"
 fi
 $SYN -o "$OUT/clean_test" tests/clean_test.c -lm

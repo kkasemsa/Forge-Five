@@ -29,6 +29,9 @@ static const char *const N_DASH[] = {"--"};
 static const char *const N_SYNC[] = {"INT", "USB", "TRS"};   /* G_SYNC: the tempo and PLAY / STOP from (seq.c mclk) */
 static const char *const N_GO[] = {"--", "GO"};
 static const char *const N_SLCR[] = {"OFF", "GATE", "STUT"};             /* SL_OFF .. SL_STUT (slicer.c) */
+#if FORGE_FIVE
+static const char *const N_MAXV[] = {"ALL", "1", "2", "3", "4", "5", "6", "7", "8"};   /* P_MAXV */
+#endif
 static const char *const N_FMODEL[] = {"SVF", "LADDR", "MS20", "DIODE", "2POLE", "NOTCH", "BP", "HP"};   /* P_FMODEL: FM_* */
 static const char *const N_SLDIV[] = {"1/8", "1/16", "1/32", "8T", "16T", "32T"};   /* SL_DEN */
 static const char *const N_CHORD[] = {"OFF", "TRIAD", "7TH", "9TH", "SUS4", "POWER"};   /* seq.c CHORD_DEG */
@@ -171,6 +174,9 @@ static const param_desc_t TP[P_COUNT] = {
     [P_MAC2] = PD("TIMBR", F_BIPCT, -64, 63, 0),
     [P_MAC3] = PD("MOTN", F_PCT, 0, 127, 0),
     [P_MAC4] = PD("SPACE", F_PCT, 0, 127, 0),
+#if FORGE_FIVE
+    [P_MAXV] = PE("VOICES", N_MAXV, 0),
+#endif
 #endif
 };
 #if CLIPPER_SYNTH
