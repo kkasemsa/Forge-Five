@@ -31,7 +31,7 @@ mkdir -p "$OUT"
 CCS="${CC:-cc} -O1 -Wall -Wno-unused-function"
 CC="$CCS -DCLIPPER_SYNTH=0"
 fail=0
-run() { echo "== $1"; shift; "$@" || fail=1; }
+run() { name=$1; echo "== $name"; shift; "$@" || { fail=1; echo "RUNFAIL ($?): $name"; }; }
 
 # HOST_ONLY=1: without the JieLi toolchain (no build/forge-five.fwsc): the generated headers are made here and the
 # tests that need the built package (update entry, update loader, target cost of the render loops) are skipped

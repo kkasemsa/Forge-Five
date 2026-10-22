@@ -6,7 +6,7 @@ section (the "== name" line before them), so they show on the run's summary page
 import re
 import sys
 
-BAD = re.compile(r"\bFAIL|\bfailed\b|\berror:|Assertion|Segmentation fault|Aborted|undefined reference|over budget")
+BAD = re.compile(r"\bFAIL|\bfailed\b|\berror:|Assertion|Segmentation fault|Aborted|undefined reference|[1-9]\d* [A-Za-z /]*over budget|RUNFAIL")
 
 
 def esc(s):
@@ -22,6 +22,9 @@ def main(path):
             continue
         if BAD.search(line) and not line.rstrip().endswith(" ok") and "ALL HOST TESTS PASSED" not in line:
             found.setdefault(sec, []).append(line.strip()[:300])
+    runfail = [l for ls in found.values() for l in ls if l.startswith("RUNFAIL")]
+    if runfail:
+        print(f"::error title=sections that failed::{esc(chr(10).join(runfail))}")
     for sec, lines in list(found.items())[:9]:
         body = "\n".join(lines[:15]) + ("\n..." if len(lines) > 15 else "")
         print(f"::error title={esc(sec[:120])}::{esc(body)}")
