@@ -12,6 +12,9 @@
 enum { ED_FMX_GET = 90, ED_FMX_PUT, ED_FMX_STORE };
 enum { ED_FMX_TRACK, ED_FMX_FACTORY, ED_FMX_BANK };
 
+#if FORGE_FIVE                                        /* (no FMX: its commands unknown; the MOD SEQ's and TUNING's below stay) */
+static int ed_fmx_handle(uint32_t cmd, const uint8_t *a, uint32_t n) { (void)cmd; (void)a; (void)n; return 0; }
+#else
 static int ed_fmx_handle(uint32_t cmd, const uint8_t *a, uint32_t n)
 {
     fmx_patch_t p;
@@ -67,6 +70,7 @@ static int ed_fmx_handle(uint32_t cmd, const uint8_t *a, uint32_t n)
     }
     return 0;
 }
+#endif
 
 /* v13 (Clipper 0.8): the MOD SEQ's steps of a part (its RATE LEN SMTH START, SPICE, DICE: parameters as any other)
  *   MSEQ_GET  part              -> part, rc, 64 bytes (lane 1's 16 steps, then lane 2's ..: each value + 8, 0..15)

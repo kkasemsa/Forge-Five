@@ -648,10 +648,8 @@ static int ed_fm6_handle(uint32_t cmd, const uint8_t *a, uint32_t na) { (void)cm
 static int ed_dsyn_handle(uint32_t cmd, const uint8_t *a, uint32_t na) { (void)cmd; (void)a; (void)na; return 0; }
 #endif
 #include "editor_hybrid.c"                            /* v11 (Clipper): the HYBRID patches (77, 78) */
-#if CLIPPER_SYNTH && !FORGE_FIVE
-#include "editor_fmx.c"                               /* v12 (Clipper 0.6): the FMX patches (90..92) */
-#elif CLIPPER_SYNTH
-static int ed_fmx_handle(uint32_t cmd, const uint8_t *a, uint32_t na) { (void)cmd; (void)a; (void)na; return 0; }
+#if CLIPPER_SYNTH
+#include "editor_fmx.c"                               /* v12 (Clipper 0.6): the FMX patches (90..92; Forge Five: none), v13 the MOD SEQ, v14 TUNING */
 #endif
 
 static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0 and F7 */
