@@ -543,6 +543,10 @@ static void edit_param(uint32_t slot, int32_t steps)
         return;
     }
 #endif
+#if FORGE_FIVE
+    if (pg->scope == SC_XP)                               /* the engine patch: a value of the sound (its id is xp[]'s; the
+        return;                                           * UNDO history sees it in the snapshot, ui_synth.c) */
+#endif
     if (pg->scope != SC_GLOBAL && p_lockable(id))
         ui.lock_par = (uint8_t)id;                        /* the SEQ layer's lock parameter: the last one touched */
     if (!v)

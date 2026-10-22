@@ -69,6 +69,9 @@ static const char *const N_ENGNAME[] = {"ANALOG", "DIGITAL", "PHASE", "LOFI", "S
                                         "WAVE", "ACID", "STRINGS", "MACRO", "VPS", "TERRAIN", "FMX", "WSEQ",
                                         "JUNO", "VECTOR",
 #endif
+#if FORGE_FIVE
+                                        "LADDER",
+#endif
 };
 
 #define PD(l, f, mn, mx, df) {l, f, mn, mx, df, 0, 0}
@@ -455,6 +458,20 @@ static void param_format(const param_desc_t *d, int32_t v, char *val, const char
         *unit = "dB";
         break;
     }
+#if FORGE_FIVE
+    case F_ST8: {                                     /* Forge Five: an oscillator's FREQ (eng_ladder.c ladder_cents): semitones, 2 decimals */
+        int32_t c = ladder_cents(v);
+        fmt_fix(val, c, 2);
+        if (c > 0) {
+            char t[10];
+            str_cpy(t, val, sizeof t);
+            val[0] = '+';
+            str_cpy(val + 1, t, 9);
+        }
+        *unit = "st";
+        break;
+    }
+#endif
     case F_SPLIT: {                                   /* stored + 4: C4 = 60 + 4 */
         uint32_t k;
         v -= 4;
@@ -491,9 +508,11 @@ static void param_format(const param_desc_t *d, int32_t v, char *val, const char
 /* ------------------------------------------------------------ pages --- */
 enum { FAM_HOME, FAM_ENV, FAM_LFO, FAM_FX, FAM_SCL, FAM_EDIT, FAM_GLO, FAM_SAVE, FAM_ARP, FAM_SEQ, FAM_TRK,
        FAM_COUNT };
-enum { SC_TRACK, SC_GLOBAL, SC_ENGINE, SC_STEP, SC_TRK, SC_SONG, SC_DRUM, SC_SYN };   /* SC_SYN: ui_synth.c */
+enum { SC_TRACK, SC_GLOBAL, SC_ENGINE, SC_STEP, SC_TRK, SC_SONG, SC_DRUM, SC_SYN,   /* SC_SYN: ui_synth.c */
+       SC_XP };                                                                      /* Forge Five: the engine patch (engine_xp.c) */
 enum { GR_NONE, GR_ADSR, GR_LFO, GR_STEPS, GR_ARP, GR_SCALE, GR_FX, GR_ROLL, GR_BROWSE, GR_SLOTS, GR_USER, GR_TRK,
-       GR_SLCR, GR_LAYER, GR_MORPH, GR_MATRIX, GR_FMX, GR_HIST, GR_MSEQ };
+       GR_SLCR, GR_LAYER, GR_MORPH, GR_MATRIX, GR_FMX, GR_HIST, GR_MSEQ,
+       GR_XP };                                                              /* Forge Five: an engine patch page */
 
 typedef struct {
     const char *title;
@@ -544,6 +563,17 @@ static const page_t PAGES[] = {
     {"SEL 2", FAM_SCL, SC_TRACK, GR_SCALE, {P_TRANS, P_STRUM, P_VLEAD, 0xFF}},   /* (2.4: the chords played) */
     {"EDIT 1", FAM_EDIT, SC_ENGINE, GR_NONE, {P_E0, P_E1, P_E2, P_E3}},
     {"EDIT 2", FAM_EDIT, SC_ENGINE, GR_NONE, {P_E4, P_E5, P_E6, P_E7}},
+#if FORGE_FIVE                                   /* the engine patch's pages (engine_xp.c), titled by the engine; hidden
+                                                  * past what its engine has (page_hidden) */
+    {"XP 1", FAM_EDIT, SC_XP, GR_XP, {0, 1, 2, 3}},
+    {"XP 2", FAM_EDIT, SC_XP, GR_XP, {4, 5, 6, 7}},
+    {"XP 3", FAM_EDIT, SC_XP, GR_XP, {8, 9, 10, 11}},
+    {"XP 4", FAM_EDIT, SC_XP, GR_XP, {12, 13, 14, 15}},
+    {"XP 5", FAM_EDIT, SC_XP, GR_XP, {16, 17, 18, 19}},
+    {"XP 6", FAM_EDIT, SC_XP, GR_XP, {20, 21, 22, 23}},
+    {"XP 7", FAM_EDIT, SC_XP, GR_XP, {24, 25, 26, 27}},
+    {"XP 8", FAM_EDIT, SC_XP, GR_XP, {28, 29, 30, 31}},
+#endif
 #if CLIPPER_SYNTH                                          /* 0.6: FMX's own pages (ui_synth.c X_F*), on FMX only */
     {"OP", FAM_EDIT, SC_SYN, GR_FMX, {19, 20, 21, 22}},          /* X_FOP X_FWAVE X_FMODE X_FRATIO */
     {"OP 2", FAM_EDIT, SC_SYN, GR_FMX, {23, 24, 25, 26}},        /* X_FFINE X_FLEVEL X_FVEL X_FKSC */
@@ -607,6 +637,10 @@ static const page_t PAGES[] = {
 /* a page not there for the sound selected (0.6: FMX's own pages on another engine): the page walks pass it */
 static int page_hidden(uint32_t i)
 {
+#if FORGE_FIVE
+    if (i < NPAGES && PAGES[i].graph == GR_XP)      /* an engine patch page the sound's engine does not have */
+        return !xp_title(TSEL, PAGES[i].id[0] / 4u);
+#endif
 #if CLIPPER_SYNTH
     return i < NPAGES && PAGES[i].graph == GR_FMX && TSEL->eng_req != ENGI_FMX;
 #else
@@ -648,6 +682,10 @@ static const param_desc_t *page_desc(const page_t *pg, uint32_t slot, int16_t **
 #if CLIPPER_SYNTH
     if (pg->scope == SC_SYN)
         return syn_desc(id, valp);
+#endif
+#if FORGE_FIVE
+    if (pg->scope == SC_XP)
+        return xp_desc(TSEL, id, valp);
 #endif
     *valp = &TSEL->p[id];
     return track_desc(TSEL, id);

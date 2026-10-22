@@ -48,7 +48,7 @@ static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /*
 #error "SLICE is a groovebox engine (CLIPPER_SYNTH 0)"
 #endif
 #define CLIPPER_NENG 10          /* WAVE ACID STRINGS MACRO VPS TERRAIN FMX WSEQ JUNO VECTOR */
-#define NENGINES (13 + CLIPPER_NENG)
+#define NENGINES (13 + CLIPPER_NENG + FORGE_FIVE)   /* Forge Five: its engines after Clipper's (append-only) */
 #define ENGI_WAVE 13u            /* Clipper 0.2: wavetables (eng_wave.c) */
 #define ENGI_ACID 14u            /*   a 303-style bass line (eng_acid.c) */
 #define ENGI_STRINGS 15u         /*   a string machine (eng_strings.c) */
@@ -59,6 +59,7 @@ static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /*
 #define ENGI_WSEQ 20u            /*   wave sequencing (eng_wseq.c, after the Wavestation) */
 #define ENGI_JUNO 21u            /* Clipper 0.8: the Juno poly and its chorus (eng_juno.c, fx.c juno_chorus) */
 #define ENGI_VECTOR 22u          /*   vector synthesis: four waves, a joystick (eng_vector.c, after the Prophet VS) */
+#define ENGI_LADDER 23u          /* Forge Five Phase 2: LADDER, three VCOs into a four-pole ladder (eng_ladder.c) */
 #else
 #define NENGINES (13 + FELUCCA_SLICE)
 #endif
@@ -69,7 +70,7 @@ static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /*
 #define ENGI_SLICE 13u           /* with FELUCCA_SLICE: after HYBRID */
 #define ENGI_FM6 9u              /* the FM6 engine's index (eng_fm6.c, the stores: append-only) */
 /* Forge Five: the engines built (the rest are ENG_OFF with FORGE_FIVE) */
-#define FF_ENG(e) (!FORGE_FIVE || (e) == 0u || (e) == ENGI_HYBRID || (e) == ENGI_WAVE || (e) == ENGI_JUNO)
+#define FF_ENG(e) (!FORGE_FIVE || (e) == 0u || (e) == ENGI_HYBRID || (e) == ENGI_WAVE || (e) == ENGI_JUNO || (e) >= ENGI_LADDER)
 #define UP_SLOTS 32u             /* user presets (upreset.c) */
 #define NELEM(a) (sizeof(a) / sizeof((a)[0]))
 
@@ -80,7 +81,8 @@ enum {
     F_SWING,                    /* 0..100: MPC swing, 50 % (straight) .. 75 % */
     F_FILT,                     /* -64..63: the DJ filter, LP <- OFF -> HP */
     F_CDB,                      /* Clipper: dB around the middle of the range (the master EQ) */
-    F_SPLIT                     /* Clipper: the layer's split, a MIDI note stored + 4 (68 = C4) */
+    F_SPLIT,                    /* Clipper: the layer's split, a MIDI note stored + 4 (68 = C4) */
+    F_ST8                       /* Forge Five: an oscillator's FREQ in semitones, fine near the centre (eng_ladder.c ladder_cents) */
 };
 
 typedef struct {

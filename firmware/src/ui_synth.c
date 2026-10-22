@@ -113,6 +113,9 @@ typedef struct {
     uint8_t ok, eng, preset, user;
     int16_t p[P_COUNT];
     int8_t ms[MSEQ_LANES][MSEQ_STEPS];               /* (0.8) the MOD SEQ's steps */
+#if FORGE_FIVE
+    int16_t xp[NXP];                                 /* the engine patch (engine_xp.c) */
+#endif
 } syn_snap_t;
 static syn_snap_t syn_a, syn_b, syn_back;
 
@@ -124,6 +127,9 @@ static void snap_take(syn_snap_t *s, const track_t *t)
     s->user = t->user;
     memcpy(s->p, t->p, sizeof s->p);
     memcpy(s->ms, t->ms, sizeof s->ms);
+#if FORGE_FIVE
+    memcpy(s->xp, t->xp, sizeof s->xp);
+#endif
 }
 /* a snapshot's sound into t (its mix and pattern parameters stay: param_kept) */
 static void snap_put(track_t *t, const syn_snap_t *s)
@@ -140,6 +146,9 @@ static void snap_put(track_t *t, const syn_snap_t *s)
     t->preset = s->preset;
     t->user = s->user;
     memcpy(t->ms, s->ms, sizeof t->ms);
+#if FORGE_FIVE
+    memcpy(t->xp, s->xp, sizeof t->xp);
+#endif
     fm1_irq_on();
     fm6_track_loaded(t);
     ui.force = 1;
@@ -178,6 +187,10 @@ static int hist_same(const hist_t *a, const hist_t *b)  /* the same sound (its m
             return 0;
     if (memcmp(a->s.ms, b->s.ms, sizeof a->s.ms))
         return 0;                                     /* (0.8: a MOD SEQ step) */
+#if FORGE_FIVE
+    if (memcmp(a->s.xp, b->s.xp, sizeof a->s.xp))
+        return 0;                                     /* (the engine patch) */
+#endif
     return a->s.eng != ENGI_FMX || !memcmp(&a->fx, &b->fx, sizeof a->fx);
 }
 static void hist_put(const hist_t *h)

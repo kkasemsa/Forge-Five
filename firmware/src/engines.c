@@ -2,6 +2,9 @@
  * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
 /* Engine table: order = PRESETS browsing order (and the engine numbers of the editor protocol). */
 #include "dsp.c"
+#if FORGE_FIVE
+#include "engine_xp.c"           /* Forge Five: the engine patch (a part's extra values; the engines fill xp_info_t) */
+#endif
 /* SLOOP 2.5: the big per-part state of GRAIN, FM6 and PHYS shares one arena per synth part (a part plays one
  * engine at a time: on a switch the old engine fades out, its voices end, then the new one starts, voice.c
  * engine_block). The first engine to ask for it after another one gets it cleared, as at power-on. */
@@ -71,6 +74,9 @@ static inline int32_t fm_model(const track_t *t)
 #include "eng_vector.c"         /* VECTOR: vector synthesis (Clipper 0.8) */
 #endif
 #endif
+#if FORGE_FIVE
+#include "eng_ladder.c"         /* LADDER: three VCOs into a four-pole ladder (Forge Five Phase 2) */
+#endif
 
 typedef union {
 #if !FORGE_FIVE
@@ -81,6 +87,9 @@ typedef union {
     hy_part_t hybrid;                    /* eng_hybrid.c: the voices */
 #if CLIPPER_SYNTH && !FORGE_FIVE
     fmx_part_t fmx;                      /* eng_fmx.c: the voices */
+#endif
+#if FORGE_FIVE
+    ladder_part_t ladder;                /* eng_ladder.c: the voices' pink noise and drift */
 #endif
 } eng_arena_t;
 static eng_arena_t eng_arena[NPART] __attribute__((section(".pool")));
@@ -145,6 +154,9 @@ static const engine_t *const ENGINES[NENGINES] = {&ENG_ANALOG, &ENG_DIGITAL, &EN
                                                     &ENG_FMX, &ENG_WSEQ,                   /* 19, 20 */
                                                     &ENG_JUNO, &ENG_VECTOR,                /* 21, 22 */
 #endif
+#if FORGE_FIVE
+                                                    &ENG_LADDER,                           /* 23 (ENGI_LADDER) */
+#endif
 };
 #if CLIPPER_SYNTH
 _Static_assert(ENGI_WAVE == 13u && ENGI_ACID == 14u && ENGI_STRINGS == 15u && ENGI_MACRO == 16u && ENGI_VPS == 17u &&
@@ -177,11 +189,9 @@ _Static_assert(ENGI_GRAIN == 8u && ENGI_PHYS == 10u && ENGI_NOISE == 11u && ENGI
 #include "preset_trim_clipper.h"
 #endif
 #if FORGE_FIVE
-#include "engine_xp.c"           /* Forge Five: the engine patch (a part's extra values) */
 static const xp_info_t *eng_xp(uint32_t e)   /* the engine's extra values, 0 = none (Clipper's engines) */
 {
-    (void)e;
-    return 0;
+    return e == ENGI_LADDER ? &LADDER_XPI : 0;
 }
 #endif
 /* Forge Five: the cost of one voice of engine e in the shared budget (voice.c), Q4: 16 = one unit (Clipper's engines,
@@ -189,7 +199,12 @@ static const xp_info_t *eng_xp(uint32_t e)   /* the engine's extra values, 0 = n
  * CHORD-D 16 (spec v0.3 section 3: to be measured on the unit) */
 static uint32_t eng_weight(uint32_t e)
 {
+#if FORGE_FIVE
+    if (e == ENGI_LADDER)
+        return 40u;
+#else
     (void)e;
+#endif
     return 16u;
 }
 static int16_t preset_trim(uint32_t e, uint32_t pi)
@@ -197,6 +212,8 @@ static int16_t preset_trim(uint32_t e, uint32_t pi)
     if (CLIPPER_SYNTH && !FORGE_FIVE && (ENGINES[e % NENGINES] == &ENG_SAMPLE || ENGINES[e % NENGINES] == &ENG_GRAIN))
         return 0;                                    /* (Clipper: the user's own samples, no factory level) */
 #if CLIPPER_SYNTH
+    if (e >= PTC_FIRST + PTC_ENGINES)                /* (Forge Five's engines: their presets are level-matched by hand) */
+        return 0;
     if (e >= PTC_FIRST)                              /* Clipper's own engines: their table (preset_trim_clipper.h) */
         return e - PTC_FIRST < PTC_ENGINES && pi < PTC_MAX ? PRESET_TRIM_CL[e - PTC_FIRST][pi] : 0;
 #endif

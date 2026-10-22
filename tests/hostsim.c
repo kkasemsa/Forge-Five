@@ -110,6 +110,9 @@ static void host_preset_req(track_t *t, uint32_t e, uint32_t pi)
     p = &ENGINES[e]->presets[pi % ENGINES[e]->npresets];
     t->eng_req = (uint8_t)e;
     t->preset = (uint8_t)(pi % ENGINES[e]->npresets);
+#if FORGE_FIVE
+    xp_load(t, (int32_t)(pi % ENGINES[e]->npresets));   /* (the engine patch: the preset's extra values) */
+#endif
     for (i = 0; i < 8u; i++)
         t->p[P_E0 + i] = p->e[i];
     t->p[P_ATK] = p->env[0];

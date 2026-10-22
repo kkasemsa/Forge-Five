@@ -378,6 +378,15 @@ static void voice_start(track_t *t, voice_t *v, uint32_t note, uint32_t vel, int
             v->s[5] = s5;
             v->s[6] = s6;
             v->s[7] = s7;
+#if FORGE_FIVE
+        } else if (e == &ENG_LADDER) {
+            v->s[0] = s0;                               /* the ladder's four stages (s0 s1 s4 s5), the noise (s6), */
+            v->s[1] = s1;                               /* the filter contour (s7: a retrigger rises from where it is) */
+            v->s[4] = s4;
+            v->s[5] = s5;
+            v->s[6] = s6;
+            v->s[7] = s7;
+#endif
         }
     }
 }

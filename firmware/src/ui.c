@@ -502,8 +502,12 @@ static void apply_preset_to(track_t *t, uint32_t pi)
     t->user = 0;
     if (t == TSEL)
         sync_reload = 1;
-    if (!e->npresets)
+    if (!e->npresets) {
+#if FORGE_FIVE
+        xp_defaults(t);
+#endif
         return;
+    }
     pi %= e->npresets;
     t->preset = (uint8_t)pi;
     for (i = 0; i < P_E0; i++)                        /* the rest of the sound to its defaults: a preset */
@@ -541,6 +545,9 @@ static void apply_preset_to(track_t *t, uint32_t pi)
     }
 #if CLIPPER_SYNTH
     mseq_init(t);                                    /* (0.8) the MOD SEQ: the shapes to start from */
+#endif
+#if FORGE_FIVE
+    xp_load(t, (int32_t)pi);                         /* the engine patch: the preset's extra values (engine_xp.c) */
 #endif
     fm6_track_loaded(t);                             /* FM6: the preset's patch (its PTCH) */
 }
@@ -634,6 +641,7 @@ static const char *const BANK_KIND[] = {"BASS", "KEYS", "ORGN", "PAD", "LEAD", "
 #define BK_ENGI_HYBRID(k, n) BK_E12(k, n)
 #define BK_ENGI_WAVE(k, n) BK_E13(k, n)
 #define BK_ENGI_JUNO(k, n) BK_E21(k, n)
+#define BK_ENGI_LADDER(k, n) {k, ENGI_LADDER, n},
 #define BK(k, e, n) BK_##e(k, n)
 static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     BK(BK_BASS, ENGI_HYBRID, "ACID") BK(BK_BASS, ENGI_HYBRID, "WOBBLE") BK(BK_BASS, ENGI_HYBRID, "REESE") BK(BK_BASS, ENGI_HYBRID, "FOLD BASS")
@@ -791,6 +799,13 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     BK(BK_PAD, ENGI_GRAIN, "DARK DRONE") BK(BK_PAD, ENGI_GRAIN, "SCAN PAD") BK(BK_PAD, ENGI_GRAIN, "WIND CHOIR")
     BK(BK_FX, ENGI_GRAIN, "BREATH GRAIN") BK(BK_PAD, 4, "SAMPLE CHOIR") BK(BK_PAD, 4, "GLASS HARP")
     BK(BK_PAD, 4, "SAW ENSEMBLE") BK(BK_LEAD, 4, "AIR FLUTE")
+#endif
+#if FORGE_FIVE                                       /* Forge Five Phase 2: LADDER (eng_ladder.c) */
+    BK(BK_BASS, ENGI_LADDER, "BERLIN BASS") BK(BK_LEAD, ENGI_LADDER, "FAT LEAD") BK(BK_BASS, ENGI_LADDER, "PEDAL SUB")
+    BK(BK_PLUCK, ENGI_LADDER, "SEQ PLUCK") BK(BK_LEAD, ENGI_LADDER, "BRASS") BK(BK_LEAD, ENGI_LADDER, "WHISTLE")
+    BK(BK_BASS, ENGI_LADDER, "WOBBLE") BK(BK_LEAD, ENGI_LADDER, "VIBRATO LEAD") BK(BK_BASS, ENGI_LADDER, "FM GROWL")
+    BK(BK_FX, ENGI_LADDER, "NOISE RISER") BK(BK_LEAD, ENGI_LADDER, "OVERDRIVE") BK(BK_PAD, ENGI_LADDER, "DRONE")
+    BK(BK_LEAD, ENGI_LADDER, "FLUTE") BK(BK_BASS, ENGI_LADDER, "KICK BASS")
 #endif
 };
 #define NBANK (sizeof BANK / sizeof BANK[0])

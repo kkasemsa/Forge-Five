@@ -923,6 +923,10 @@ static void draw_foot(void)
     } else {                                           /* page title + number in its family: "ENV DEST 2/2" */
         uint32_t i, n = 0, k = 0;
         const char *pt = pg->scope == SC_ENGINE ? e->page_title[pg->id[0] != P_E0] : 0;   /* EDIT: the engine's */
+#if FORGE_FIVE
+        if (pg->scope == SC_XP)                        /* an engine patch page: the engine names it */
+            pt = xp_title(TSEL, pg->id[0] / 4u);
+#endif
         for (i = 0; i < NPAGES; i++)
             if (PAGES[i].fam == pg->fam && !page_hidden(i)) {
                 n++;
