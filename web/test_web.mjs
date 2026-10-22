@@ -799,7 +799,7 @@ async function editorV7() {
      matrix, #if CLIPPER_SYNTH, move P_E0 to 78: lockable(id, 78)) */
   const sc = readFileSync(join(HERE, "../firmware/src/seq.c"), "utf8"), ch = readFileSync(join(HERE, "../firmware/src/core.h"), "utf8");
   const ids = {}; let n = 0;
-  for (const nm of (/enum \{\s*\/\* per-track parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/#if CLIPPER_SYNTH[\s\S]*?#endif/g, "").replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) ids[nm] = n++;
+  for (const nm of (/enum \{\s*\/\* per-track parameters \*\/([^}]*)\}/.exec(ch) || [])[1].replace(/#if FORGE_FIVE[\s\S]*?#endif/g, "").replace(/#if CLIPPER_SYNTH[\s\S]*?#endif/g, "").replace(/\/\*[\s\S]*?\*\//g, "").split(",").map((x) => x.trim()).filter(Boolean)) ids[nm] = n++;
   const lockableC = (id) => id <= ids.P_LD_AMP || id === ids.P_SGATE || (id >= ids.P_DIST && id <= ids.P_REV) || id === ids.P_GLIDE || id === ids.P_PAN
     || id === ids.P_DETUNE || (id >= ids.P_SLCR && id <= ids.P_SLDEPTH) || (id >= ids.P_E0 && id <= ids.P_E7) || id === ids.P_TFLT;
   let same = ids.P_COUNT === 61;
@@ -814,11 +814,12 @@ async function editorV7() {
     ok(sy.P_L2RATE === 53 && sy.P_E2ATK === 56 && sy.P_M1SRC === 60 && sy.P_M6AMT === 77 && sy.P_ITYPE === 78 && sy.P_IMIX === 82
       && sy.P_MSRATE === 83 && sy.P_MSKEY === 86 && sy.P_SPICE === 87 && sy.P_DICE === 88 && sy.P_VINT === 89 && sy.P_SLOOP === 90
       && sy.P_SPREAD === 91 && sy.P_L3RATE === 92 && sy.P_E2LOOP === 95 && sy.P_MAC1 === 96 && sy.P_MAC4 === 99 && sy.P_M7SRC === 100
-      && sy.P_M12AMT === 117 && sy.P_E0 === 118 && sy.P_COUNT === 126
-      && E.lockable(sy.P_E0, 118) && E.lockable(sy.P_E7, 118) && !E.lockable(sy.P_L2RATE, 118) && !E.lockable(sy.P_M6AMT, 118)
-      && !E.lockable(sy.P_ITYPE, 118) && !E.lockable(sy.P_IMIX, 118) && !E.lockable(sy.P_MSRATE, 118) && !E.lockable(sy.P_DICE, 118)
-      && !E.lockable(sy.P_SLOOP, 118) && !E.lockable(sy.P_SPREAD, 118) && !E.lockable(sy.P_MAC1, 118) && !E.lockable(sy.P_M12AMT, 118),
-      "v7: Clipper's layout (LFO 2 53, ENV 2 56, MATRIX 60, INSERT 78, 0.8's MOD SEQ 83, SPICE 87, 0.9's VINTAGE 89 LOOP 90, 1.0's SPREAD 91, LFO 3 92, ENV 2 LOOP 95, MACROS 96, slots 7..12 100, P_E0 118): its EDIT values lockable, the rest not");
+      && sy.P_M12AMT === 117 && sy.P_MAXV === 118 && sy.P_E0 === 119 && sy.P_COUNT === 127
+      && E.lockable(sy.P_E0, 119) && E.lockable(sy.P_E7, 119) && !E.lockable(sy.P_L2RATE, 119) && !E.lockable(sy.P_M6AMT, 119)
+      && !E.lockable(sy.P_ITYPE, 119) && !E.lockable(sy.P_IMIX, 119) && !E.lockable(sy.P_MSRATE, 119) && !E.lockable(sy.P_DICE, 119)
+      && !E.lockable(sy.P_SLOOP, 119) && !E.lockable(sy.P_SPREAD, 119) && !E.lockable(sy.P_MAC1, 119) && !E.lockable(sy.P_M12AMT, 119)
+      && !E.lockable(sy.P_MAXV, 119),
+      "v7: Forge Five's layout (Clipper 1.0's: LFO 2 53, ENV 2 56, MATRIX 60, INSERT 78, MOD SEQ 83, SPICE 87, VINTAGE 89 LOOP 90, SPREAD 91, LFO 3 92, ENV 2 LOOP 95, MACROS 96, slots 7..12 100; VOICES 118, P_E0 119): its EDIT values lockable, the rest not");
   }
   {   /* (after SLOOP 2.6) SetGate: a value set again is sent once the last request is answered */
     const g = new E.SetGate();
@@ -1470,6 +1471,7 @@ function editorClipperPages() {
   for (const l of src.split("\n")) {
     if (/^#if !CLIPPER_SYNTH/.test(l)) keep.push(false);
     else if (/^#if CLIPPER_SYNTH/.test(l)) keep.push(true);
+    else if (/^#if FORGE_FIVE/.test(l)) keep.push(true);          /* (Forge Five's pages: the build's) */
     else if (/^#else/.test(l)) keep[keep.length - 1] = !keep[keep.length - 1];
     else if (/^#endif/.test(l)) keep.pop();
     else if (keep.every(Boolean)) lines.push(l);
@@ -1482,8 +1484,9 @@ function editorClipperPages() {
   const devG = pages.filter((x) => x[1] === "SC_GLOBAL").flatMap((x) => x[2]).filter((id) => ![G.G_INFO, G.G_SLOT, G.G_LOAD, G.G_SAVE, G.G_CLRSEQ, G.G_INITSND, G.G_NEWPRJ].includes(id));
   const missP = [...devP].filter((id) => !p0.has(id)), missG = devG.filter((id) => !g1.has(id));
   const notOn = Array.from({ length: P.P_COUNT }, (_, i) => i).filter((i) => !p0.has(i));
-  ok(pages.length > 20 && P.P_E0 === 118 && P.P_COUNT === 126 && G.G_COUNT === 34 && G.G_DMODE === 33
-    && X.layoutKnown({ pcount: 126, pe0: 118, gcount: G.G_COUNT }) && X.layoutKnown({ pcount: 99, pe0: 91, gcount: 33 })
+  ok(pages.length > 20 && P.P_E0 === 119 && P.P_COUNT === 127 && G.G_COUNT === 34 && G.G_DMODE === 33
+    && X.layoutKnown({ pcount: 127, pe0: 119, gcount: G.G_COUNT }) && X.layoutKnown({ pcount: 126, pe0: 118, gcount: G.G_COUNT })
+    && X.layoutKnown({ pcount: 99, pe0: 91, gcount: 33 })
     && !missP.length && !missG.length && js(notOn) === js([P.P_MUTE]) && all0.length === new Set(all0).size,
     `editor: Clipper 1.0's pages hold every value of the device's (params.c PAGES; not on one: MUTE${missP.length || missG.length ? `; missing P ${missP} G ${missG}` : ""}${notOn.length !== 1 ? `; off the pages ${notOn}` : ""})`);
   const title = (id, s) => (L.flatMap((g) => g.pages).find((x) => x[1] === s && x[2].includes(id)) || [])[0];

@@ -5278,8 +5278,10 @@ const EXPECT_09 = { pcount: 99, pe0: 91 };
 /* Clipper 1.0: 27 more: SPREAD (91), LFO 3 (92..94), ENV 2 LOOP (95), the MACROS (96..99), the matrix's slots 7..12
    (100..117) */
 const EXPECT_10 = { pcount: 126, pe0: 118 };
+/* Forge Five (FF 0.1): 1 more: VOICES (118), the part's voice cap */
+const EXPECT_FF = { pcount: 127, pe0: 119 };
 const layoutKnown = (info) => EXPECT.gcount.includes(info.gcount) &&
-  [EXPECT, EXPECT_04, EXPECT_06, EXPECT_08, EXPECT_09, EXPECT_10].some((x) => info.pcount === x.pcount && info.pe0 === x.pe0);
+  [EXPECT, EXPECT_04, EXPECT_06, EXPECT_08, EXPECT_09, EXPECT_10, EXPECT_FF].some((x) => info.pcount === x.pcount && info.pe0 === x.pe0);
 /* the matrix's slots: 1..6 at 60, (1.0) 7..12 at 100 */
 const mxId = (k) => (k <= 6 ? 57 + 3 * k : 79 + 3 * k);
 const MX_PAGES = (pe0) => Array.from({ length: pe0 >= 118 ? 12 : 6 }, (_, i) => ["MATRIX " + (i + 1), 0, [mxId(i + 1), mxId(i + 1) + 1, mxId(i + 1) + 2]]);
@@ -5297,7 +5299,7 @@ const LAYOUT = (pe0) => pe0 >= 78 ? [
   { t: "EDIT", engine: true, pages: [["EDIT 1", 0, [pe0, pe0 + 1, pe0 + 2, pe0 + 3]], ["EDIT 2", 0, [pe0 + 4, pe0 + 5, pe0 + 6, pe0 + 7]]] },
   ...(pe0 >= 118 ? [{ t: "EDIT", title: "MACROS", pages: [["MACROS", 0, [96, 97, 98, 99]]] }] : []),
   { t: "VOICE", pages: [["LEVEL", 0, [0]], ["VOICE", 0, [37, 38, 41, 42]], ["VOICE 2", 0, pe0 >= 91 ? [43, 44, 39, 89] : [43, 44, 39]],
-    ...(pe0 >= 118 ? [["VOICE 3", 0, [91]]] : [])] },
+    ...(pe0 >= 119 ? [["VOICE 3", 0, [91, 118]]] : pe0 >= 118 ? [["VOICE 3", 0, [91]]] : [])] },
   { t: "FX", pages: [["FX", 0, [33, 34, 35, 36]], ["FILTER", 0, [50, 46]], ...(pe0 >= 83 ? [["INSERT", 0, [78, 79, 80, 81]], ["INSERT 2", 0, [82]]] : []),
     ["DLY", 1, [4, 5, 6, 7]], ...(pe0 >= 118 ? [["DLY 2", 1, [33]]] : []), ["REVERB", 1, [28, 8, 9, 30]], ["CHORUS", 1, [10, 11]]] },
   { t: "SEL", pages: [["SEL", 0, [25, 26, 27, 49]], ["SEL 2", 0, [28, 51, 52]]] },
