@@ -8,10 +8,10 @@ name: Build
 
 on:
   push:
-    branches: [main]
+    branches: [main, clipper-base]
     tags: ['ff-*']
   pull_request:
-    branches: [main]
+    branches: [main, clipper-base]
   workflow_dispatch:
 
 permissions:
