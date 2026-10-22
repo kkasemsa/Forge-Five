@@ -243,7 +243,8 @@ static void ladder_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, cons
         b = 16384 - G;
         G4 = ((int64_t)G * G * G * G) >> 42;           /* Q14 */
         k = p[P_E1] * 155;                            /* EMPHASIS (Q12): sings from ~106 (8.3 of 10) up */
-        rd = (int32_t)(((int64_t)16384 << 12) / (4096 + ((k * G4) >> 14)));   /* Q14 */
+        rd = (16384 << 12) / (4096 + (int32_t)((k * G4) >> 14));   /* Q14 (32-bit: k G^4 < 2^15; pi32v2 has no
+                                                                      * 64-bit division: __divdi3 is not in its runtime) */
     }
     for (i = 0; i < n; i++) {
         int32_t a, bsig, c, s, u, y, vv, nz;
