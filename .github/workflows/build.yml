@@ -93,8 +93,13 @@ jobs:
       - name: Build
         run: |
           set -o pipefail
-          case "$GITHUB_REF_NAME" in ff-*) sh build.sh --release "${GITHUB_REF_NAME#ff-}" 2>&1 | tee build.log ;;
-                                       *) sh build.sh 2>&1 | tee build.log ;; esac
+          case "$GITHUB_REF_NAME" in ff-*) REL="--release ${GITHUB_REF_NAME#ff-}" ;; *) REL="" ;; esac
+          if ! sh build.sh $REL 2>&1 | tee build.log; then
+            # (the errors as annotations right here: the log artifact is not always reachable)
+            grep -niE "error|fail|undefined|traceback" build.log | head -12 | sed 's/^/::error title=build error::/'
+            tail -25 build.log | sed 's/^/::error title=build.log tail::/'
+            exit 1
+          fi
           # (the memory budget as a notice: readable without the log)
           grep -o "image [0-9]* B; RAM .* of [0-9]*" build.log | sed 's/^/::notice title=Memory::/' || true
 
