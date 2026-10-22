@@ -524,7 +524,7 @@ static volatile uint32_t note_hits[NPART][4];
 /* the visualiser (ui_vis.c): the tracks a note started on (bit per track), each one's last note, a kick */
 static volatile uint8_t vis_hit, vis_kick_hit, vis_note[NTRK];
 
-static void trk_note_on1(track_t *t, uint32_t note, uint32_t vel)
+static void trk_note_on0(track_t *t, uint32_t note, uint32_t vel)
 {
     uint32_t any = 0, i, mode = (uint32_t)t->p[P_VOICE];
     if (trk_silent(t))
@@ -598,7 +598,7 @@ static void strum_cancel(const track_t *t, uint32_t note, int all)
         if (stq[i].on && stq[i].trk == (uint8_t)(t - trk) && (all || stq[i].note == note))
             stq[i].on = 0;
 }
-static void trk_note_off1(track_t *t, uint32_t note)
+static void trk_note_off0(track_t *t, uint32_t note)
 {
     uint32_t i, k = 0, mode = (uint32_t)t->p[P_VOICE];
     if (is_drum(t))
@@ -655,9 +655,68 @@ static void trk_sustain_up1(track_t *t)
         }
 }
 
+/* Forge Five Phase 3: CHORD-D's chord memory (eng_chordd.c). MEM: a key plays the chord over it, the notes it took
+ * kept per key (cm_held) so its note-off lets the same ones go whatever changed meanwhile. LEARN: the keys held
+ * together are collected; when the last is let go, the chord is learnt (chordd_learn: MEM from then). Per part, after
+ * the layer's routing, before the voices: the arpeggiator and the sequencer play chords too */
+#if FORGE_FIVE
+#define CM_LEARN_N 8u
+static uint32_t cm_held[NPART][128];                    /* per key: the intervals its chord took (bit k: k up) */
+static uint8_t cm_ln[NPART][CM_LEARN_N], cm_lc[NPART], cm_down[NPART];   /* LEARN: the notes, how many, keys down */
+static void trk_note_on1(track_t *t, uint32_t note, uint32_t vel)
+{
+    uint32_t pi = (uint32_t)(t - trk), m, k;
+    if (pi >= NPART || note > 127u || t->engine != ENGI_CHORDD || is_drum(t)) {
+        trk_note_on0(t, note, vel);
+        return;
+    }
+    if (t->xp[CX_CHORD] == CM_LEARN) {
+        if (!cm_down[pi])
+            cm_lc[pi] = 0;                              /* (a new chord) */
+        if (cm_down[pi] < 127u)
+            cm_down[pi]++;
+        for (k = 0; k < cm_lc[pi] && cm_ln[pi][k] != note; k++)
+            ;
+        if (k == cm_lc[pi] && k < CM_LEARN_N)
+            cm_ln[pi][cm_lc[pi]++] = (uint8_t)note;
+    }
+    m = chordd_mask(t);
+    cm_held[pi][note] = m;
+    trk_note_on0(t, note, vel);
+    for (k = 1; m >> k; k++)
+        if ((m >> k) & 1u && note + k <= 127u)
+            trk_note_on0(t, note + k, vel);
+}
+static void trk_note_off1(track_t *t, uint32_t note)
+{
+    uint32_t pi = (uint32_t)(t - trk), m, k;
+    if (pi >= NPART || note > 127u) {
+        trk_note_off0(t, note);
+        return;
+    }
+    if (t->engine == ENGI_CHORDD && t->xp[CX_CHORD] == CM_LEARN && cm_down[pi] && !--cm_down[pi] && cm_lc[pi] > 1u)
+        chordd_learn(t, cm_ln[pi], cm_lc[pi]);         /* (one key alone: not a chord, still LEARN) */
+    m = cm_held[pi][note];
+    cm_held[pi][note] = 0;
+    trk_note_off0(t, note);
+    for (k = 1; m >> k; k++)
+        if ((m >> k) & 1u && note + k <= 127u)
+            trk_note_off0(t, note + k);
+}
+#else
+#define trk_note_on1 trk_note_on0
+#define trk_note_off1 trk_note_off0
+#endif
+
 static void trk_all_off1(track_t *t)
 {
     uint32_t i;
+#if FORGE_FIVE
+    if ((uint32_t)(t - trk) < NPART) {
+        memset(cm_held[t - trk], 0, sizeof cm_held[0]);
+        cm_down[t - trk] = cm_lc[t - trk] = 0;
+    }
+#endif
     strum_cancel(t, 0, 1);
     for (i = 0; i < NVOICE; i++) {
         t->v[i].gate = 0;

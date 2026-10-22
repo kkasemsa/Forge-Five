@@ -1023,6 +1023,13 @@ static int32_t jc_mode(const track_t *t, int32_t *wet, int32_t *width, int32_t *
     const int16_t *p = t->p;
     int32_t m = t->engine == ENGI_JUNO ? clamp(p[P_E7], 0, 3) : 0;
     *wet = 32768, *width = 127, *tone = 100, *hiss = 0;
+#if FORGE_FIVE                                          /* CHORD-D (eng_chordd.c): CHORUS on EDIT 1, the BBD on VCA BBD */
+    if (t->engine == ENGI_CHORDD) {
+        *width = clamp(t->xp[CX_WIDTH], 0, 127), *tone = clamp(t->xp[CX_TONE], 0, 127);
+        *hiss = clamp(t->xp[CX_HISS], 0, 127);
+        return clamp(p[P_E3], 0, 3);
+    }
+#endif
     if (!m && p[P_ITYPE] >= IT_JUNO1 && p[P_ITYPE] <= IT_JUNO12) {
         m = p[P_ITYPE] - IT_JUNO1 + 1;
         *wet = ins_mixq(p[P_IMIX]);

@@ -112,6 +112,8 @@ $SYN -o "$OUT/ff_store_test" tests/ff_store_test.c -lm
 run "Forge Five stores: the FFP1 project and UPF1 user preset records, VOICES, the voice budget in units" "$OUT/ff_store_test"
 $SYN -o "$OUT/ladder_test" tests/ladder_test.c -lm
 run "Forge Five LADDER: pitch, the 24 dB filter, pink noise, levels, corners, determinism, golden renders, cost" "$OUT/ladder_test"
+$SYN -include ctype.h -o "$OUT/chordd_test" tests/chordd_test.c -lm
+run "Forge Five CHORD-D: chord memory (MEM, LEARN, SPLIT), VCA GATE, the BBD chorus, RELEASE, the patch, levels, golden" "$OUT/chordd_test"
 $SYN -o "$OUT/clipper_ui_test" tests/clipper_ui_test.c -lm
 run "Clipper synth: HOME, presets, keys, pages, one track, MIDI omni, no drums / song" "$OUT/clipper_ui_test" "$OUT/clipper"
 $SYN -o "$OUT/clipper_stress" tests/stress_test.c -lm

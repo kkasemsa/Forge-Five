@@ -1,0 +1,6 @@
+# CHORD-D presets: FNV-1a of half a second of a key (tests/chordd_test.c t_golden)
+DUB STAB|984980fe1cf86643
+ECHO CHORD|faf08b6842442edd
+DEEP PAD|7391de5837b29729
+SUB PULSE|aaac18b1d1388a65
+CHOR STRINGS|91f7a5bfb0f077a7

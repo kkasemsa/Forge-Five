@@ -642,6 +642,7 @@ static const char *const BANK_KIND[] = {"BASS", "KEYS", "ORGN", "PAD", "LEAD", "
 #define BK_ENGI_WAVE(k, n) BK_E13(k, n)
 #define BK_ENGI_JUNO(k, n) BK_E21(k, n)
 #define BK_ENGI_LADDER(k, n) {k, ENGI_LADDER, n},
+#define BK_ENGI_CHORDD(k, n) {k, ENGI_CHORDD, n},
 #define BK(k, e, n) BK_##e(k, n)
 static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     BK(BK_BASS, ENGI_HYBRID, "ACID") BK(BK_BASS, ENGI_HYBRID, "WOBBLE") BK(BK_BASS, ENGI_HYBRID, "REESE") BK(BK_BASS, ENGI_HYBRID, "FOLD BASS")
@@ -806,6 +807,9 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     BK(BK_BASS, ENGI_LADDER, "WOBBLE") BK(BK_LEAD, ENGI_LADDER, "VIBRATO LEAD") BK(BK_BASS, ENGI_LADDER, "FM GROWL")
     BK(BK_FX, ENGI_LADDER, "NOISE RISER") BK(BK_LEAD, ENGI_LADDER, "OVERDRIVE") BK(BK_PAD, ENGI_LADDER, "DRONE")
     BK(BK_LEAD, ENGI_LADDER, "FLUTE") BK(BK_BASS, ENGI_LADDER, "KICK BASS")
+    /* Forge Five Phase 3: CHORD-D (eng_chordd.c) */
+    BK(BK_STAB, ENGI_CHORDD, "DUB STAB") BK(BK_STAB, ENGI_CHORDD, "ECHO CHORD") BK(BK_PAD, ENGI_CHORDD, "DEEP PAD")
+    BK(BK_BASS, ENGI_CHORDD, "SUB PULSE") BK(BK_PAD, ENGI_CHORDD, "CHOR STRINGS")
 #endif
 };
 #define NBANK (sizeof BANK / sizeof BANK[0])

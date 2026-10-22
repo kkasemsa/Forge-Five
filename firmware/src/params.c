@@ -70,7 +70,7 @@ static const char *const N_ENGNAME[] = {"ANALOG", "DIGITAL", "PHASE", "LOFI", "S
                                         "JUNO", "VECTOR",
 #endif
 #if FORGE_FIVE
-                                        "LADDER",
+                                        "LADDER", "CHORD-D",
 #endif
 };
 
