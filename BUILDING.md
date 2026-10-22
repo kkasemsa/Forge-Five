@@ -4,9 +4,9 @@ The build makes three files in `build/`:
 
 | File | What |
 | --- | --- |
-| `felucca.bin` | the firmware app |
+| `forge-five.bin` | the firmware app |
 | `loader/ota.bin` | the update loader |
-| `felucca.fwsc` | the installable package (app + loader) |
+| `forge-five.fwsc` | the installable package (app + loader) |
 
 ## Get the source
 
@@ -56,10 +56,10 @@ On Linux x86-64 the toolchain runs natively and Docker is not needed.
 `JIELI_TOOLCHAIN` and `AC79_SDK` override the default locations
 (`~/.jieli/toolchain`, `~/fw-AC79_AIoT_SDK`).
 
-`./build.sh --release 1.0` makes a release build: the package identity becomes `FM-1_910`
-and the version string `v1.0`; the package is `build/felucca-1.0.fwsc`, and
-`build/release-1.0/` holds what a release ships: the package, the app
-(`felucca-1.0-app.bin`), `SHA256SUMS`, the sample attribution, `LICENSE`, `LICENSING.md` and
+`./build.sh --release 0.2` makes a release build: the package identity becomes `FM-1_902`
+and the version string `FF 0.2`; the package is `build/forge-five-0.2.fwsc`, and
+`build/release-0.2/` holds what a release ships: the package, the app
+(`forge-five-0.2-app.bin`), `SHA256SUMS`, the sample attribution, `LICENSE`, `LICENSING.md` and
 `LICENSES/` (the package contains Apache-2.0 SDK files, so the licence texts travel with it).
 
 Build options (environment, `0` or `1`; defaults in `firmware/src/felucca.c`, `core.h` and `icons.c`):
@@ -136,7 +136,7 @@ Use the web installer in Chrome or Edge:
 From the command line (needs `pip3 install mido python-rtmidi`):
 
 ```
-python3 tools/fm1_install.py build/felucca.fwsc
+python3 tools/fm1_install.py build/forge-five.fwsc
 python3 tools/fm1_install.py --info          # identity of the connected FM-1
 ```
 
@@ -144,8 +144,8 @@ Or, to install your own build from the web installer, make a local copy of the s
 (Web MIDI needs a secure context):
 
 ```
-python3 web/make_site.py build/felucca.fwsc dev /tmp/felucca-site
-cd /tmp/felucca-site && python3 -m http.server 8000
+python3 web/make_site.py build/forge-five.fwsc dev /tmp/forge-five-site
+cd /tmp/forge-five-site && python3 -m http.server 8000
 # open http://localhost:8000/webapp/installer/
 ```
 

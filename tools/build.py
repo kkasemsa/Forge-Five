@@ -5,8 +5,8 @@
 
   tools/build.py [--release X.Y[-suffix]]
 
-Outputs in build/: felucca.bin (app), loader/ota.bin (update loader),
-felucca.fwsc (package). A release build (--release X.Y) writes felucca-X.Y.fwsc and a folder
+Outputs in build/: forge-five.bin (app), loader/ota.bin (update loader),
+forge-five.fwsc (package). A release build (--release X.Y) writes forge-five-X.Y.fwsc and a folder
 release-X.Y/ with the package, the app, SHA256SUMS, the sample attribution and the licence files.
 See BUILDING.md for the toolchain and the SDK.
 
@@ -51,6 +51,7 @@ SDK_SHA256 = {
 
 PRODUCT = "FM-1_900"                # package identity; release builds are FM-1_9XY
 VERSION = None                      # FELUCCA_VERSION for release builds (default: firmware/src/felucca.c)
+PKG = "forge-five"                  # Forge Five: the names of the app and the package (Felucca: felucca)
 # FELUCCA_CPU2 (firmware/src/felucca.c), unset or 1, the default (1.6.1): the second core is built in, its entry and
 # stacks (firmware/hal/fm1_cpu1.S) linked and its waiting loop (.c1_text) checked; MENU > SYSTEM > 2ND CORE starts it
 # (OFF by default: one core, as 1.6). FELUCCA_CPU2=0: none of it is built (1.6's one-core code and RAM)
@@ -252,7 +253,7 @@ def build_app():
             img += b"\xff" * (load - APP_XIP - len(img))
             img += blob
     img += b"\xff" * (-len(img) % 4)
-    (OUT / "felucca.bin").write_bytes(img)
+    (OUT / f"{PKG}.bin").write_bytes(img)
     return bytes(img), syms, dis, rt
 
 
@@ -377,14 +378,14 @@ def main():
     ap.add_argument("--release", metavar="X.Y", help="release build: identity FM-1_9XY, version string vX.Y")
     ap.add_argument("--sdk", type=Path, help="JieLi AC79 SDK checkout (default: $AC79_SDK)")
     a = ap.parse_args()
-    name = "felucca.fwsc"
+    name = f"{PKG}.fwsc"
     if a.release:                   # one digit each: the identity has room for two (X.Y.Z and X.Y.Z.W keep X.Y's)
         m = re.fullmatch(r"(\d)\.(\d)(?:\.\d){0,2}(-[A-Za-z0-9]+)?", a.release)
         if not m:
             raise SystemExit(f"--release {a.release}: use X.Y, X.Y.Z, X.Y.Z.W or X.Y-suffix, one digit each")
         PRODUCT = "FM-1_9" + m[1] + m[2]
-        VERSION = "v" + a.release.lower()      # e.g. v1.0, v1.1-rc1
-        name = f"felucca-{a.release}.fwsc"
+        VERSION = "FF " + a.release.lower()    # Forge Five: FF 0.2, FF 0.2-rc1 (Felucca: v1.0)
+        name = f"{PKG}-{a.release}.fwsc"
     if not (FW / "engines" / "src" / "felucca_engine.h").exists():
         raise SystemExit("firmware/engines is empty: the Felucca-Engines submodule "
                          "(git submodule update --init, or clone with --recurse-submodules)")
@@ -414,14 +415,14 @@ def main():
     att = SRC / "assets" / "samples-cc0" / "ATTRIBUTION.txt"
     if att.exists():
         shutil.copy(att, OUT / "ATTRIBUTION.txt")
-    print(f"app      {OUT / 'felucca.bin'}  {len(img)} B")
+    print(f"app      {OUT / f'{PKG}.bin'}  {len(img)} B")
     print(f"loader   {LDR / 'ota.bin'}  {len(ota)} B")
     print(f"package  {OUT / name}  {len(pkg)} B, identity {PRODUCT}")
     if a.release:                   # what a release carries: the package, the app and every licence they need
         rel = OUT / f"release-{a.release}"
         shutil.rmtree(rel, ignore_errors=True)
         (rel / "LICENSES").mkdir(parents=True)
-        app = f"felucca-{a.release}-app.bin"
+        app = f"{PKG}-{a.release}-app.bin"
         (rel / name).write_bytes(pkg)
         (rel / app).write_bytes(img)
         (rel / "SHA256SUMS").write_text("".join(f"{hashlib.sha256(b).hexdigest()}  {n}\n"

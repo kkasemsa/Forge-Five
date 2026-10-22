@@ -105,10 +105,10 @@ Any engine gets a full panel the same way: a `param_desc_t` table, page titles, 
 Follow `BUILDING.md` (Docker Desktop, the JieLi toolchain via `tools/get_toolchain.sh`, the AC79 SDK, Python 3 + Pillow), then:
 
 ```
-./build.sh --release 0.2-ff          # build/felucca-0.2-ff.fwsc (identity FM-1_902)
+./build.sh --release 0.2             # build/forge-five-0.2.fwsc (identity FM-1_902, version FF 0.2)
 tests/run_tests.sh                   # host tests, including LADDER's, SEM's, the engine patch's and the Multi's
 python3 tools/fm1_install.py --info  # identify the FM-1 (writes nothing)
-python3 tools/fm1_install.py build/felucca-0.2-ff.fwsc
+python3 tools/fm1_install.py build/forge-five-0.2.fwsc
 ```
 
 Before the first flash: keep M-VAVE's V15 file, take the installer's full backup, and have a recovery route
