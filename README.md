@@ -1,3 +1,12 @@
+# Forge Five
+
+Classic synths with their real front panels on four MIDI channels, for the M-VAVE FM-1, played from Ableton Move.
+A fork of Felucca 1.6.1 (below). **Install:** [docs/INSTALL.md](docs/INSTALL.md) (GitHub builds the package; one script
+sends it to the FM-1). **What is in it:** [docs/FORGE-FIVE.md](docs/FORGE-FIVE.md). Copyright (C) 2026 Khantipol Kasemsant,
+GPL-3.0-only.
+
+---
+
 # Felucca
 
 [![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
