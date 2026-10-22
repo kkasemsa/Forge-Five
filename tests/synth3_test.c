@@ -300,8 +300,13 @@ static void t_layer(void)
     trk[1].p[P_LYOCT] = 2;
     trk_note_on(&trk[0], 55, 100), trk_note_on(&trk[0], 62, 100);
     frames(2);
+#if FORGE_FIVE                                        /* (Forge Five: part A below the split, part B from it up) */
+    snprintf(w, sizeof w, "SPLIT at C4: G3 on the main sound only, D4 on the layer only (Forge Five: A below, B above)");
+    ok(held_gate(0, 55) == 1 && !held_gate(1, 55) && held_gate(1, 62) == 1 && !held_gate(0, 62), w);
+#else
     snprintf(w, sizeof w, "SPLIT at C4: G3 on the layer only, D4 on the main sound only");
     ok(held_gate(1, 55) == 1 && !held_gate(0, 55) && held_gate(0, 62) == 1 && !held_gate(1, 62), w);
+#endif
     trk_note_off(&trk[0], 55), trk_note_off(&trk[0], 62);
     frames(2);
     ok(!held_gate(0, 62) && !held_gate(1, 55), "SPLIT: the note-offs");

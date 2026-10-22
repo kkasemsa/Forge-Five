@@ -683,7 +683,12 @@ static void trk_note_on(track_t *t, uint32_t note, uint32_t vel)
     if (m == LY_LAYER)
         r = 3;
     else if (m == LY_SPLIT)
+#if FORGE_FIVE                                          /* Forge Five (spec v0.3 section 1): part A below the split, part B
+                                                         * from it up */
+        r = (int32_t)note >= trk[1].p[P_LYSPLIT] - 4 ? 2u : 1u;
+#else
         r = (int32_t)note >= trk[1].p[P_LYSPLIT] - 4 ? 1u : 2u;
+#endif
     if (ly_route[note] & 2u)                            /* (the same note again: its layer note first let go) */
         trk_note_off1(&trk[1], ly_note[note]);
     ly_route[note] = (uint8_t)r;

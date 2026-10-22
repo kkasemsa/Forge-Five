@@ -2,7 +2,7 @@
  * Copyright (C) 2026 3dSam (Clipper) */
 /* Clipper 0.3: the synth's own pages (scope SC_SYN, params.c): the LAYER, the A/B MORPH and the RANDOMIZER.
  *   LAYER    MODE (OFF, LAYER, SPLIT, MULTI), SOUND (any factory or user sound for track 2), SPLIT (track 1 from that
- *            note up, track 2 below; MULTI: CH, the MIDI channel track 2 answers on its own, every other channel and
+ *            note up, track 2 below; Forge Five: the other way, part A below, part B from it up; MULTI: CH, the MIDI channel track 2 answers on its own, every other channel and
  *            the keys playing track 1: bi-timbral, 0.6), LEVEL; LAYER 2: OCT, PAN, FILT (track 2's), SWAP (the two sounds trade places: the
  *            way to edit the layer's sound with every page, then SWAP back). The routing: voice.c trk_note_on.
  *   MORPH    SET A, SET B: the sound now as A, as B; MORPH 0..127 between them (every continuous value on the line
@@ -23,6 +23,7 @@ enum { X_LYMODE, X_LYSOUND, X_LYSPLIT, X_LYLEVEL, X_LYOCT, X_LYPAN, X_LYFILT, X_
        X_MIN, X_MOUT,                                  /* 1.0: GLO > MIDI, the instrument's channels (seq.c midi_in_ch) */
        X_MBEND, X_MLOCAL, X_MPROG, X_MCCO,             /* 1.0: the bend range (voice.c midi_bend), LOCAL, PROG, CC OUT */
        X_MBRTH,                                        /* 1.0: EWI (seq.c midi_breath) */
+       X_LYVOICE,                                      /* Forge Five: the layer's VOICES (part B's P_MAXV; part A's on VOICE 3) */
        X_COUNT };
 static void mseq_fill(struct track *t, uint32_t l, uint32_t f);
 static const char *const N_QFILL[] = {"--", "RAMP+", "RAMP-", "TRI", "SINE", "SQR", "RND", "FLAT", "INVRT", "SHIFT"};
@@ -46,6 +47,7 @@ static const char *const N_MBEND[25] = {"AUTO", "1", "2", "3", "4", "5", "6", "7
 static const char *const N_MCCO[] = {"OFF", "CC"};   /* (5 characters a value: "IN+OUT" did not fit) */
 static const char *const N_MBRTH[] = {"OFF", "VOL", "V+AT"};
 _Static_assert(X_MIN == 50 && X_MOUT == 51 && X_MBEND == 52 && X_MCCO == 55 && X_MBRTH == 56, "params.c PAGES: MIDI's ids");
+_Static_assert(X_LYVOICE == 57, "params.c PAGES: LAYER 3's id");
 static param_desc_t xd_sound = {"SOUND", F_INT, 0, 0, 0, 0, 0};   /* (its range: the list's length, syn_desc) */
 static const param_desc_t XD[X_COUNT] = {
     [X_LYMODE] = PE("MODE", N_LYMODE, LY_OFF),
@@ -55,6 +57,9 @@ static const param_desc_t XD[X_COUNT] = {
     [X_LYPAN] = PD("PAN", F_BIPCT, -64, 63, 0),
     [X_LYFILT] = PD("FILT", F_FILT, -64, 63, 0),
     [X_LYSWAP] = PE("SWAP", N_GO, 0),
+#if FORGE_FIVE
+    [X_LYVOICE] = PE("VOICES", N_MAXV, 0),
+#endif
     [X_MORPH] = PD("MORPH", F_PCT, 0, 127, 0),
     [X_SETA] = PE("SET A", N_GO, 0),
     [X_SETB] = PE("SET B", N_GO, 0),
@@ -619,6 +624,9 @@ static const param_desc_t *syn_desc(uint32_t id, int16_t **valp)
     case X_LYOCT: *valp = &l->p[P_LYOCT]; break;
     case X_LYPAN: *valp = &l->p[P_PAN]; break;
     case X_LYFILT: *valp = &l->p[P_TFLT]; break;
+#if FORGE_FIVE
+    case X_LYVOICE: *valp = &l->p[P_MAXV]; break;
+#endif
     case X_MSRC:
     case X_MDST:
     case X_MAMT: {                                    /* the slot's own values, the selected sound's */
@@ -918,8 +926,13 @@ static void graph_layer(void)
     cv_text(8, 40, &FONT_S, e->name, C_DIM);
     for (i = 0; i < 61u; i++) {                       /* the keys C2..C7 (36..96): where each sound plays */
         uint32_t note = 36u + i;
+#if FORGE_FIVE                                        /* (Forge Five: part A below the split, B from it up) */
+        int on2 = m == LY_LAYER || m == LY_MULTI || (m == LY_SPLIT && (int32_t)note >= sp);
+        int on1 = m != LY_SPLIT || (int32_t)note < sp;
+#else
         int on2 = m == LY_LAYER || m == LY_MULTI || (m == LY_SPLIT && (int32_t)note < sp);
         int on1 = m != LY_SPLIT || (int32_t)note >= sp;
+#endif
         x = 40 + (int32_t)i * 3;
         cv_rect(x, 62, 2, 7, on1 ? C_HI : C_LINE);
         cv_rect(x, 73, 2, 7, on2 ? TE_COL[1] : C_LINE);
