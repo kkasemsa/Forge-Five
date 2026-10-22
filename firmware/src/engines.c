@@ -21,6 +21,9 @@ static uint8_t eng_mem_owner[NPART];       /* engine index + 1 whose state is in
 #define ENG_MEM(p) ((void *)eng_mem[p].b)  /* part p's region (p < NPART) */
 #define ENG_MEM_FITS(name, size) _Static_assert((size) <= ENG_MEM_PART, name " state over ENG_MEM_PART")
 
+/* a track's engine number as an index (the audio paths: a compare, cheaper than % NENGINES; a bad number: 0) */
+static inline uint32_t eng_idx(uint32_t e) { return e < NENGINES ? e : 0u; }
+#include "engine_xp.c"           /* the engine patch: an engine's extra values per part (this fork) */
 #include "../engines/src/eng_analog.c"   /* Felucca-Engines (MIT): ANALOG LOFI TRIO WHEEL NOISE */
 #include "eng_phase.c"
 #include "../engines/src/eng_lofi.c"
@@ -69,8 +72,16 @@ static const engine_t *const ENGINES[NENGINES] = {
 #endif
 };
 
-/* a track's engine number as an index (the audio paths: a compare, cheaper than % NENGINES; a bad number: 0) */
-static inline uint32_t eng_idx(uint32_t e) { return e < NENGINES ? e : 0u; }
+/* the engines' extra values (engine_xp.c): LADDER's; the others none */
+static const xp_info_t *eng_xp(uint32_t e)
+{
+#if FELUCCA_LADDER
+    if (e == ENGI_LADDER)
+        return &LADDER_XPI;
+#endif
+    (void)e;
+    return 0;
+}
 
 /* part t's engine memory goes to its engine (t->engine; voice.c engine_block, once a block: on a switch, after
  * the old engine's fade, before any note on the new one): zeroed (its engine_t.mem bytes) when another

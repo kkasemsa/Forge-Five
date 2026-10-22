@@ -441,3 +441,4 @@ static const engine_t ENG_FM6 = {
     .done = fm6_done,
     .mem = sizeof(fm6_note_t) * FM6_POLY,
 };
+_Static_assert(XP_BYTES == FM6_PACKED, "the engine patch record is the FM6 patch record");

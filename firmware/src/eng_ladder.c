@@ -19,10 +19,9 @@
  *                    oscillators' pitch (OSC) and / or the cutoff (FILT). GLIDE is the track's (VOICE page)
  *   DRIFT            a slow random walk of each oscillator's tuning (0: dead stable)
  *
- * Parameters: the engine's eight (EDIT 1 FILTER, EDIT 2 CONTOUR) and twenty more in the track parameters DIGITAL
- * (engine 1, retired) used to hold, P_FM1_ATK .. P_FM4_LEVEL (core.h P_X0 .. P_X19): every format already stores
- * them per track, and no other engine reads them. Their pages (params.c) show only on a LADDER track; their
- * descriptors are LADDER_X (params.c track_desc / param_desc_of). A preset sets them (ladder_load). */
+ * Parameters: the engine's eight (EDIT 1 FILTER, EDIT 2 CONTOUR) and twenty more as its engine patch (engine_xp.c:
+ * track_t.xp[], stored as a blob in the part's 128-byte patch record), on five pages of their own (LADDER_XP:
+ * OSC 1-2, OSC 2-3, MIX, MIX 2, CTRL). A preset sets them (ladder_load). */
 
 #define F_ST8 (F_STEPS + 1)          /* params.c: an oscillator's FREQ, shown in semitones (ladder_cents) */
 #define LADDER_PINK 62               /* pink's level against white (x / 16): measured, tests/ladder_test.c */
@@ -49,7 +48,7 @@ enum {
     LX_MODMIX, LX_MODAMT, LX_OSCMOD, LX_FLTMOD,       /* page MOD */
     LX_COUNT
 };
-#define LXP(t, k) ((t)->p[P_X0 + (k)])
+#define LXP(t, k) ((t)->xp[k])
 
 static const param_desc_t LADDER_X[LX_COUNT] = {
     {"O1 RNG", F_ENUM, 0, 5, LD_8, N_LD_RANGE, 0},
@@ -381,16 +380,20 @@ static const ladder_xp_t LADDER_XP[NELEM(LADDER_PRESETS)] = {
     {{LD_16, LW_SQR, LD_32, LW_TRI, 0, LD_32, 0, LW_TRI, 127, 127, 0, 0, 0, 40, 1, 6, 0, 0, 0, 0}, 0},
 };
 
-/* a sound load (ui.c apply_preset_to, after the engine's eight): the twenty extra values and GLIDE of preset pi;
- * pi < 0 their defaults (CLEAN INIT) */
+/* a sound load (engine_xp.c xp_load, after the defaults): the twenty extra values and GLIDE of preset pi; pi < 0 (CLEAN
+ * INIT): the defaults, already in */
 static void ladder_load(track_t *t, int32_t pi)
 {
     uint32_t k;
+    if (pi < 0)
+        return;
     for (k = 0; k < LX_COUNT; k++)
-        t->p[P_X0 + k] = pi < 0 ? LADDER_X[k].def : LADDER_XP[(uint32_t)pi % NELEM(LADDER_XP)].x[k];
-    if (pi >= 0)
-        t->p[P_GLIDE] = LADDER_XP[(uint32_t)pi % NELEM(LADDER_XP)].glide;
+        t->xp[k] = LADDER_XP[(uint32_t)pi % NELEM(LADDER_XP)].x[k];
+    t->p[P_GLIDE] = LADDER_XP[(uint32_t)pi % NELEM(LADDER_XP)].glide;
 }
+static const char *const LADDER_PAGES[] = {"OSC 1-2", "OSC 2-3", "MIX", "MIX 2", "CTRL"};
+static const xp_info_t LADDER_XPI = {LADDER_X, LX_COUNT, LADDER_PAGES, ladder_load};
+_Static_assert(LX_COUNT <= NXP && (LX_COUNT + 3u) / 4u == NELEM(LADDER_PAGES), "LADDER: its pages and values");
 
 static const engine_t ENG_LADDER = {
     .name = "LADDER",

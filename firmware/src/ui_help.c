@@ -13,6 +13,7 @@
 static const char H_EDIT[] = "[K1-4]SOUND[EDIT]HOLD: ENGINES";
 static const char H_LANES[] = "[K1-4]LANE LEVELS[EDIT]HOLD: MUTES";
 static const char H_FMOP[] = "[K1]OPERATOR[SAVE]HOLD: UNDO";
+static const char H_XP[] = "[K1-4]THE PANEL[EDIT]NEXT PAGE";   /* the engine's extra pages (engine_xp.c) */
 static const struct { const char *title, *hint; } HELP_PAGE[] = {
     {"ENV", "[K1-4]A D S R[ENV]ENV DEST"},
     {"ENV DEST", "[K1-4]ENV AMOUNTS[ENV]ENV"},
@@ -32,6 +33,8 @@ static const struct { const char *title, *hint; } HELP_PAGE[] = {
     {"EDIT 1", H_EDIT},
     {"EDIT 2", H_EDIT},
     {"FILTER", "[K1]LP BP HP[K2]CUTOFF[EDIT]VOICE"},
+    {"XP 1", H_XP}, {"XP 2", H_XP}, {"XP 3", H_XP}, {"XP 4", H_XP},
+    {"XP 5", H_XP}, {"XP 6", H_XP}, {"XP 7", H_XP}, {"XP 8", H_XP},
     {"LANES", H_LANES},
     {"LANES 2", H_LANES},
     {"SLICES", "[K1]SLICE[K2]MOVE[OCT+]SPLIT, JOIN"},

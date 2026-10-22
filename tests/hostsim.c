@@ -101,8 +101,7 @@ static void host_preset_values(track_t *t, uint32_t e, uint32_t pi, const preset
     t->p[P_REL] = p->env[3];
     t->p[P_ED_FLT] = p->fenv;
     t->p[P_VOICE] = p->mono ? V_LEGATO : V_POLY;
-    if (e == ENGI_LADDER)                         /* its extra values and GLIDE (ui.c apply_preset_to) */
-        ladder_load(t, (int32_t)pi);
+    xp_load(t, (int32_t)pi);                      /* the engine's extra values (engine_xp.c, ui.c apply_preset_to) */
     for (i = 0; i < 4u; i++)
         t->p[P_DIST + i] = (int16_t)(p->fx[i] ? p->fx[i] - 1 : FX_DEF[i]);
     fm6_track_loaded(t);                          /* FM6: the preset's patch (ui.c apply_preset_to) */

@@ -227,8 +227,6 @@ static const param_desc_t GP[G_COUNT] = {
 
 static const param_desc_t *track_desc(const track_t *t, uint32_t id)
 {
-    if (id >= P_X0 && id <= P_X19 && eng_idx(t->eng_req) == ENGI_LADDER)   /* LADDER's extra values */
-        return &LADDER_X[id - P_X0];
     if (id >= P_E0 && id <= P_E7) {                   /* the engine asked for (t->engine follows after a fade) */
         const engine_t *e = ENGINES[eng_idx(t->eng_req)];
         const param_desc_t *d = e->desc ? e->desc(t, id - P_E0) : 0;   /* a mode-dependent label / names */
@@ -245,8 +243,6 @@ static const param_desc_t *track_desc(const track_t *t, uint32_t id)
  * only; range and default are the same): what the editor protocol, user presets and projects use */
 static const param_desc_t *param_desc_of(uint32_t e, uint32_t id)
 {
-    if (id >= P_X0 && id <= P_X19 && e == ENGI_LADDER)   /* LADDER's extra values: their ranges (stores clamp to them) */
-        return &LADDER_X[id - P_X0];
     return id >= P_E0 ? &ENGINES[e]->edit[id - P_E0] : &TP[id];
 }
 
@@ -450,7 +446,8 @@ static void param_format(const param_desc_t *d, int32_t v, char *val, const char
 /* ------------------------------------------------------------ pages --- */
 enum { FAM_HOME, FAM_ENV, FAM_LFO, FAM_FX, FAM_SCL, FAM_EDIT, FAM_GLO, FAM_SAVE, FAM_ARP, FAM_SEQ, FAM_TRK,
        FAM_COUNT };
-enum { SC_TRACK, SC_GLOBAL, SC_ENGINE, SC_STEP, SC_TRK };   /* SC_TRK: the TRACKS page (ui_input.c tracks_edit) */
+enum { SC_TRACK, SC_GLOBAL, SC_ENGINE, SC_STEP, SC_TRK, SC_XP };   /* SC_TRK: the TRACKS page (ui_input.c tracks_edit);
+                                                                   * SC_XP: the engine's extra values, ids into xp[] (engine_xp.c) */
 enum { GR_NONE, GR_ADSR, GR_LFO, GR_STEPS, GR_ARP, GR_SCALE, GR_FX, GR_ROLL, GR_BROWSE, GR_SLOTS, GR_USER, GR_TRK,
        GR_SLCR, GR_MOD, GR_PATS, GR_SONG, GR_TOOLS, GR_CHORD, GR_SLICES, GR_EVENTS,
        GR_FMOP, GR_FMOP2, GR_FMENV, GR_INS };   /* (GR_STEPS: SEQ TOOLS' knobs; GR_FMOP..: FM6's operator pages, ui_fm6op.c) */
@@ -481,14 +478,16 @@ static const page_t PAGES[] = {
     {"EDIT 1", FAM_EDIT, SC_ENGINE, GR_NONE, {P_E0, P_E1, P_E2, P_E3}},
     {"EDIT 2", FAM_EDIT, SC_ENGINE, GR_NONE, {P_E4, P_E5, P_E6, P_E7}},
     {"FILTER", FAM_EDIT, SC_TRACK, GR_NONE, {P_FTYPE, P_E4, P_E5, P_E7}},   /* ANALOG only (1.5, #104): TYPE CUT RES KTR */
-    /* LADDER only (eng_ladder.c): its extra values after its FILTER and CONTOUR (EDIT 1 and 2): the OSCILLATOR BANK,
-     * the MIXER, the CONTROLLERS; hidden on every other engine (ui.c page_visible). (Titles of their own: tests and
-     * the UI find pages by title) */
-    {"OSC 1-2", FAM_EDIT, SC_TRACK, GR_NONE, {P_X0 + 0, P_X0 + 1, P_X0 + 2, P_X0 + 3}},
-    {"OSC 2-3", FAM_EDIT, SC_TRACK, GR_NONE, {P_X0 + 4, P_X0 + 5, P_X0 + 6, P_X0 + 7}},
-    {"MIX", FAM_EDIT, SC_TRACK, GR_NONE, {P_X0 + 8, P_X0 + 9, P_X0 + 10, P_X0 + 11}},
-    {"MIX 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_X0 + 12, P_X0 + 13, P_X0 + 14, P_X0 + 15}},
-    {"CTRL", FAM_EDIT, SC_TRACK, GR_NONE, {P_X0 + 16, P_X0 + 17, P_X0 + 18, P_X0 + 19}},
+    /* the engine's extra values (engine_xp.c), after its EDIT 1 and 2: up to XP_PAGE_N pages of four, shown while the
+     * engine has values for them (ui.c page_visible), titled by the engine (ui_graph.c page_title) */
+    {"XP 1", FAM_EDIT, SC_XP, GR_NONE, {0, 1, 2, 3}},
+    {"XP 2", FAM_EDIT, SC_XP, GR_NONE, {4, 5, 6, 7}},
+    {"XP 3", FAM_EDIT, SC_XP, GR_NONE, {8, 9, 10, 11}},
+    {"XP 4", FAM_EDIT, SC_XP, GR_NONE, {12, 13, 14, 15}},
+    {"XP 5", FAM_EDIT, SC_XP, GR_NONE, {16, 17, 18, 19}},
+    {"XP 6", FAM_EDIT, SC_XP, GR_NONE, {20, 21, 22, 23}},
+    {"XP 7", FAM_EDIT, SC_XP, GR_NONE, {24, 25, 26, 27}},
+    {"XP 8", FAM_EDIT, SC_XP, GR_NONE, {28, 29, 30, 31}},
     {"LANES", FAM_EDIT, SC_TRACK, GR_NONE, {P_LN0, P_LN1, P_LN2, P_LN3}},   /* DRUM only: the lane levels */
     {"LANES 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_LN4, P_LN5, P_LN6, P_LN7}},
     {"SLICES", FAM_EDIT, SC_TRACK, GR_SLICES, {0xFF, 0xFF, 0xFF, 0xFF}},   /* SLICE only: the slices by hand (ui_slice.c) */
@@ -543,6 +542,8 @@ static const param_desc_t *page_desc(const page_t *pg, uint32_t slot, int16_t **
         *valp = &song.g[id];
         return &GP[id];
     }
+    if (pg->scope == SC_XP)                           /* the engine's extra values (engine_xp.c) */
+        return xp_desc(TSEL, id, valp);
     if (pg->graph == GR_MOD)                          /* SRC DST AMT of the slot shown */
         id += 3u * mod_ui_slot;
     *valp = &TSEL->p[id];

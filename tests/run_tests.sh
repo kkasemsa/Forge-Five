@@ -428,6 +428,8 @@ if [ -f build/gen/felucca_tables.h ]; then
     $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/ladder_test" tests/ladder_test.c -lm
     mkdir -p build/ladder_demo
     run "LADDER: pitch and RANGEs, four poles, self-oscillation at CUTOFF, KBD, pink, levels, corners, cost, demos" "$OUT/ladder_test" build/ladder_demo
+    $CC -O1 -w -Ibuild/gen -Ifirmware/src -Itests -o "$OUT/xp_test" tests/xp_test.c -lm
+    run "engine patch (engine_xp.c): LADDER's values through projects, user presets, undo, the pages; FM6 bit for bit" "$OUT/xp_test"
     $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/fm6_test" tests/fm6_test.c -lm
     mkdir -p build/fm6_demo
     run "FM6: algorithms, envelopes, retrigger, DC, clipping, macros, patch formats, voices, cost, demos" "$OUT/fm6_test" build/fm6_demo

@@ -427,9 +427,10 @@ static int page_visible(uint32_t i)
 {
     if (PAGES[i].scope == SC_TRACK && PAGES[i].id[0] >= P_LN0 && PAGES[i].id[0] <= P_LN7)
         return TSEL->eng_req % NENGINES == ENGI_DRUM;
-    if (PAGES[i].scope == SC_TRACK && PAGES[i].fam == FAM_EDIT && PAGES[i].graph == GR_NONE &&
-        PAGES[i].id[0] >= P_X0 && PAGES[i].id[0] <= P_X19 && !str_eq(PAGES[i].title, "OP LEVEL"))
-        return eng_idx(TSEL->eng_req) == ENGI_LADDER;  /* LADDER's pages (OSC 1-2 .. MOD; OP LEVEL is DIGITAL's) */
+    if (PAGES[i].scope == SC_XP) {                    /* the engine's extra pages: while it has values for them */
+        const xp_info_t *x = trk_xp(TSEL);
+        return x && PAGES[i].id[0] < x->n;
+    }
     if (PAGES[i].id[0] == P_FTYPE)                    /* FILTER (1.5, #104): ANALOG's */
         return ENGINES[TSEL->eng_req % NENGINES] == &ENG_ANALOG;
     if (PAGES[i].graph >= GR_FMOP && PAGES[i].graph <= GR_FMENV)
@@ -872,6 +873,7 @@ static struct {
     uint8_t fm6_slot;            /* the track's FM6 patch and its SLOT (eng_fm6.c): an edited or a project's */
     uint8_t fm6[FP_SIZE + 1u];   /* patch is the track's own, not a factory one */
     int16_t p[P_COUNT];
+    int16_t xp[NXP];             /* the engine's extra values (engine_xp.c) */
     step_t step[NSTEP];
     motion_store_t motion_backup; /* one track only, swaps with the shared event pool on undo */
     uint32_t after;              /* track_sig right after the last load */
@@ -906,6 +908,7 @@ static uint32_t track_sig(const track_t *t)      /* the sound (an FM6 track's pa
     uint8_t id[3] = {t->eng_req, t->preset, t->user};
     uint32_t h = fnv(fnv(steps_sig(t), t->p, sizeof t->p), id, 3), k = trk_index(t);
     h = fnv(h, fm6_patch[k], sizeof fm6_patch[k]); /* (a patch the editor sent between two loads) */
+    h = fnv(h, t->xp, sizeof t->xp);               /* the engine's extra values (engine_xp.c) */
     for (uint32_t j = 0; j < motion.count; j++)
         if ((motion.event[j].place >> 6) == k) h = fnv(h, &motion.event[j], sizeof motion.event[j]);
     return h ^ ((motion.on >> k) & 1u);
@@ -995,6 +998,7 @@ static void load_begin(track_t *t, uint32_t what)
     undo.preset = t->preset;
     undo.user = t->user;
     memcpy(undo.p, t->p, sizeof undo.p);
+    memcpy(undo.xp, t->xp, sizeof undo.xp);
     memcpy(undo.step, t->step, sizeof undo.step);
     memcpy(undo.fm6, fm6_patch[i], FP_SIZE);
     undo.fm6_slot = fm6_slot[i];
@@ -1053,6 +1057,7 @@ static void edit_undo_take(track_t *t, uint32_t tag, uint32_t what)
     undo.preset = t->preset;
     undo.user = t->user;
     memcpy(undo.p, t->p, sizeof undo.p);
+    memcpy(undo.xp, t->xp, sizeof undo.xp);
     memcpy(undo.step, t->step, sizeof undo.step);
     memcpy(undo.fm6, fm6_patch[i], FP_SIZE);
     undo.fm6_slot = fm6_slot[i];
@@ -1113,6 +1118,11 @@ static void undo_swap(void)
                 t->p[i] = undo.p[i];
                 undo.p[i] = v;
             }
+        for (i = 0; i < NXP; i++) {
+            int16_t v = t->xp[i];
+            t->xp[i] = undo.xp[i];
+            undo.xp[i] = v;
+        }
     }
     if (undo.what & UNDO_PAT) {
         uint32_t ps = pat_sig[trk_index(t)];
@@ -1373,8 +1383,7 @@ static void apply_preset_to(track_t *t, uint32_t pi)
     t->p[P_REL] = e->presets[pi].env[3];
     t->p[P_ED_FLT] = e->presets[pi].fenv;
     t->p[P_VOICE] = e->presets[pi].mono ? V_LEGATO : V_POLY;   /* mono presets keep the legato feel */
-    if (eng_idx(t->eng_req) == ENGI_LADDER)            /* its twenty extra values and GLIDE (eng_ladder.c) */
-        ladder_load(t, (int32_t)pi);
+    xp_load(t, (int32_t)pi);                          /* the engine's extra values (engine_xp.c) */
     {   /* the sends */
         static const uint8_t FX_DEF[4] = {0, 24, 28, 36};
         const preset_t *pr = &e->presets[pi];
@@ -1445,8 +1454,7 @@ static void clean_engine_of(track_t *t)
         t->p[P_SUS] = TP[P_SUS].max;
         t->p[P_REL] = CLEAN_REL;
     }
-    if (ei == ENGI_LADDER)                             /* its extra values at their defaults */
-        ladder_load(t, -1);
+    xp_defaults(t);                                   /* the engine's extra values (engine_xp.c) */
     fm1_irq_on();
     if (ei == ENGI_FM6) {                             /* the init voice as the track's own patch (SLOT: OWN) */
         uint8_t v[FP_SIZE + 1u];

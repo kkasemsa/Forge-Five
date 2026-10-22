@@ -42,7 +42,7 @@ static void setup(int32_t pi)
     host_preset(&trk[0], ENGI_LADDER, pi < 0 ? 0u : (uint32_t)pi);
     if (pi < 0) {                       /* a plain patch: OSC 1 saw at 8', the filter open, a flat envelope */
         uint32_t k;
-        ladder_load(&trk[0], -1);
+        xp_defaults(&trk[0]);
         for (k = 0; k < 8u; k++)
             trk[0].p[P_E0 + k] = ENG_LADDER.edit[k].def;
         trk[0].p[P_E0] = 127;           /* CUTOFF */

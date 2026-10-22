@@ -76,11 +76,7 @@ enum {                          /* per-track parameters */
     P_E0, P_E1, P_E2, P_E3, P_E4, P_E5, P_E6, P_E7,
     P_COUNT
 };
-/* LADDER's twenty extra values (eng_ladder.c) are the track parameters DIGITAL (retired) held: stored by every format,
- * read by no other engine; their pages and descriptors are LADDER's on a LADDER track (params.c) */
-#define P_X0 P_FM1_ATK
-#define P_X19 P_FM4_LEVEL
-typedef char p_x_fit[P_X19 - P_X0 == 19 ? 1 : -1];
+#define NXP 64                   /* an engine's extra values per part (engine_xp.c): track_t.xp[] */
 
 enum {                          /* global parameters */
     G_BPM, G_SWING, G_CLOCK, G_TUNE,
@@ -257,6 +253,7 @@ _Static_assert(sizeof(chain_config_t) == 84u && sizeof(chain_v9_t) == 36u, "song
 
 typedef struct track {
     int16_t p[P_COUNT];
+    int16_t xp[NXP];             /* the engine's extra values (engine_xp.c: its own pages, stored as a blob) */
     uint8_t engine, preset;      /* engine: what the audio ISR renders */
     uint8_t eng_req;             /* engine the UI asked for (the ISR switches at a block start) */
     uint8_t user;                /* user preset slot + 1 the sound came from (UI), 0 = none */

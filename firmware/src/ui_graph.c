@@ -1148,7 +1148,8 @@ static void page_title(char *ti)
     const track_t *t = TSEL;
     const engine_t *e = ENGINES[t->eng_req % NENGINES];
     uint32_t i, n = 0, k = 0;
-    const char *pt = pg->scope == SC_ENGINE ? e->page_title[pg->id[0] != P_E0] : 0;   /* EDIT: the engine's */
+    const char *pt = pg->scope == SC_ENGINE ? e->page_title[pg->id[0] != P_E0]          /* EDIT: the engine's */
+                   : pg->scope == SC_XP ? xp_title(t, pg->id[0] / 4u) : 0;              /* its extra pages' too */
     for (i = 0; i < NPAGES; i++)
         if (PAGES[i].fam == pg->fam && page_visible(i)) {
             n++;

@@ -3,7 +3,7 @@
 A three-oscillator monosynth engine in the manner of the classic 1970s American portable synth, added to Felucca as engine 14.
 Source: `firmware/src/eng_ladder.c`. Test: `tests/ladder_test.c`. Demos: `build/ladder_demo/` after the tests run.
 
-## Pages (EDIT button, in this order)
+## Pages (EDIT button, in this order; the five after CONTOUR are the engine patch's XP 1..5)
 
 | Page | KNOB 1 | KNOB 2 | KNOB 3 | KNOB 4 |
 | --- | --- | --- | --- | --- |
@@ -33,11 +33,18 @@ BERLIN BASS, FAT LEAD, PEDAL SUB, SEQ PLUCK, BRASS, WHISTLE, WOBBLE, VIBRATO LEA
 
 ## Storage
 
-LADDER's 20 extra values use the track parameters DIGITAL (engine 1, retired) used to hold, so projects and user presets store them with no format change. LADDER's favourites use DIGITAL's old favourites row.
+LADDER's 20 extra values are its **engine patch** (`firmware/src/engine_xp.c`): a part's engine keeps up to 64 values of
+its own in `track_t.xp[]`, edited on pages of its own (XP 1..8, titled by the engine) and stored as a 128-byte 7-bit blob
+in the slot every project and user preset already has for a part's FM6 patch. An FM6 part stores its FM6 patch there
+bit for bit, as before; any other engine with extra values stores its blob. No project or preset format changed.
+LADDER's favourites use DIGITAL's retired favourites row.
+
+Any engine gets a full panel the same way: a `param_desc_t` table, page titles, a preset-load hook, one line in
+`engines.c eng_xp()`. The web editor does not know the blob yet.
 
 ## Known limits (v0.1)
 
-- The stock Felucca web editor does not know engine 14: it shows LADDER's extra values with the old DIGITAL labels. Edit on the device.
+- The bundled web editor knows LADDER's eight EDIT values, not the 20 of its engine patch (no motion, locks or MIDI LEARN on those either). Edit them on the device.
 - FILT MOD reads its source once a block (32 samples): fine for LFO rates, not audio-rate filter FM.
 - Not yet run on hardware: build, flash and check on a unit with a recovery path ready (see BUILDING-LADDER below).
 

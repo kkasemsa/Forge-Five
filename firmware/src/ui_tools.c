@@ -40,6 +40,7 @@ static void tl_undo_take(track_t *t)
     undo.user = t->user;
     memcpy(undo.p, t->p, sizeof undo.p);
     memcpy(undo.step, t->step, sizeof undo.step);
+    memcpy(undo.xp, t->xp, sizeof undo.xp);
     memcpy(undo.fm6, fm6_patch[i], FP_SIZE);
     undo.fm6_slot = fm6_slot[i];
     undo.pat = pat_sig[i];
