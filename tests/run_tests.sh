@@ -38,6 +38,7 @@ run() { name=$1; echo "== $name"; shift; "$@" || { fail=1; echo "RUNFAIL ($?): $
 if [ -n "$HOST_ONLY" ]; then
     mkdir -p build/gen
     for g in font:felucca_font icons:felucca_icons samples:felucca_samples drumkits:felucca_drumkits logo:sloop_logo; do
+        [ "${g%%:*}" = logo ] && g=ff_logo:sloop_logo
         [ -f "build/gen/${g#*:}.h" ] || python3 "tools/gen_${g%%:*}.py" "build/gen/${g#*:}.h" >/dev/null
     done
 else
@@ -104,6 +105,8 @@ fi
 
 # Clipper synth (CLIPPER_SYNTH=1, what the FM-1 runs): one instrument, HOME = the sound, no tracks / drums / song
 SYN="$CCS -O2 -w -DCLIPPER_SYNTH=1 -Ibuild/gen -Ifirmware/src -Ifirmware/hal"
+# Forge Five: the tests of the engines the synth leaves out (core.h FF_ENG) build all of Clipper (FORGE_FIVE=0)
+SYNALL="$SYN -DFORGE_FIVE=0"
 mkdir -p "$OUT/clipper"
 $SYN -o "$OUT/clipper_ui_test" tests/clipper_ui_test.c -lm
 run "Clipper synth: HOME, presets, keys, pages, one track, MIDI omni, no drums / song" "$OUT/clipper_ui_test" "$OUT/clipper"
@@ -121,8 +124,9 @@ $SYN -o "$OUT/wave_test" tests/wave_test.c -lm
 mkdir -p build/wave_demo
 run "Clipper 0.2 WAVE: band-limited tables (no aliasing), building, POS, DTN / SUB, user tables, bounded, demos" "$OUT/wave_test" build/wave_demo
 SYN_UB="${CC_UB:-cc} -DCLIPPER_SYNTH=1 -O1 -g -w -fsanitize=address,undefined -fno-sanitize=shift-base,signed-integer-overflow -fno-sanitize-recover=all -Ibuild/gen -Ifirmware/src -Ifirmware/hal"
+SYN_UBALL="$SYN_UB -DFORGE_FIVE=0"
 # (Forge Five: ACID, STRINGS and MACRO are not built in the synth, core.h FF_ENG; their test runs with FORGE_FIVE=0)
-if $SYN -DFORGE_FIVE=0 -o "$OUT/engines2_test" tests/engines2_test.c -lm; then
+if $SYNALL -o "$OUT/engines2_test" tests/engines2_test.c -lm; then
     mkdir -p build/eng2_demo
     run "Clipper 0.2 ACID (accent, sweep, slide), STRINGS (registers, ensemble), MACRO (chords, swarm, additive, speech, LPG) [FORGE_FIVE=0]" "$OUT/engines2_test" build/eng2_demo
 fi
@@ -144,17 +148,17 @@ run "Clipper 0.6: an INSERT per sound (bypass bit for bit, every type, fades, ta
 if $SYN_UB -o "$OUT/synth6_ub" tests/synth6_test.c -lm 2>/dev/null; then
     run "Clipper 0.6 under ASan + UBSan" sh -c "'$OUT/synth6_ub' >/dev/null && echo clean"
 fi
-$SYN -o "$OUT/fmx_test" tests/fmx_test.c -lm
+$SYNALL -o "$OUT/fmx_test" tests/fmx_test.c -lm
 mkdir -p build/fmx_demo
 run "Clipper 0.6 FMX: presets in tune, waves, PM / FM / RING, routing, 40 templates, PEG, bank (FMX and DX7 slots), DX7 converted" "$OUT/fmx_test" build/fmx_demo
-if $SYN_UB -o "$OUT/fmx_ub" tests/fmx_test.c -lm 2>/dev/null; then
+if $SYN_UBALL -o "$OUT/fmx_ub" tests/fmx_test.c -lm 2>/dev/null; then
     run "Clipper 0.6 FMX under ASan + UBSan" sh -c "'$OUT/fmx_ub' >/dev/null && echo clean"
 fi
-$SYN -o "$OUT/wseq_test" tests/wseq_test.c -lm
+$SYNALL -o "$OUT/wseq_test" tests/wseq_test.c -lm
 mkdir -p build/wseq_demo
 run "Clipper 0.6 WSEQ: steps at the tempo and their pitches, FWD / BACK / PING / ONCE, PITCH, START, XFADE, no click at a cut" "$OUT/wseq_test" build/wseq_demo
 mkdir -p "$OUT/fmx_ui"
-$SYN -o "$OUT/fmx_ui_test" tests/fmx_ui_test.c -lm
+$SYNALL -o "$OUT/fmx_ui_test" tests/fmx_ui_test.c -lm
 run "Clipper 0.6 FMX on the FM-1: its pages on FMX only, OP / ROUTE / templates / a sound loaded" "$OUT/fmx_ui_test" "$OUT/fmx_ui"
 mkdir -p "$OUT/hist_ui"
 $SYN -o "$OUT/hist_ui_test" tests/hist_ui_test.c -lm -lpthread
@@ -169,9 +173,9 @@ if ${CC_TSAN:-gcc} -O1 -g -w -fsanitize=thread -DCLIPPER_SYNTH=1 -Ibuild/gen -If
 else
     echo "(split under ThreadSanitizer: this compiler has none, skipped)"
 fi
-$SYN -o "$OUT/synth8_test" tests/synth8_test.c -lm
+$SYNALL -o "$OUT/synth8_test" tests/synth8_test.c -lm
 run "Clipper 0.8: JUNO (presets, tune, PW, HPF, the chorus I / II / I+II, no click, as an INSERT), VECTOR (corners, MOVE), the MOD SEQ (KEY, SYNC, LEN, SMTH, to CUT / AMP, projects, user presets), SPICE / DICE (arp, sequencer)" "$OUT/synth8_test"
-if $SYN_UB -o "$OUT/synth8_ub" tests/synth8_test.c -lm 2>/dev/null; then
+if $SYN_UBALL -o "$OUT/synth8_ub" tests/synth8_test.c -lm 2>/dev/null; then
     run "Clipper 0.8 under ASan + UBSan" sh -c "'$OUT/synth8_ub' >/dev/null && echo clean"
 fi
 mkdir -p "$OUT/mseq_ui"
@@ -197,17 +201,17 @@ run "Clipper 1.0 effects: a sine through every reverb type, delay MODE and TIME,
 if $SYN_UB -o "$OUT/fx_sweep_ub" tests/fx_sweep_test.c -lm 2>/dev/null; then
     run "Clipper 1.0 effects under ASan + UBSan (no line read out of its array)" sh -c "'$OUT/fx_sweep_ub' >/dev/null && echo clean"
 fi
-$SYN -o "$OUT/engines3_test" tests/engines3_test.c -lm
+$SYNALL -o "$OUT/engines3_test" tests/engines3_test.c -lm
 run "Clipper 0.5 VPS (vector phaseshaping: pitch, formant, D, no DC, no aliasing, no step) and TERRAIN (every surface pitched, RAD, DRIFT, no aliasing), bounded, cost" "$OUT/engines3_test" build/eng3_demo
-if $SYN_UB -o "$OUT/engines3_ub" tests/engines3_test.c -lm 2>/dev/null; then
+if $SYN_UBALL -o "$OUT/engines3_ub" tests/engines3_test.c -lm 2>/dev/null; then
     run "Clipper 0.5 engines under ASan + UBSan" sh -c "'$OUT/engines3_ub' >/dev/null && echo clean"
 fi
-$SYN -o "$OUT/sloop26_fixes" tests/sloop26_fixes_test.c -lm
+$SYNALL -o "$OUT/sloop26_fixes" tests/sloop26_fixes_test.c -lm
 run "Clipper 0.4.1: SLOOP 2.6's fixes (look-ahead limiter, filter start, FM6 patch after the fade, arp #191, wheels)" "$OUT/sloop26_fixes"
-if $SYN_UB -o "$OUT/sloop26_ub" tests/sloop26_fixes_test.c -lm 2>/dev/null; then
+if $SYN_UBALL -o "$OUT/sloop26_ub" tests/sloop26_fixes_test.c -lm 2>/dev/null; then
     run "Clipper 0.4.1 fixes under ASan + UBSan" sh -c "'$OUT/sloop26_ub' >/dev/null && echo clean"
 fi
-if $SYN_UB -o "$OUT/engines2_asan" tests/engines2_test.c -lm 2>/dev/null; then
+if $SYN_UBALL -o "$OUT/engines2_asan" tests/engines2_test.c -lm 2>/dev/null; then
     run "Clipper 0.2 new engines under ASan + UBSan" sh -c "'$OUT/engines2_asan' >/dev/null && echo clean"
 fi
 if $SYN_UB -o "$OUT/clipper_ui_asan" tests/clipper_ui_test.c -lm 2>/dev/null; then

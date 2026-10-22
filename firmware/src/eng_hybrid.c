@@ -139,7 +139,7 @@ static struct {                                  /* the patch read once when it 
 } hy_act[NPART];
 
 static const char *const N_HY_OSC[] = {"OFF", "SAW", "PULSE", "TRI", "SINE", "MORPH", "SUPER", "FM", "SYNC", "FOLD", "NOISE"};
-static const char *const N_HY_FLT[] = {"OFF", "LP12", "LP24", "BP", "HP", "NOTCH", "PEAK", "MOOG"};
+static const char *const N_HY_FLT[] = {"OFF", "LP12", "LP24", "BP", "HP", "NOTCH", "PEAK", "LADDR"};
 static const char *const N_HY_ROUTE[] = {"SER", "PAR", "SPLIT"};
 static const char *const N_HY_LFOW[] = {"SINE", "TRI", "SAW", "SQR", "S&H", "SMTH"};
 static const char *const N_HY_SRC[] = {"--", "ENV2", "ENV3", "AENV", "LFO1", "LFO2", "LFO3", "VEL", "KEY", "MW", "AT",

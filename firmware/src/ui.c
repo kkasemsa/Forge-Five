@@ -3,7 +3,7 @@
 /* Felucca user interface. Four columns map to KNOB 1..4. Rendering is lazy:
  * every element remembers what it last drew and is redrawn only on change. */
 #ifndef FELUCCA_VERSION
-#define FELUCCA_VERSION "CLIPPER 1.1 EXP"  /* (experimental) the synthesizer firmware for the FM-1 (from SLOOP 2.5, based on Felucca) */
+#define FELUCCA_VERSION "FF 0.1 DEV"   /* Forge Five (based on Clipper 1.1, SLOOP, Felucca); tools/build.py --release X.Y: "FF X.Y" */
 #endif
 static void project_save(uint32_t slot);
 static void arrangement_save(void);
@@ -686,7 +686,7 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     BK(BK_FX, ENGI_NOISE, "NZ SNARE") BK(BK_FX, ENGI_NOISE, "BITCRUSH") BK(BK_FX, ENGI_NOISE, "RADIO")
     BK(BK_FX, 3, "CHIP NOISE") BK(BK_FX, ENGI_HYBRID, "RISER") BK(BK_FX, ENGI_HYBRID, "INIT")
 #if CLIPPER_SYNTH                                    /* Clipper 0.2: WAVE, the wavetables */
-    BK(BK_PAD, ENGI_WAVE, "PPG PAD") BK(BK_PAD, ENGI_WAVE, "WT SWEEP") BK(BK_PAD, ENGI_WAVE, "VOCAL WT")
+    BK(BK_PAD, ENGI_WAVE, "WAVE PAD") BK(BK_PAD, ENGI_WAVE, "WT SWEEP") BK(BK_PAD, ENGI_WAVE, "VOCAL WT")
     BK(BK_PAD, ENGI_WAVE, "HARMONICS") BK(BK_PAD, ENGI_WAVE, "COMB PAD") BK(BK_PAD, ENGI_WAVE, "PWM STR")
     BK(BK_BASS, ENGI_WAVE, "SYNC BASS") BK(BK_BASS, ENGI_WAVE, "FM GROWL") BK(BK_LEAD, ENGI_WAVE, "WT BASIC")
     BK(BK_LEAD, ENGI_WAVE, "RESO SWP") BK(BK_LEAD, ENGI_WAVE, "FOLD LEAD") BK(BK_LEAD, ENGI_WAVE, "CHIP WT")
@@ -759,7 +759,7 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     BK(BK_PLUCK, ENGI_TERRAIN, "TERRA PLUCK")
 #endif
     /* Clipper 0.2: the MOOG ladder */
-    BK(BK_BASS, ENGI_HYBRID, "MOOG BASS") BK(BK_BASS, 0, "MINI BASS") BK(BK_LEAD, ENGI_HYBRID, "MOOG LEAD")
+    BK(BK_BASS, ENGI_HYBRID, "LADR BASS") BK(BK_BASS, 0, "MINI BASS") BK(BK_LEAD, ENGI_HYBRID, "LADR LEAD")
     BK(BK_LEAD, 0, "MINI LEAD") BK(BK_PAD, ENGI_HYBRID, "LADDER PAD")
 #if FELUCCA_SLICE
     BK(BK_FX, ENGI_SLICE, "BREAK 16") BK(BK_FX, ENGI_SLICE, "CHOP 8") BK(BK_FX, ENGI_SLICE, "REVERSE")

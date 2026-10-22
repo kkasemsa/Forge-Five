@@ -741,7 +741,11 @@ static void proj_fetch(uint32_t slot)
     if (!proj_import(q, &proj_tmp, n))
         q->magic = 0;
 }
+#if !FORGE_FIVE
 #include "fm6_bank.c"                           /* the FM6 patch bank (eng_fm6.c PTCH B1..B27): staged in proj_tmp */
+#else                                           /* (Forge Five: no FM6 bank; its flash record stays where it is, untouched) */
+static void fm6_bank_boot(void) {}
+#endif
 #endif
 
 static void project_save(uint32_t slot)

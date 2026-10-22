@@ -450,11 +450,13 @@ static const uint8_t *ed_bk_obj(uint32_t id, uint32_t *len)   /* 0 = no such obj
             *len = sizeof up_bank[0];
         return (const uint8_t *)&up_bank[id - 6u];
     }
+#if !FORGE_FIVE
     if (id == 8u) {                                       /* the FM6 patch bank, in flash (XIP) */
         if (fm6_bank_cur >= 0)
             *len = sizeof(fm6_bank_t);
         return (const uint8_t *)fm6_bank_flash(fm6_bank_cur < 0 ? 0u : (uint32_t)fm6_bank_cur);
     }
+#endif
     if (id == 9u) {                                       /* SLOOP 2.5: the SYN drum kits (drum_synth.c dsu) */
         (void)dsu_kit(0);
         *len = sizeof dsu;
@@ -507,6 +509,7 @@ static uint32_t ed_bk_commit(void)
         up_gen++;
         return 0;
     }
+#if !FORGE_FIVE
     if (id == 8u) {                                       /* the FM6 patch bank (n 0: empty) */
         if (ed_flash_busy())
             return 3;
@@ -518,6 +521,10 @@ static uint32_t ed_bk_commit(void)
         fm6_bank_changed();
         return 0;
     }
+#else
+    if (id == 8u)                                         /* (Forge Five: no FM6 bank: a restore of one is accepted and dropped) */
+        return 0;
+#endif
     if (id == 9u) {                                       /* SLOOP 2.5: the SYN drum kits, written with the settings */
         persist_t p;
         uint32_t k;

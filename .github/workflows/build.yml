@@ -28,6 +28,8 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # (the brand check reads the commits pushed)
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -79,6 +81,14 @@ jobs:
           cp "$D/cpu/wl82/tools/cfg/eq_cfg_hw.bin" /tmp/sdk-keep/cpu/wl82/tools/cfg/
           rm -rf "$D" && mv /tmp/sdk-keep "$D"
           find "$D" -type f
+
+      - name: No brand names (spec v0.3 §7)      # the UI's strings, the docs, the editor, the commits pushed
+        run: |
+          case "$GITHUB_EVENT_NAME" in
+            push) python3 tools/brand_check.py --commits "${{ github.event.before }}..${{ github.sha }}" ;;
+            pull_request) python3 tools/brand_check.py --commits "origin/${{ github.base_ref }}..${{ github.sha }}" ;;
+            *) python3 tools/brand_check.py ;;
+          esac
 
       - name: Build
         run: |

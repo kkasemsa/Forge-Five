@@ -272,7 +272,7 @@ static const uint8_t STR1[] = {42, 3, 'H', 0, 0xFC, 0, 'g', 0, 'e', 0, 'l', 0, '
 static const uint8_t STR2[] = {30, 3, 'F', 0, 'e', 0, 'l', 0, 'u', 0, 'c', 0, 'c', 0, 'a', 0, ' ', 0, 'U', 0, 'p', 0,
                                'd', 0, 'a', 0, 't', 0, 'e', 0};
 #else
-static const uint8_t STR2[] = {16, 3, 'C', 0, 'l', 0, 'i', 0, 'p', 0, 'p', 0, 'e', 0, 'r', 0};   /* Clipper: the MIDI port's name */
+static const uint8_t STR2[] = {22, 3, 'F', 0, 'o', 0, 'r', 0, 'g', 0, 'e', 0, ' ', 0, 'F', 0, 'i', 0, 'v', 0, 'e', 0};   /* Forge Five: the MIDI port's name */
 #endif
 
 #if FELUCCA_UAC_48K

@@ -14,7 +14,7 @@ They are settings of the FM-1: they stay after a power-off, whatever sound is lo
 | MIDI | **LOCAL** | ON, OFF | OFF: the keys only go out on MIDI, the sound plays what comes in (a DAW sending the track back to Clipper: no doubled notes). CC 122 sets it too. |
 | MIDI 2 | **PROG** | ON, OFF | Program changes load sounds (ON, the default) or are ignored. |
 | MIDI 2 | **SEND** | OFF, CC | CC: turning a knob sends the CC that sets it (the CCs below), so a DAW records the moves and plays them back. OFF (the default): nothing is sent. |
-| MIDI 2 | **EWI** | OFF, VOL, V+AT | For a breath controller (an EWI, a TEC, a Yamaha BC with an adapter) sending CC 2. VOL: the breath is the volume (0 silent, 127 as set). V+AT: the aftertouch too, so the MOD page's AT destination (CUT: the filter opens as you blow; VIB, WAH, TREM) and the matrix's AT source follow it. OFF (the default): CC 2 does nothing. Set the sound's VOICE to MONO or LEGATO, with a little GLIDE. |
+| MIDI 2 | **EWI** | OFF, VOL, V+AT | For a breath controller (an EWI, a TEC, a breath controller with an adapter) sending CC 2. VOL: the breath is the volume (0 silent, 127 as set). V+AT: the aftertouch too, so the MOD page's AT destination (CUT: the filter opens as you blow; VIB, WAH, TREM) and the matrix's AT source follow it. OFF (the default): CC 2 does nothing. Set the sound's VOICE to MONO or LEGATO, with a little GLIDE. |
 
 GLO > SYSTEM keeps the rest: **MIDI** (what goes out: the keys only, or the sequencer and arp too), **SYNC** (the clock: internal, USB, TRS), **IN** (NOTES, or CLOCK: the notes ignored). MENU > MIDI has **CLOCK OUT**. MENU > SYSTEM has **MPE**.
 

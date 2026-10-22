@@ -161,6 +161,8 @@ int main(void)
     song.g[G_BPM] = 120;
     for (e = 0; e < NENGINES; e++) {                    /* a sound loaded under the chord, every engine */
         char w[80];                                     /* (0.9: SAMPLE and GRAIN too, on Clipper's own sources) */
+        if (!ENGINES[e]->npresets)                      /* (Forge Five: an engine not built, ENG_OFF) */
+            continue;
         attacks_ok = 1;
         snprintf(w, sizeof w, "%s: sounds loaded under a held chord", ENGINES[e]->name);
         check(w, e, 0, ch_preset, ENGINES[e]->npresets < 6u ? ENGINES[e]->npresets - 1u : 5u, 40);

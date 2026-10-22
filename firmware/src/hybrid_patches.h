@@ -219,7 +219,7 @@ static const hy_patch_t HY_FACTORY[] = {
      .env2 = {0, 66, 24, 50}, .env3 = {0, 64, 64, 64},
      .lfo = {HLFO(SINE, 60, 0, 0), HLFO(SINE, 60, 0, 0)},
      .mod = {HMOD(M1, NONE, CUT, 50), HMOD(M2, NONE, RES1, 50), HMOD(VEL, NONE, CUT, 10), HMOD(AT, NONE, CUT, 16)},
-     .drive = 30, .bend = 2, .level = 100, .name = "MOOG BASS"},
+     .drive = 30, .bend = 2, .level = 100, .name = "LADR BASS"},
     /* 25 a singing lead: two saws a few cents apart and a triangle an octave up, the ladder near its edge, a
      * delayed vibrato on the mod wheel */
     {.osc = {HOSC(SAW, 0, -5, 110, 0, 0), HOSC(SAW, 0, 6, 100, 0, 0), HOSC(TRI, 12, 0, 50, 0, 0)},
@@ -228,7 +228,7 @@ static const hy_patch_t HY_FACTORY[] = {
      .env2 = {4, 80, 70, 60}, .env3 = {0, 64, 64, 64},
      .lfo = {HLFO(SINE, 82, HL_KEY, 70), HLFO(SINE, 60, 0, 0)},
      .mod = {HMOD(LFO2, MW, PITCH, 7), HMOD(M1, NONE, CUT, 50), HMOD(M2, NONE, RES1, 40), HMOD(AT, NONE, CUT, 20)},
-     .drive = 20, .bend = 2, .level = 100, .name = "MOOG LEAD"},
+     .drive = 20, .bend = 2, .level = 100, .name = "LADR LEAD"},
     /* 26 a slow ladder pad: two pulses and a saw, the ladder opening over seconds and breathing with LFO 3 */
     {.osc = {HOSC(PULSE, 0, -6, 100, 30, 0), HOSC(PULSE, 0, 6, 100, 50, 0), HOSC(SAW, -12, 0, 60, 0, 0)},
      .drift = 50, .route = HR_SER,
@@ -243,7 +243,7 @@ static const hy_patch_t HY_FACTORY[] = {
 static const char *const N_HY_PATCH[] = {"CLIPPER", "POLY PAD", "STRINGS", "ACID", "SYNC LEAD", "FM BELL", "FM KEYS",
                                          "WOBBLE", "REESE", "HOOVER", "BRASS", "VOX", "PLUCK", "RISER", "METAL",
                                          "FOLD BASS", "CHIP LEAD", "GLASS PAD", "DRONE", "808 SUB", "TRANCE",
-                                         "SAW PLUCK", "SPACE BEL", "INIT", "MOOG BASS", "MOOG LEAD", "LADDER PAD"};
+                                         "SAW PLUCK", "SPACE BEL", "INIT", "LADR BASS", "LADR LEAD", "LADDER PAD"};
 _Static_assert(NELEM(N_HY_PATCH) == NELEM(HY_FACTORY), "a name per factory patch");
 
 /* the presets: {CUT, RES, FENV, PTCH, M1..M4}, {A D S R}, ENV -> FILTER (the part's), mono */
@@ -274,8 +274,8 @@ static const preset_t HY_PRESETS[] = {
     HYP("SAW PLUCK", 21, 50, 50, 0, 82, 30, 60, 0, FX(0, 20, 40, 30)),
     HYP("SPACE BEL", 22, 40, 0, 0, 110, 0, 104, 0, FX(0, 30, 30, 70)),
     HYP("INIT", 23, 0, 0, 0, 64, 110, 40, 0, FX(0, 0, 0, 0)),
-    HYP("MOOG BASS", 24, 40, 30, 0, 72, 90, 34, 1, FX(0, 0, 0, 6), XP(P_GLIDE + 1, 24, P_GLMODE + 1, 1, P_TRANS + 1, -12)),
-    HYP("MOOG LEAD", 25, 50, 40, 2, 80, 110, 50, 1, FX(0, 10, 28, 26), XP(P_GLIDE + 1, 36)),
+    HYP("LADR BASS", 24, 40, 30, 0, 72, 90, 34, 1, FX(0, 0, 0, 6), XP(P_GLIDE + 1, 24, P_GLMODE + 1, 1, P_TRANS + 1, -12)),
+    HYP("LADR LEAD", 25, 50, 40, 2, 80, 110, 50, 1, FX(0, 10, 28, 26), XP(P_GLIDE + 1, 36)),
     HYP("LADDER PAD", 26, 50, 30, 80, 100, 115, 95, 0, FX(0, 40, 10, 60)),
 #if CLIPPER_SYNTH
     /* Clipper 0.3: the factory patches played another way (their macros, the filter, the voice) */

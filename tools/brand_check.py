@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 Khantipol Kasemsant
+"""Forge Five (spec v0.3 §7): no brand or model names in what the user sees or in the record. Checks
+  - every string literal in firmware/src/*.c and *.h (the UI, engine and preset names, messages),
+  - the Markdown of README.md and docs/,
+  - the web editor's text (web/*.html, web/*.js, web/*.mjs string literals),
+  - and, given --commits A..B, the messages of those commits,
+for Moog, Oberheim, Roland, Sequential, Yamaha, PPG, "Model D" and "SEM" (as words, any case). Comments in the C
+sources are not checked: Clipper's history stays as it is. tools/brand_allow.txt lists lines that may pass
+(one regular expression a line; a '#' line is a note), such as Clipper's engine names that a later phase renames.
+    tools/brand_check.py [--commits RANGE]       exit 1 on a hit"""
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+BRAND = re.compile(r"\b(moog|oberheim|roland|sequential|yamaha|ppg|model[ -]?d|sem)\b", re.I)
+STR = re.compile(r'"((?:[^"\\\n]|\\.)*)"')
+UPSTREAM_DOCS = {"CLIPPER-README.md", "release-1.0.md", "release-1.1.md", "test-sequencer.md"}
+
+
+def allowed():
+    p = ROOT / "tools" / "brand_allow.txt"
+    if not p.exists():
+        return []
+    return [re.compile(l.strip()) for l in p.read_text().splitlines() if l.strip() and not l.startswith("#")]
+
+
+def main(argv):
+    allow = allowed()
+    hits = []
+
+    def check(where, text):
+        if BRAND.search(text) and not any(a.search(text) for a in allow):
+            hits.append(f"{where}: {text.strip()[:120]}")
+
+    for f in sorted(list((ROOT / "firmware" / "src").glob("*.c")) + list((ROOT / "firmware" / "src").glob("*.h"))):
+        src = f.read_text(errors="replace")
+        src = re.sub(r"/\*.*?\*/", "", src, flags=re.S)          # (comments: not the user's)
+        src = re.sub(r"//[^\n]*", "", src)
+        for i, line in enumerate(src.splitlines(), 1):
+            for m in STR.finditer(line):
+                check(f"{f.relative_to(ROOT)}:{i}", m.group(1))
+    for f in [ROOT / "README.md"] + sorted((ROOT / "docs").glob("*.md")):
+        if f.name in UPSTREAM_DOCS or not f.exists():          # (Clipper's and SLOOP's own words, kept as they are)
+            continue
+        for i, line in enumerate(f.read_text(errors="replace").splitlines(), 1):
+            check(f"{f.relative_to(ROOT)}:{i}", line)
+    for f in sorted((ROOT / "web").glob("*.html")) + sorted((ROOT / "web").glob("*.js")) + sorted((ROOT / "web").glob("*.mjs")):
+        for i, line in enumerate(f.read_text(errors="replace").splitlines(), 1):
+            for m in STR.finditer(line):
+                check(f"{f.relative_to(ROOT)}:{i}", m.group(1))
+    if len(argv) == 3 and argv[1] == "--commits":
+        rng = argv[2]
+        if rng.startswith("0" * 40):                           # (a new branch: no "before"; the last 20 commits then)
+            rng = "-20"
+        r = subprocess.run(["git", "log", "--format=%H%n%B%x00", rng], cwd=ROOT, capture_output=True, text=True)
+        if r.returncode:
+            r = subprocess.run(["git", "log", "--format=%H%n%B%x00", "-20"], cwd=ROOT, capture_output=True, text=True)
+        log = r.stdout
+        for rec in log.split("\0"):
+            if rec.strip():
+                sha, _, msg = rec.strip().partition("\n")
+                for line in msg.splitlines():
+                    check(f"commit {sha[:9]}", line)
+    for h in hits:
+        print("brand:", h)
+    print(f"brand check: {len(hits)} hit(s)" if hits else "brand check: clean")
+    return 1 if hits else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

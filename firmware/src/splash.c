@@ -29,6 +29,8 @@ static void sloop_splash(void)
     char vb[24];
     if (v[0] == 'C' && v[1] == 'L' && v[7] == ' ')
         v += 8;                                         /* "CLIPPER 0.1" -> "0.1" under the wordmark */
+    else if (v[0] == 'F' && v[1] == 'F' && v[2] == ' ')
+        v += 3;                                         /* Forge Five: "FF 0.1 DEV" -> "0.1 DEV" */
     {   /* (1.0) "1.0 EXP" -> "1.0 EXPERIMENTAL": the boot screen says it whole */
         uint32_t n = 0;
         while (v[n] && n < 12u)
@@ -40,6 +42,6 @@ static void sloop_splash(void)
     }
     cv_begin(240, 36, C_BLACK);
     cv_text(120 - text_w(&FONT_S, v) / 2, 0, &FONT_S, v, RGB(196, 196, 204));
-    cv_text(120 - text_w(&FONT_S, "based on felucca") / 2, 18, &FONT_S, "based on felucca", RGB(96, 96, 104));
+    cv_text(120 - text_w(&FONT_S, "based on clipper + felucca") / 2, 18, &FONT_S, "based on clipper + felucca", RGB(96, 96, 104));
     cv_blit(0, 202);
 }

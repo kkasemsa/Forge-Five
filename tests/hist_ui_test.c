@@ -187,8 +187,11 @@ int main(int argc, char **argv)
         xv[X_RNDWHAT] = 6;                              /* OPS */
         syn_randomize();
         frames(2);
-        ok(memcmp(&fb.op, &fmx_cur[0].op, sizeof fb.op) && !memcmp(before + P_E0, t->p + P_E0, 8 * sizeof(int16_t)) &&
-           !memcmp(fb.out, fmx_cur[0].out, sizeof fb.out), "RANDOM WHAT OPS on FMX: the operators move, the carriers' outputs and EDIT stay");
+        if (FORGE_FIVE)                                 /* (no FMX: OPS randomizes nothing) */
+            ok(!memcmp(&fb, &fmx_cur[0], sizeof fb), "RANDOM WHAT OPS without FMX (Forge Five): nothing moves");
+        else
+            ok(memcmp(&fb.op, &fmx_cur[0].op, sizeof fb.op) && !memcmp(before + P_E0, t->p + P_E0, 8 * sizeof(int16_t)) &&
+               !memcmp(fb.out, fmx_cur[0].out, sizeof fb.out), "RANDOM WHAT OPS on FMX: the operators move, the carriers' outputs and EDIT stay");
         {
             int bad = 0;
             for (k = 0; k < FMX_NOP; k++)
