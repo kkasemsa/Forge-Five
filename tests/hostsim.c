@@ -99,11 +99,15 @@ static void host_tracks_init(void)                /* as felucca_init: defaults, 
 
 /* the factory preset as ui.c apply_preset_to sets it (sound, sends, arp; not the pattern, not the mix);
  * the engine as the UI asks for it (eng_req: the audio side switches; host_preset: at once) */
+/* (Forge Five: an engine the build leaves out, ENG_OFF with no presets, is played as the HYBRID voice instead) */
+static uint32_t host_eng_built(uint32_t e) { return ENGINES[e % NENGINES]->npresets ? e % NENGINES : ENGI_HYBRID; }
 static void host_preset_req(track_t *t, uint32_t e, uint32_t pi)
 {
     static const uint8_t FX_DEF[4] = {0, 24, 28, 36};
-    const preset_t *p = &ENGINES[e]->presets[pi % ENGINES[e]->npresets];
+    const preset_t *p;
     uint32_t i;
+    e = host_eng_built(e);
+    p = &ENGINES[e]->presets[pi % ENGINES[e]->npresets];
     t->eng_req = (uint8_t)e;
     t->preset = (uint8_t)(pi % ENGINES[e]->npresets);
     for (i = 0; i < 8u; i++)
@@ -127,6 +131,7 @@ static void host_preset_req(track_t *t, uint32_t e, uint32_t pi)
 }
 static void host_preset(track_t *t, uint32_t e, uint32_t pi)
 {
+    e = host_eng_built(e);
     host_preset_req(t, e, pi);
     t->engine = (uint8_t)e;
 }

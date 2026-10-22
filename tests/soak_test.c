@@ -61,7 +61,7 @@ int main(int argc, char **argv)
             case 5: punch.req = (int8_t)(rnd(3) ? -1 : (int)rnd(PUNCH_NFX)); break;
             case 6: song.g[G_BPM] = (int16_t)(60 + rnd(140)); break;
             case 7: { uint32_t t = rnd(NPART), e = rnd(NENGINES);                 /* engine / preset */
-                      host_preset_req(&trk[t], e, rnd(ENGINES[e]->npresets)); panic_req |= (uint8_t)(1u << t); break; }
+                      host_preset_req(&trk[t], host_eng_built(e), rnd(ENGINES[host_eng_built(e)]->npresets)); panic_req |= (uint8_t)(1u << t); break; }
             case 8: trk[rnd(NTRK)].p[P_SLEN] = (int16_t)(1 + rnd(64)); break;
             case 9: trk[rnd(NTRK)].p[P_SDIV] = (int16_t)rnd(6); break;
             case 10: song.g[G_CLOCK] = (int16_t)rnd(3); break;

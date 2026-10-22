@@ -286,7 +286,7 @@ static void t_layer(void)
 {
     char w[160];
     sound(0, 0u, 0);
-    sound(1, ENGI_STRINGS, 0);
+    sound(1, host_eng_built(ENGI_STRINGS), 0);           /* (Forge Five: HYBRID) */
     trk[0].p[P_VOICE] = V_POLY, trk[1].p[P_VOICE] = V_POLY;
     trk[1].p[P_LYMODE] = LY_LAYER, trk[1].p[P_LYOCT] = 3, trk[1].p[P_LYSPLIT] = 64;
     trk_note_on(&trk[0], 60, 100);
@@ -380,13 +380,13 @@ static void t_random(void)
     char w[160];
     int16_t before[P_COUNT];
     uint32_t i, moved = 0, inside = 1;
-    sound(0, ENGI_ACID, 0);
+    sound(0, host_eng_built(ENGI_ACID), 0);
     memcpy(before, trk[0].p, sizeof before);
     go_page("RANDOM");
     knob(0, 127);                                       /* AMT 127 */
     knob(2, 1);                                         /* RAND */
     for (i = P_E0; i <= P_E7; i++) {
-        const param_desc_t *d = &ENGINES[ENGI_ACID]->edit[i - P_E0];
+        const param_desc_t *d = &ENGINES[host_eng_built(ENGI_ACID)]->edit[i - P_E0];
         moved += trk[0].p[i] != before[i];
         inside &= trk[0].p[i] >= d->min && trk[0].p[i] <= d->max;
     }

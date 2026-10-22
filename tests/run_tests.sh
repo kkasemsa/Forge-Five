@@ -121,9 +121,11 @@ $SYN -o "$OUT/wave_test" tests/wave_test.c -lm
 mkdir -p build/wave_demo
 run "Clipper 0.2 WAVE: band-limited tables (no aliasing), building, POS, DTN / SUB, user tables, bounded, demos" "$OUT/wave_test" build/wave_demo
 SYN_UB="${CC_UB:-cc} -DCLIPPER_SYNTH=1 -O1 -g -w -fsanitize=address,undefined -fno-sanitize=shift-base,signed-integer-overflow -fno-sanitize-recover=all -Ibuild/gen -Ifirmware/src -Ifirmware/hal"
-$SYN -o "$OUT/engines2_test" tests/engines2_test.c -lm
-mkdir -p build/eng2_demo
-run "Clipper 0.2 ACID (accent, sweep, slide), STRINGS (registers, ensemble), MACRO (chords, swarm, additive, speech, LPG)" "$OUT/engines2_test" build/eng2_demo
+# (Forge Five: ACID, STRINGS and MACRO are not built in the synth, core.h FF_ENG; their test runs with FORGE_FIVE=0)
+if $SYN -DFORGE_FIVE=0 -o "$OUT/engines2_test" tests/engines2_test.c -lm; then
+    mkdir -p build/eng2_demo
+    run "Clipper 0.2 ACID (accent, sweep, slide), STRINGS (registers, ensemble), MACRO (chords, swarm, additive, speech, LPG) [FORGE_FIVE=0]" "$OUT/engines2_test" build/eng2_demo
+fi
 mkdir -p "$OUT/synth3"
 $SYN -o "$OUT/synth3_test" tests/synth3_test.c -lm
 run "Clipper 0.3: master EQ and COMP, poly unison, VEL / MW / AT, LAYER and SPLIT, SWAP, MORPH, RANDOM, the pages (0.4: MATRIX, LFO 2, ENV 2)" "$OUT/synth3_test" "$OUT/synth3"

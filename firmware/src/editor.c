@@ -633,11 +633,18 @@ static int ed_backup(uint32_t cmd, const uint8_t *a, uint32_t na)   /* no flash:
 }
 #endif
 
+#if !FORGE_FIVE
 #include "editor_fm6.c"                               /* v9: the FM6 patches (68..71) */
 #include "editor_dsyn.c"                              /* v10: the SYN drum kits (72..76) */
+#else                                                 /* (Forge Five: no FM6, no drum kits, no FMX: their commands unknown) */
+static int ed_fm6_handle(uint32_t cmd, const uint8_t *a, uint32_t na) { (void)cmd; (void)a; (void)na; return 0; }
+static int ed_dsyn_handle(uint32_t cmd, const uint8_t *a, uint32_t na) { (void)cmd; (void)a; (void)na; return 0; }
+#endif
 #include "editor_hybrid.c"                            /* v11 (Clipper): the HYBRID patches (77, 78) */
-#if CLIPPER_SYNTH
+#if CLIPPER_SYNTH && !FORGE_FIVE
 #include "editor_fmx.c"                               /* v12 (Clipper 0.6): the FMX patches (90..92) */
+#elif CLIPPER_SYNTH
+static int ed_fmx_handle(uint32_t cmd, const uint8_t *a, uint32_t na) { (void)cmd; (void)a; (void)na; return 0; }
 #endif
 
 static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0 and F7 */

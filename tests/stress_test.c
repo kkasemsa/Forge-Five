@@ -166,7 +166,7 @@ static void t_fuzz(uint32_t nframes)
     song.sel = 0; go_home(); ui.force = 1;
     song.g[G_BPM] = 140;
     for (k = 0; k < NPART; k++) {
-        host_preset_req(&trk[k], ENGI_FM6, rn(ENGINES[ENGI_FM6]->npresets));
+        host_preset_req(&trk[k], host_eng_built(ENGI_FM6), rn(ENGINES[host_eng_built(ENGI_FM6)]->npresets));
         chord_steps(k);
         trk[k].p[P_CHORD] = 3;
         trk[k].p[P_STRUM] = 30;
@@ -200,7 +200,7 @@ static void t_fuzz(uint32_t nframes)
             trk[rn(NPART)].p[P_CHORD] = (int16_t)rn(6);
         } else if (r < 55) {
             uint32_t t = rn(NPART), e = rn(3) ? ENGI_FM6 : rn(NENGINES);
-            host_preset_req(&trk[t], e, rn(ENGINES[e]->npresets));
+            host_preset_req(&trk[t], host_eng_built(e), rn(ENGINES[host_eng_built(e)]->npresets));
         } else if (r < 56) {
             trk[rn(NTRK)].p[P_SDIV] = (int16_t)rn(NDIV_STEP);
         } else if (r < 57) {

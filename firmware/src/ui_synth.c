@@ -440,6 +440,9 @@ static int syn_rnd_in(uint32_t i, uint32_t what)
 /* 0.7, RANDOM > WHAT OPS on FMX: the operators of the part's patch, as the opsix's randomizer: ratios from the musical
  * ones, the modulators' levels, the envelopes, now and then a wave; the carriers' levels and the routing's shape kept,
  * its amounts moved. AMT how far */
+#if FORGE_FIVE
+static void syn_rnd_fmx(int32_t amt) { (void)amt; }  /* (no FMX) */
+#else
 static void syn_rnd_fmx(int32_t amt)
 {
     static const uint8_t RAT[12] = {1, 1, 1, 2, 2, 3, 4, 5, 6, 7, 8, 14};
@@ -473,6 +476,7 @@ static void syn_rnd_fmx(int32_t amt)
     fmx_dirty[0] = 1;
     fm1_irq_on();
 }
+#endif
 static void syn_randomize(void)
 {
     track_t *t = &trk[0];
@@ -797,6 +801,7 @@ static void syn_changed(uint32_t id, int16_t *vp)
         case X_FPEG: p->peg = (uint8_t)clamp(*vp + 64, 0, 127); break;
         default: p->ptime = u; break;
         }
+#if !FORGE_FIVE
         if ((id == X_FAMT || id == X_FOUT) && TSEL->p[P_E1]) {   /* the routing changed: the template's off (ALG
                                                                * PAT), what it filled kept in the patch */
             uint32_t a = (uint32_t)TSEL->p[P_E1] - 1u, d, s;
@@ -811,6 +816,7 @@ static void syn_changed(uint32_t id, int16_t *vp)
             }
             TSEL->p[P_E1] = 0;
         }
+#endif
         fmx_dirty[tr] = 1;
         break;
     }
@@ -1079,6 +1085,9 @@ static void graph_matrix(void)
 }
 /* FMX's pages: the routing as a grid (rows: TO, columns: FROM; a square's size its amount; the diagonal feedback),
  * the output column, the operators' waves and ratios; the operator / connection being edited white */
+#if FORGE_FIVE
+static void graph_fmx(void) {}                        /* (no FMX: its pages never show) */
+#else
 static void graph_fmx(void)
 {
     const fmx_patch_t *p = &fmx_cur[song.sel % NPART];
@@ -1123,6 +1132,7 @@ static void graph_fmx(void)
         cv_text(214, y - 1, &FONT_S, N_FMX_MODE[(o->mode & 3u) % FXM_N], (o->mode & 3u) ? C_HI : C_DIM);
     }
 }
+#endif
 static uint32_t fmx_sig(void)
 {
     const uint8_t *b = (const uint8_t *)&fmx_cur[song.sel % NPART];

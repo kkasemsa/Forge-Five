@@ -160,7 +160,7 @@ int main(int argc, char **argv)
                 wet += TSEL->p[P_DLY] != 0 || TSEL->p[P_REV] != 0;
             }
         set_engine_of(TSEL, ENGI_HYBRID); apply_preset_to(TSEL, 0); frames(3);
-        check(n > 300u && !wet, "every factory sound loads with DLY 0 and REV 0 (dry by default)");
+        check(n > (FORGE_FIVE ? 100u : 300u) && !wet, "every factory sound loads with DLY 0 and REV 0 (dry by default)");
     }
     /* 1.0 (a comment): the PRESETS page's KNOB 2 filters the list by engine; KNOB 1 and PRESETS stay inside it */
     {
@@ -245,7 +245,7 @@ int main(int argc, char **argv)
         ok = base_pos(&total) == 5u;
         midi_in(0xB0u, 0, 1); midi_in(0xC0u, 2, 0); frames(2);
         ok &= total <= 130u || base_pos(&total) == 130u;
-        check(ok && total > 130u, "a program change loads that sound of the list; CC 0 picks the bank of 128");
+        check(ok && (FORGE_FIVE || total > 130u), "a program change loads that sound of the list; CC 0 picks the bank of 128");
         midi_in(0xB0u, 0, 0); midi_in(0xC0u, 0, 0); frames(2);
         check(base_pos(&total) == 0u && preset_pos(&total) == nf, "program 0 of bank 0: the first factory sound");
         to_page(FAM_GLO, "MIDI");
@@ -800,9 +800,9 @@ int main(int argc, char **argv)
     TSEL->p[P_AMODE] = 1; ui.force = 1; frames(2); ppm("clipper-home-arp"); TSEL->p[P_AMODE] = 0; frames(2);
     {   /* (1.0) the arp a preset brings is the sound's: the next sound turns it off; the player's own runs on */
         track_t *t = TSEL;
-        uint32_t ea = ENGI_ACID, pa = 0, k, eb = 0;
+        uint32_t ea = FORGE_FIVE ? ENGI_JUNO : ENGI_ACID, pa = 0, k, eb = 0;   /* (Forge Five: no ACID; JUNO's TURING JUNO) */
         for (k = 0; k < ENGINES[ea]->npresets; k++)
-            if (!strcmp(ENGINES[ea]->presets[k].name, "ACID ARP"))
+            if (!strcmp(ENGINES[ea]->presets[k].name, FORGE_FIVE ? "TURING JUNO" : "ACID ARP"))
                 pa = k;
         t->p[P_AMODE] = 0;
         set_engine_of(t, ea); apply_preset_to(t, pa); frames(2);

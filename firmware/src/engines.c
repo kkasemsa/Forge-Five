@@ -37,10 +37,13 @@ static inline int32_t fm_model(const track_t *t)
 }
 /* (pitch_inc: felucca_tables.h, SLOOP 2.5: from the top octave) */
 #include "eng_analog.c"
+#if !FORGE_FIVE                 /* (Forge Five: ENG_OFF in their places, eng_off.c) */
 #include "eng_digital.c"
 #include "eng_phase.c"
 #include "eng_lofi.c"
-#include "eng_sample.c"
+#endif
+#include "eng_sample.c"         /* (Forge Five: for its sample store, SMP_*: the user wavetables, drums.c, seq.c; the engine is off) */
+#if !FORGE_FIVE
 #include "eng_formant.c"
 #include "eng_trio.c"
 #include "eng_drawbar.c"
@@ -48,9 +51,13 @@ static inline int32_t fm_model(const track_t *t)
 #include "eng_fm6.c"            /* FM6: 6-operator FM, msfa ported (fm6_core.c, Apache-2.0); SLOOP 2.4 */
 #include "eng_phys.c"           /* PHYS: physical models, from Felucca 1.0 (DaisySP, Rings: MIT); SLOOP 2.5 */
 #include "eng_noise.c"          /* NOISE: from Felucca 1.0; SLOOP 2.5 */
+#else
+#include "eng_off.c"
+#endif
 #include "eng_hybrid.c"         /* HYBRID: the Clipper voice (3 oscillators, 2 filters, the matrix) */
 #if CLIPPER_SYNTH
 #include "eng_wave.c"           /* WAVE: wavetables (Clipper 0.2) */
+#if !FORGE_FIVE
 #include "eng_acid.c"           /* ACID: a 303-style bass line */
 #include "eng_strings.c"        /* STRINGS: a string machine */
 #include "eng_macro.c"          /* MACRO: chords, swarm, additive, speech (after Plaits) */
@@ -58,16 +65,21 @@ static inline int32_t fm_model(const track_t *t)
 #include "eng_terrain.c"        /* TERRAIN: wave terrain, lite (Clipper 0.5) */
 #include "eng_fmx.c"            /* FMX: six operators, waves, PM / FM / RING, any routing (Clipper 0.6) */
 #include "eng_wseq.c"           /* WSEQ: wave sequencing (Clipper 0.6) */
+#endif
 #include "eng_juno.c"           /* JUNO: the Juno poly, its chorus in fx.c (Clipper 0.8) */
+#if !FORGE_FIVE
 #include "eng_vector.c"         /* VECTOR: vector synthesis (Clipper 0.8) */
+#endif
 #endif
 
 typedef union {
+#if !FORGE_FIVE
     gr_part_t grain;
     fm6_note_t fm6[FM6_POLY];
     uint32_t phys[PHYS_ARENA / 4u];      /* eng_phys.c: two SYMP slots or three small ones */
+#endif
     hy_part_t hybrid;                    /* eng_hybrid.c: the voices */
-#if CLIPPER_SYNTH
+#if CLIPPER_SYNTH && !FORGE_FIVE
     fmx_part_t fmx;                      /* eng_fmx.c: the voices */
 #endif
 } eng_arena_t;
@@ -98,6 +110,27 @@ static void *eng_arena_of(const track_t *t, uint32_t eng)
 #include "eng_slice.c"
 #endif
 
+#if FORGE_FIVE                   /* Forge Five: the engines not built are ENG_OFF in their places (eng_off.c) */
+#define ENG_DIGITAL ENG_OFF
+#define ENG_PHASE ENG_OFF
+#define ENG_LOFI ENG_OFF
+#define ENG_SAMPLE ENG_OFF
+#define ENG_FORMANT ENG_OFF
+#define ENG_TRIO ENG_OFF
+#define ENG_DRAWBAR ENG_OFF
+#define ENG_GRAIN ENG_OFF
+#define ENG_FM6 ENG_OFF
+#define ENG_PHYS ENG_OFF
+#define ENG_NOISE ENG_OFF
+#define ENG_ACID ENG_OFF
+#define ENG_STRINGS ENG_OFF
+#define ENG_MACRO ENG_OFF
+#define ENG_VPS ENG_OFF
+#define ENG_TERRAIN ENG_OFF
+#define ENG_FMX ENG_OFF
+#define ENG_WSEQ ENG_OFF
+#define ENG_VECTOR ENG_OFF
+#endif
 static const engine_t *const ENGINES[NENGINES] = {&ENG_ANALOG, &ENG_DIGITAL, &ENG_PHASE, &ENG_LOFI, &ENG_SAMPLE,
                                                     &ENG_FORMANT, &ENG_TRIO, &ENG_DRAWBAR, &ENG_GRAIN,
                                                     &ENG_FM6,    /* 9 (ENGI_FM6): always; SLICE after it (core.h) */
@@ -145,7 +178,7 @@ _Static_assert(ENGI_GRAIN == 8u && ENGI_PHYS == 10u && ENGI_NOISE == 11u && ENGI
 #endif
 static int16_t preset_trim(uint32_t e, uint32_t pi)
 {
-    if (CLIPPER_SYNTH && (ENGINES[e % NENGINES] == &ENG_SAMPLE || ENGINES[e % NENGINES] == &ENG_GRAIN))
+    if (CLIPPER_SYNTH && !FORGE_FIVE && (ENGINES[e % NENGINES] == &ENG_SAMPLE || ENGINES[e % NENGINES] == &ENG_GRAIN))
         return 0;                                    /* (Clipper: the user's own samples, no factory level) */
 #if CLIPPER_SYNTH
     if (e >= PTC_FIRST)                              /* Clipper's own engines: their table (preset_trim_clipper.h) */

@@ -12,6 +12,16 @@
 #ifndef CLIPPER_SYNTH
 #define CLIPPER_SYNTH 1
 #endif
+/* Forge Five (spec v0.3): Clipper trimmed to the bases of its five engines. With FORGE_FIVE the firmware builds
+ * ANALOG (its filter models), HYBRID, WAVE and JUNO only; the other engines keep their numbers in ENGINES[] (the
+ * stores are append-only, upstream merges stay simple) as ENG_OFF, a silent engine with no sound that no page offers
+ * (engines.c). 0 = all of Clipper. The groovebox host tests (CLIPPER_SYNTH 0) always build everything. */
+#ifndef FORGE_FIVE
+#define FORGE_FIVE CLIPPER_SYNTH
+#endif
+#if FORGE_FIVE && !CLIPPER_SYNTH
+#error "FORGE_FIVE builds on the Clipper synth (CLIPPER_SYNTH 1)"
+#endif
 /* Clipper 0.5.1 (the crackle hunt): written by the audio interrupt (audio.c), shown in GLO > SYSTEM's CPU column
  * (ui_draw.c) */
 static volatile uint32_t diag_late;      /* halves the DMA had already moved past: since power-on */
@@ -58,6 +68,8 @@ static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /*
 #define ENGI_HYBRID 12u          /* Clipper: the HYBRID voice (eng_hybrid.c), after NOISE */
 #define ENGI_SLICE 13u           /* with FELUCCA_SLICE: after HYBRID */
 #define ENGI_FM6 9u              /* the FM6 engine's index (eng_fm6.c, the stores: append-only) */
+/* Forge Five: the engines built (the rest are ENG_OFF with FORGE_FIVE) */
+#define FF_ENG(e) (!FORGE_FIVE || (e) == 0u || (e) == ENGI_HYBRID || (e) == ENGI_WAVE || (e) == ENGI_JUNO)
 #define UP_SLOTS 32u             /* user presets (upreset.c) */
 #define NELEM(a) (sizeof(a) / sizeof((a)[0]))
 
