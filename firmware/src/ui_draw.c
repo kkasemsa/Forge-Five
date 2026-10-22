@@ -1087,6 +1087,22 @@ static void draw_columns(void)
             draw_act_column(c, c == 1u && ui.tl_clean && act_col() == 2u ? "CLEAN" : labels[c], VAL(c), icons[c]);
         return;
     }
+    if (cur_page()->graph == GR_MULTI) {               /* Forge Five: ENG CH VOICES LEVEL of the selected part */
+        const track_t *t = TSEL;
+        uint32_t lvl = trk_level(song.sel), ch = mch_get(song.sel), tr = midi_base() == -2;
+        const char *e = ENGINES[eng_idx(t->eng_req)]->name;
+        char b[8];
+        draw_column(0, "ENG", e, "", VAL(0u), -1, engine_icon(e));
+        if (ch >= 16u)
+            str_cpy(b, ch == MCH_OMNI ? "OMNI" : "OFF", sizeof b);
+        else
+            fmt_int(b, (int32_t)ch + 1);
+        draw_column(1, tr ? "CH" : "CH*", b, "", tr ? VAL(1u) : T_DIM, -1, ICON_AUTO);   /* (*: MIDI IN not on TRACK yet) */
+        draw_column(2, "VOICES", N_MAXV[(uint32_t)t->p[P_MAXV] % MAXV_N], "", VAL(2u), -1, ICON_AUTO);
+        param_format(&TP[P_LEVEL], (int32_t)lvl, val, &unit);
+        draw_column(3, "LEVEL", val, unit, lvl && !t->p[P_MUTE] ? VAL(3u) : T_DIM, (int32_t)lvl * 1000 / 127, ICON_AUTO);
+        return;
+    }
     if (cur_page()->scope == SC_TRK) {                 /* LEVEL PAN REV MUTE of the selected track */
         const track_t *t = TSEL;
         uint32_t lvl = trk_level(song.sel);

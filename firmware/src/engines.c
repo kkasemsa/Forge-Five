@@ -72,6 +72,19 @@ static const engine_t *const ENGINES[NENGINES] = {
 #endif
 };
 
+/* Forge Five: an engine's voice weight for the shared budget (voice.c), Q4: 16 = one of Felucca's eight voices (ANALOG's
+ * cost, fx.c ENG_VCOST 163 instructions a sample); a heavier engine's voice takes more of the budget, so four parts of
+ * mixed engines fit the CPU. Felucca's own engines all weigh 16: their voice counts are as they were */
+static uint32_t eng_weight(uint32_t e)
+{
+#if FELUCCA_LADDER
+    if (e == ENGI_LADDER)
+        return 40u;                                   /* 2.5: ANALOG x 2.7 measured (tests/ladder_test.c), 3 voices of 8 */
+#endif
+    (void)e;
+    return 16u;
+}
+
 /* the engines' extra values (engine_xp.c): LADDER's; the others none */
 static const xp_info_t *eng_xp(uint32_t e)
 {

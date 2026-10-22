@@ -111,8 +111,9 @@ static void track_lfo_tick(track_t *t)                  /* (one core: the whole 
 /* voices the engine may use (POLY and UNISON): its cap, else all of them */
 static uint32_t trk_nvoice(const track_t *t)
 {
-    uint32_t c = ENGINES[t->engine]->poly;
-    return c && c < NVOICE ? c : NVOICE;
+    uint32_t c = ENGINES[t->engine]->poly, m = (uint32_t)t->p[P_MAXV];   /* Forge Five: the part's VOICES too */
+    c = c && c < NVOICE ? c : NVOICE;
+    return m && m < c ? m : c;
 }
 
 /* the part's voice mode: P_VOICE, POLY for an engine of hits (engine_t.oneshot: DRUM) */
@@ -130,6 +131,20 @@ static uint32_t voices_busy(void)                       /* sounding voices of al
             n += trk[p].v[i].active && trk[p].v[i].stage != 4u;
     return n;
 }
+/* Forge Five: the budget in weights (engines.c eng_weight, Q4): NVOICE of Felucca's voices; a heavier engine's voice
+ * takes more. voices_cost: what sounds now; voice_fits: a voice of part t fits beside them */
+#define VOICE_BUDGET (NVOICE * 16u)
+static uint32_t voices_cost(void)
+{
+    uint32_t p, i, n = 0;
+    for (p = 0; p < NPART; p++) {
+        uint32_t w = eng_weight(trk[p].engine);
+        for (i = 0; i < NVOICE; i++)
+            n += (trk[p].v[i].active && trk[p].v[i].stage != 4u) ? w : 0u;
+    }
+    return n;
+}
+static int voice_fits(const track_t *t) { return voices_cost() + eng_weight(t->engine) <= VOICE_BUDGET; }
 
 static uint32_t lowest_held(const track_t *t)           /* index of the lowest held note (the bass), NVOICE = none */
 {
@@ -186,15 +201,18 @@ static void voice_kill(voice_t *v)                      /* fade out over the nex
 /* the budget is full: free a voice for part t. 0 = nothing to take (soft) */
 static int voice_room(track_t *t, int soft)
 {
-    track_t *vp = 0;
-    uint32_t k;
-    if (voices_busy() < NVOICE)
-        return 1;
-    k = voice_victim(t, soft, &vp);
-    if (k == NVOICE)
-        return !soft;                                   /* hard: over the budget (cannot happen: each of the
+    uint32_t n;
+    for (n = 0; n < NVOICE; n++) {                      /* (a heavy voice may need two light ones gone) */
+        track_t *vp = 0;
+        uint32_t k;
+        if (voice_fits(t))
+            return 1;
+        k = voice_victim(t, soft, &vp);
+        if (k == NVOICE)
+            return !soft;                               /* hard: over the budget (cannot happen: each of the
                                                          * NPART < NVOICE parts protects one voice at most) */
-    voice_kill(&vp->v[k]);
+        voice_kill(&vp->v[k]);
+    }
     return 1;
 }
 
@@ -227,13 +245,15 @@ static voice_t *voice_alloc(track_t *t, uint32_t note)
             return voice_reuse(t, &t->v[i]);
         nfree += !t->v[i].active;
     }
-    if (nfree && voices_busy() >= NVOICE) {
+    if (nfree && !voice_fits(t)) {
         track_t *vp = 0;
         uint32_t k = voice_victim(t, 0, &vp);
         if (k < np && vp == t)
             return &t->v[k];                            /* our own: restart it in place (no click) */
         if (k < NVOICE)
             voice_kill(&vp->v[k]);
+        while (!voice_fits(t) && (k = voice_victim(t, 0, &vp)) < NVOICE && !(k < np && vp == t))
+            voice_kill(&vp->v[k]);                      /* (a heavy voice: more than one light one) */
     }
     if (t->p[P_ALLOC] || t->p[P_GLIDE]) {
         for (i = 0; i < np; i++) {

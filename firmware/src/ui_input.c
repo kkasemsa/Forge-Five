@@ -75,7 +75,8 @@ static int mom_turn(uint32_t k, int32_t s)
     const track_t *t = ui.home ? home_trk(k) : TSEL;     /* (HOME LEVELS: KNOB k is track k's) */
     if (ui.home) {
         d = home_param(k, &vp);
-    } else if (pg->scope == SC_TRK && !lock_held()) {  /* MIXER (#195): the selected track's LEVEL PAN REV MUTE */
+    } else if (pg->scope == SC_TRK && pg->graph == GR_TRK && !lock_held()) {  /* MIXER (#195): the selected track's LEVEL
+                                                                            * PAN REV MUTE */
         static const uint8_t MIX_ID[4] = {P_LEVEL, P_PAN, P_REV, P_MUTE};   /* (tracks_edit's knobs) */
         vp = &TSEL->p[MIX_ID[k & 3u]];
         d = &TP[MIX_ID[k & 3u]];
@@ -523,6 +524,30 @@ static void tracks_edit(uint32_t slot, int32_t steps)
     *vp = (int16_t)clamp(*vp + accel(EN_K1 + slot, steps, d->max - d->min), d->min, d->max);
     motion_capture(t, (uint32_t)(vp - t->p), *vp);
     ml_knob(t, (uint32_t)(vp - t->p));
+}
+
+/* Forge Five, the MULTI page: KNOB 1 the part's engine (as PRESETS' KNOB 2), 2 its MIDI channel (MIDI IN TRACK's: a turn
+ * puts MIDI IN on TRACK, and the channels the parts no longer hear let go), 3 its VOICES, 4 its LEVEL */
+static void multi_edit(uint32_t slot, int32_t steps)
+{
+    track_t *t = TSEL;
+    if (slot == 0u) {
+        select_engine(eng_step(t->eng_req, steps));
+    } else if (slot == 1u) {
+        uint32_t ch = (uint32_t)clamp((int32_t)mch_get(song.sel) + steps, 0, (int32_t)MCH_N - 1);
+        if (midi_base() != -2) {
+            song.g[G_ROUTE] = ROUTE_TRACK;
+            settings_later();
+        }
+        mch_set(song.sel, ch);
+        midi_route = MIDI_ROUTE_AGAIN;
+    } else if (slot == 2u) {
+        t->p[P_MAXV] = (int16_t)clamp(t->p[P_MAXV] + steps, 0, (int32_t)MAXV_N - 1);
+    } else {
+        t->p[P_LEVEL] = (int16_t)clamp(t->p[P_LEVEL] + accel(EN_K1 + slot, steps, 127), 0, 127);
+        motion_capture(t, P_LEVEL, t->p[P_LEVEL]);
+        ml_knob(t, P_LEVEL);
+    }
 }
 
 /* SEQ > STEP's piano roll (not the DRUM grid, whose white keys stay its steps): where step recording writes */
@@ -977,6 +1002,10 @@ static void edit_param(uint32_t slot, int32_t steps)
     }
     if (pg->scope == SC_STEP) {
         step_edit(slot, steps);
+        return;
+    }
+    if (pg->graph == GR_MULTI) {                        /* Forge Five: ENG CH VOICES LEVEL of the part */
+        multi_edit(slot, steps);
         return;
     }
     if (pg->scope == SC_TRK) {

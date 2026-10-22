@@ -46,7 +46,8 @@
 enum {                          /* per-track parameters */
     P_LEVEL,
     P_ATK, P_DEC, P_SUS, P_REL,
-    P_ED_FLT, P_ED_PIT, P_ED_SHP, P_ED_FX,     /* P_ED_FX: unused, kept for the formats / protocol */
+    P_ED_FLT, P_ED_PIT, P_ED_SHP, P_ED_FX,     /* P_ED_FX: unused in Felucca (kept for the formats / protocol); Forge Five:
+                                                * the part's VOICES (P_MAXV) */
     P_LRATE, P_LWAVE, P_LPHASE, P_LFADE,
     P_LD_PIT, P_LD_FLT, P_LD_SHP, P_LD_AMP,
     P_AMODE, P_ARATE, P_AOCT, P_AGATE,
@@ -77,6 +78,11 @@ enum {                          /* per-track parameters */
     P_COUNT
 };
 #define NXP 64                   /* an engine's extra values per part (engine_xp.c): track_t.xp[] */
+/* Forge Five: the part's VOICES, 0 ALL (the engine's cap) or 1..8, the most it may hold at once (voice.c trk_nvoice): a
+ * pad part cannot starve a bass part. Stored as P_ED_FX, which nothing ever read; a part's setting, not the sound's
+ * (ui.c param_kept): a sound load keeps it. On the MULTI page (GLO) and VOICE 3 */
+#define P_MAXV P_ED_FX
+#define MAXV_N 9u
 
 enum {                          /* global parameters */
     G_BPM, G_SWING, G_CLOCK, G_TUNE,

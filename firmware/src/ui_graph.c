@@ -1138,7 +1138,7 @@ static uint32_t strip_kind(void)
     if (ui.home)
         return SK_SCOPE;
     g = cur_page()->graph;
-    return g == GR_ADSR ? SK_ADSR : g == GR_LFO ? SK_LFO : g == GR_TRK ? SK_TRK : SK_TITLE;
+    return g == GR_ADSR ? SK_ADSR : g == GR_LFO ? SK_LFO : g == GR_TRK || g == GR_MULTI ? SK_TRK : SK_TITLE;
 }
 /* the page's title and its number in its family ("ENV DEST 2/2", EDIT: the engine's "OSC 1/2"); the piano roll: its
  * scale ("C MIN"); ti holds 20 (the footer, the strip) */
@@ -2237,7 +2237,7 @@ static void draw_graph(void)
     const track_t *t = TSEL;
     uint16_t c = ACC;
     uint32_t sig;
-    if (!ui.home && pg->graph == GR_TRK) {
+    if (!ui.home && (pg->graph == GR_TRK || pg->graph == GR_MULTI)) {   /* (Forge Five: MULTI shows the same cards) */
         draw_tracks();
         return;
     }
