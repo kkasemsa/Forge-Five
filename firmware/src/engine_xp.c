@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 Khantipol Kasemsan (kkasemsa); built on Felucca, (C) 2026 Leo Kuroshita, Hügelton Instruments */
+ * Copyright (C) 2026 Khantipol Kasemsant; built on Felucca, (C) 2026 Leo Kuroshita, Hügelton Instruments */
 /* The engine patch (this fork, v0.2): a part's engine keeps up to NXP extra values of its own in track_t.xp[], beside
  * the eight of EDIT 1 / 2, so an engine can carry its whole front panel (LADDER: 20; the classic polys to come: more).
  * Felucca's formats have no room for more track parameters (P_COUNT is full: project.c), but every project and every

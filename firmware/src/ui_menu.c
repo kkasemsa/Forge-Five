@@ -36,7 +36,13 @@ static void draw_about_qr(int32_t x, int32_t y)
 enum { MC_TEXT, MC_TITLE, MC_URL };
 typedef struct { const char *text; uint8_t kind; } menu_credit_t;
 static const menu_credit_t MENU_CREDITS[] = {
-    {"H\xFCgelton Instruments", MC_TITLE},  /* Felucca's own: above; these are ours too */
+    {"FORGE FIVE", MC_TITLE},               /* this fork: the LADDER engine, the engine patch, the parts */
+    {"Khantipol Kasemsant", MC_TEXT},
+    {"GPL-3.0-only, on Felucca 1.6.1", MC_TEXT},
+    {"https://github.com/kkasemsa", MC_URL},
+    {"", MC_TEXT},
+    {"FELUCCA", MC_TITLE},                  /* Felucca's own: above; these are ours too */
+    {"H\xFCgelton Instruments", MC_TEXT},
     {"Leo Kuroshita", MC_TEXT},
     {"The PHASE and DRUM engines: GPL-3.0", MC_TEXT},
     {"The Sample Pack: CC0", MC_TEXT},
@@ -116,7 +122,7 @@ static int32_t menu_document(int32_t y, int draw)
         cv_text(6, y + 38, &AF_S, "Classic synths on 4 parts", T_TEXT);
         cv_text(6, y + 58, &AF_M, FELUCCA_VERSION, T_THEME);
         cv_text_r(232, y + 61, &AF_S, __DATE__, T_MID, T_BG);
-        cv_text(6, y + 82, &AF_S, "(C) 2026 K. Kasemsan", T_TEXT);
+        cv_text(6, y + 82, &AF_S, "(C) 2026 Khantipol Kasemsant", T_TEXT);
         cv_text(6, y + 100, &AF_S, "on Felucca, H\xFCgelton", T_TEXT);
         cv_text(6, y + 118, &AF_S, "GPL-3.0-only", T_TEXT);
         cv_text(6, y + 138, &AF_S, "hugelton.github.io", T_MID);

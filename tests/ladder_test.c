@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 Khantipol Kasemsan (kkasemsa); built on Felucca, (C) 2026 Leo Kuroshita, Hügelton Instruments */
+ * Copyright (C) 2026 Khantipol Kasemsant; built on Felucca, (C) 2026 Leo Kuroshita, Hügelton Instruments */
 /* LADDER engine test (firmware/src/eng_ladder.c) on the host, through hostsim.c as regress.c and noise_test.c.
  *   build/host/ladder_test [DEMODIR]          (DEMODIR: a WAV per preset and a tour of them all)
  * 1. pitch: OSC 1 at A4 is 440 Hz at 8' (+-0.3 %), the RANGEs octaves of it; OSC 2's FREQ +-56 a fifth up / a fourth

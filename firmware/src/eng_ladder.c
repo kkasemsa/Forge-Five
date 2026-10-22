@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 Khantipol Kasemsan (kkasemsa)
+ * Copyright (C) 2026 Khantipol Kasemsant
  * Built on Felucca, Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
 /* LADDER: a three-oscillator monosynth in the manner of the classic 1970s American portable synthesizer.
  * Written from scratch from the published behaviour of its circuit blocks; no code or data of any other synth.

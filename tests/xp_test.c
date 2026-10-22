@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only
- * Copyright (C) 2026 Khantipol Kasemsan (kkasemsa); built on Felucca, (C) 2026 Leo Kuroshita, Hügelton Instruments */
+ * Copyright (C) 2026 Khantipol Kasemsant; built on Felucca, (C) 2026 Leo Kuroshita, Hügelton Instruments */
 /* The engine patch (firmware/src/engine_xp.c) through the UI host (tests/ui_test.c's harness): a LADDER part's extra
  * values round-trip through a project and a user preset, an FM6 part's patch stays bit for bit, engine switches keep
  * or default them as designed, undo swaps them, the pages show and edit them.
