@@ -33,7 +33,7 @@ CC="$CCS -DCLIPPER_SYNTH=0"
 fail=0
 run() { echo "== $1"; shift; "$@" || fail=1; }
 
-# HOST_ONLY=1: without the JieLi toolchain (no build/felucca.fwsc): the generated headers are made here and the
+# HOST_ONLY=1: without the JieLi toolchain (no build/forge-five.fwsc): the generated headers are made here and the
 # tests that need the built package (update entry, update loader, target cost of the render loops) are skipped
 if [ -n "$HOST_ONLY" ]; then
     mkdir -p build/gen
@@ -41,7 +41,7 @@ if [ -n "$HOST_ONLY" ]; then
         [ -f "build/gen/${g#*:}.h" ] || python3 "tools/gen_${g%%:*}.py" "build/gen/${g#*:}.h" >/dev/null
     done
 else
-    [ -f build/felucca.fwsc ] || { echo "run ./build.sh first (or HOST_ONLY=1)"; exit 1; }
+    [ -f build/forge-five.fwsc ] || { echo "run ./build.sh first (or HOST_ONLY=1)"; exit 1; }
 fi
 # the generated headers the FM6 engine needs (tools/build.py generate() makes them too; no Pillow needed)
 mkdir -p build/gen
@@ -234,14 +234,14 @@ run "USB audio input: built into the firmware (FELUCCA_UAC set before usb.c)" ua
 
 if [ -z "$HOST_ONLY" ]; then
 $CC -o "$OUT/ota_test" tests/ota_test.c
-run "M-UPGRADE entry" "$OUT/ota_test" build/felucca.fwsc
+run "M-UPGRADE entry" "$OUT/ota_test" build/forge-five.fwsc
 
-head -c 200000 build/felucca.bin > "$OUT/old_app.bin"
+head -c 200000 build/forge-five.bin > "$OUT/old_app.bin"
 python3 tools/fm1pkg_make.py "$OUT/old_app.bin" build/loader/ota.bin "$OUT/old.fwsc" >/dev/null
 $CC -o "$OUT/ldr_test" tests/ldr_test.c
-run "update loader: other app -> this build" "$OUT/ldr_test" "$OUT/old.fwsc" build/felucca.fwsc
+run "update loader: other app -> this build" "$OUT/ldr_test" "$OUT/old.fwsc" build/forge-five.fwsc
 else
-    echo "== skip update entry and loader (HOST_ONLY: no build/felucca.fwsc)"
+    echo "== skip update entry and loader (HOST_ONLY: no build/forge-five.fwsc)"
 fi
 
 $CC -O2 -w -Ibuild/gen -Ifirmware/src -o "$OUT/hostsim" tests/hostsim.c -lm
