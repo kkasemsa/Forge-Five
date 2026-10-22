@@ -6,7 +6,7 @@ section (the "== name" line before them), so they show on the run's summary page
 import re
 import sys
 
-BAD = re.compile(r"\bFAIL|\bfailed\b|\berror:|Assertion|Segmentation fault|Aborted|undefined reference|[1-9]\d* [A-Za-z /]*over budget|RUNFAIL")
+BAD = re.compile(r"\bFAIL|\bfailed\b|\berror:|Assertion|Segmentation fault|Aborted|undefined reference|[1-9]\d* [A-Za-z /]*over budget|OVER BUDGET|RUNFAIL|^target: ")
 
 
 def esc(s):
@@ -26,7 +26,7 @@ def main(path):
     if runfail:
         print(f"::error title=sections that failed::{esc(chr(10).join(runfail))}")
     for sec, lines in list(found.items())[:9]:
-        body = "\n".join(lines[:15]) + ("\n..." if len(lines) > 15 else "")
+        body = "\n".join(lines[:40]) + ("\n..." if len(lines) > 40 else "")
         print(f"::error title={esc(sec[:120])}::{esc(body)}")
     if len(found) > 9:
         print(f"::error title=more failures::{len(found) - 9} more failing sections (see build/test.log)")
