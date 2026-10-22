@@ -113,3 +113,12 @@ python3 tools/fm1_install.py build/forge-five-0.2.fwsc
 
 Before the first flash: keep M-VAVE's V15 file, take the installer's full backup, and have a recovery route
 (FM-1 Transporter with a Seeed XIAO RP2040) in case the unit lands in WL80UBOOT mode.
+
+## Building on GitHub (no Docker)
+
+Every push to `main` runs `.github/workflows/build.yml` on Linux x86-64, where the JieLi toolchain runs natively:
+it builds the package, runs the host tests and, when both pass, publishes the artifact **forge-five-\<sha\>** (Actions >
+the run > Artifacts: `forge-five.fwsc`, `forge-five.bin`, `loader/ota.bin`, `SHA256SUMS`, `MANIFEST.txt`, the licences).
+A tag `ff-X.Y` makes a release build (`--release X.Y`) and a GitHub release with `forge-five-X.Y.fwsc`, the dist zip and
+a source tarball that includes the engines submodule. Install the downloaded package with
+`python3 tools/fm1_install.py forge-five.fwsc` (needs `pip3 install mido python-rtmidi`; no toolchain on the Mac).

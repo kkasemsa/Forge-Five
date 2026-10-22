@@ -1,0 +1,151 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Forge Five: build the firmware package and run the host tests on Linux x86-64,
+# where the JieLi toolchain runs natively (no Docker, no Rosetta).
+#   push / PR to main, or run by hand (Actions > Build > Run workflow)
+# Artifact (a green run only): forge-five-<sha>: forge-five.fwsc, forge-five.bin, loader/ota.bin, SHA256SUMS, MANIFEST.txt,
+# the licence texts (tools/ff_dist.sh); a failed run: forge-five-FAILED-<sha> with its logs
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['ff-*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write    # releases on an ff-* tag (ff-0.2)
+
+env:
+  JIELI_TOOLCHAIN: ${{ github.workspace }}/../jieli/toolchain
+  AC79_SDK: ${{ github.workspace }}/../fw-AC79_AIoT_SDK
+  SDK_TAG: AC79NN_SDK_V1.2.1_2023-12-13
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true    # firmware/engines (Felucca-Engines, MIT)
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Python packages
+        run: |
+          pip install 'Pillow>=10' 'fonttools>=4.40' mido
+          # (the UI font raster needs Pillow's RAQM layout engine: fail here, not in the build)
+          python -c 'import PIL.features as f; raise SystemExit(0 if f.check("raqm") else "Pillow: no RAQM")'
+
+      # The JieLi toolchain (clang 4.0.1 for pi32v2) from JieLi's package server: cached after the first good run
+      - name: Cache JieLi toolchain
+        id: tc
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/../jieli
+          key: jieli-toolchain-linux-v2    # (v2: fetched through the digest check)
+
+      - name: Fetch JieLi toolchain
+        if: steps.tc.outputs.cache-hit != 'true'
+        run: |                             # (checked against the digest pinned in the script; a new archive stops here)
+          sh tools/get_toolchain.sh "$GITHUB_WORKSPACE/../jieli"
+          ls "$JIELI_TOOLCHAIN/pi32v2/bin/clang"
+
+      # The AC79 SDK (Apache-2.0): the package uses three files of cpu/wl82/tools only
+      - name: Cache AC79 SDK files
+        id: sdk
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/../fw-AC79_AIoT_SDK
+          key: ac79-sdk-${{ env.SDK_TAG }}-v1
+
+      - name: Fetch AC79 SDK files
+        if: steps.sdk.outputs.cache-hit != 'true'
+        run: |
+          set -e
+          D="$AC79_SDK"
+          if git clone --depth 1 --branch "$SDK_TAG" --filter=blob:none --sparse \
+               https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git "$D"; then
+            git -C "$D" sparse-checkout set cpu/wl82/tools
+          else
+            echo "sparse clone failed: full shallow clone"
+            rm -rf "$D"
+            git clone --depth 1 --branch "$SDK_TAG" https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git "$D"
+          fi
+          # keep only what the package needs (a small cache)
+          mkdir -p /tmp/sdk-keep/cpu/wl82/tools/cfg
+          cp "$D/cpu/wl82/tools/uboot.boot" "$D/cpu/wl82/tools/cfg_tool.bin" /tmp/sdk-keep/cpu/wl82/tools/
+          cp "$D/cpu/wl82/tools/cfg/eq_cfg_hw.bin" /tmp/sdk-keep/cpu/wl82/tools/cfg/
+          rm -rf "$D" && mv /tmp/sdk-keep "$D"
+          find "$D" -type f
+
+      - name: Build
+        run: |
+          set -o pipefail
+          case "$GITHUB_REF_NAME" in ff-*) ./build.sh --release "${GITHUB_REF_NAME#ff-}" 2>&1 | tee build.log ;;
+                                       *) ./build.sh 2>&1 | tee build.log ;; esac
+          # (the memory budget as a notice: readable without the log)
+          grep -o "image [0-9]* B; RAM .* of [0-9]*" build.log | sed 's/^/::notice title=Memory::/' || true
+
+      - name: Host tests
+        run: |
+          set -o pipefail
+          sh tests/run_tests.sh 2>&1 | tee build/test.log
+
+      - name: Report test failures
+        if: failure()
+        run: '[ -f build/test.log ] && python3 .github/scripts/test_failures.py build/test.log || true'
+
+      # The installable firmware is published only after the build AND the host tests passed (a failed run keeps its
+      # logs under another name, below). dist/ is what a release ships: the package, the app, the loader, checksums,
+      # a manifest, the licence texts and the sample attribution (LICENSING.md: the package carries Apache-2.0 SDK
+      # files and MIT engines, so their texts travel with it).
+      - name: Distribution
+        run: sh tools/ff_dist.sh build/dist "${{ github.sha }}" "${{ github.ref_name }}" "${{ github.run_id }}" passed
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: forge-five-${{ github.sha }}
+          path: build/dist/
+          if-no-files-found: error
+
+      - name: Upload logs of a failed run
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forge-five-FAILED-${{ github.sha }}
+          path: |
+            build.log
+            build/test.log
+          if-no-files-found: ignore
+
+      - name: Upload UI renders
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-renders-${{ github.sha }}
+          path: build/ui_new/
+          if-no-files-found: ignore
+
+      # A tag ff-X.Y: the release carries the package, the checksums, the distribution folder (licences, manifest)
+      # and the whole source with the engines submodule's files (GitHub's own source archive leaves it empty)
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/ff-')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          V="${GITHUB_REF_NAME#ff-}"
+          (cd build/dist && zip -qr "../forge-five-$V-dist.zip" .)
+          tar --exclude=.git --exclude=build --exclude=build.log --transform "s,^\./,forge-five-$V/," \
+              -czf "build/forge-five-$V-source.tar.gz" .
+          cp build/dist/forge-five.fwsc "build/forge-five-$V.fwsc"
+          gh release create "$GITHUB_REF_NAME" "build/forge-five-$V.fwsc" build/dist/SHA256SUMS build/dist/MANIFEST.txt \
+            "build/forge-five-$V-dist.zip" "build/forge-five-$V-source.tar.gz" \
+            --title "Forge Five FF $V" \
+            --notes "Forge Five FF $V: classic synths with their real front panels on four MIDI channels, on Felucca 1.6.1. GPL-3.0; the licence texts are in the dist zip, the source tarball has the engines submodule. Install at your own risk: python3 tools/fm1_install.py forge-five-$V.fwsc"
