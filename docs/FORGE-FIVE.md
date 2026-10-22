@@ -1,4 +1,10 @@
-# LADDER engine (fork of Felucca)
+# Forge Five
+
+Classic synths with their real front panels, on four MIDI channels. A fork of [Felucca](https://github.com/hugelton/Felucca)
+(GPL-3.0) for the M-VAVE FM-1, made to be played from Ableton Move. Version FF 0.2: the LADDER engine and the engine
+patch; next the MULTI page, the cost-unit voice allocator, OBERHEIM. Not yet run on hardware.
+
+## LADDER engine
 
 A three-oscillator monosynth engine in the manner of the classic 1970s American portable synth, added to Felucca as engine 14.
 Source: `firmware/src/eng_ladder.c`. Test: `tests/ladder_test.c`. Demos: `build/ladder_demo/` after the tests run.
@@ -42,21 +48,21 @@ LADDER's favourites use DIGITAL's retired favourites row.
 Any engine gets a full panel the same way: a `param_desc_t` table, page titles, a preset-load hook, one line in
 `engines.c eng_xp()`. The web editor does not know the blob yet.
 
-## Known limits (v0.1)
+## Known limits (FF 0.2)
 
 - The bundled web editor knows LADDER's eight EDIT values, not the 20 of its engine patch (no motion, locks or MIDI LEARN on those either). Edit them on the device.
 - FILT MOD reads its source once a block (32 samples): fine for LFO rates, not audio-rate filter FM.
 - Not yet run on hardware: build, flash and check on a unit with a recovery path ready (see BUILDING-LADDER below).
 
-## BUILDING-LADDER (macOS)
+## Building (macOS)
 
 Follow `BUILDING.md` (Docker Desktop, the JieLi toolchain via `tools/get_toolchain.sh`, the AC79 SDK, Python 3 + Pillow), then:
 
 ```
-./build.sh --release 0.1-ladder      # build/felucca-0.1-ladder.fwsc
+./build.sh --release 0.2-ff          # build/felucca-0.2-ff.fwsc (identity FM-1_902)
 tests/run_tests.sh                   # host tests, including LADDER's
 python3 tools/fm1_install.py --info  # identify the FM-1 (writes nothing)
-python3 tools/fm1_install.py build/felucca-0.1-ladder.fwsc
+python3 tools/fm1_install.py build/felucca-0.2-ff.fwsc
 ```
 
 Before the first flash: keep M-VAVE's V15 file, take the installer's full backup, and have a recovery route
