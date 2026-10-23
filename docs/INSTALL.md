@@ -78,8 +78,9 @@ another identity after the install.
   KNOB 1 or the PRESETS knob goes through its sounds; play from Move on channel 1 (every channel plays the instrument
   until a layer or split is on).
 - GLO > SYSTEM shows the CPU. The measures the voice budget was set from (23 Oct 2026, both cores): nothing playing
-  14 %; LADDER FAT LEAD on POLY, 3 notes 41 %; BRASS STACK BRASS, 5 notes 45 %; CHORD-D DEEP PAD, 2 keys (8 voices)
-  64 %. Above ~80 % is worth reporting, with the sound and the number of notes.
+  14 %; LADDER FAT LEAD on POLY, 3 notes 41 %, 4 notes 44 %; BRASS STACK BRASS, 5 notes 45 %, 8 notes 56 %; CHORD-D
+  DEEP PAD, 2 keys (8 voices) 64 %. RIBBON is still to be measured (its weight, 2.0, the spec's for now). Above ~80 % is
+  worth reporting, with the sound and the number of notes.
 - Settings, user presets and projects live in flash outside the firmware image. A Forge Five install over Clipper keeps
   Clipper's: sounds of the engines Forge Five leaves out load silent (ENG_OFF). Take a backup from the web editor first.
 

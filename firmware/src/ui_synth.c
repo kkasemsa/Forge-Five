@@ -183,7 +183,12 @@ static int hist_same(const hist_t *a, const hist_t *b)  /* the same sound (its m
     if (a->s.eng != b->s.eng)
         return 0;
     for (i = 0; i < P_COUNT; i++)
-        if ((i >= P_E0 || !param_kept(i)) && i != P_ED_FX && a->s.p[i] != b->s.p[i])
+        if ((i >= P_E0 || !param_kept(i)) && i != P_ED_FX && a->s.p[i] != b->s.p[i]
+#if FORGE_FIVE                                        /* (RIBBON's ribbon: played, not an edit of the sound; its spring
+                                                       * moves it back by itself) */
+            && !(a->s.eng == ENGI_RIBBON && i == P_E3)
+#endif
+            )
             return 0;
     if (memcmp(a->s.ms, b->s.ms, sizeof a->s.ms))
         return 0;                                     /* (0.8: a MOD SEQ step) */

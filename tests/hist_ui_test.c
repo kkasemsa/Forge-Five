@@ -265,6 +265,28 @@ int main(int argc, char **argv)
         t->p[P_AMODE] = 0;
         frames(2);
     }
+#if FORGE_FIVE
+    {   /* RIBBON's ribbon (K4 on EDIT 1) is played, not an edit: no step, the sound not EDITED; BRILL is an edit.
+         * (SPRING off: these frames run the audio too, and the spring would bring it back to the middle) */
+        uint32_t n0, h0;
+        set_engine_of(t, ENGI_RIBBON);
+        apply_preset_to(t, 1);
+        t->xp[RX_SPRING] = 0;
+        frames(3);
+        go_page("UNDO");                                /* (the spring's switch set: a step of its own, first) */
+        rest();
+        n0 = hist_n, h0 = hist_head;
+        go_page("EDIT 1");
+        knob(3, 20);
+        knob(3, -7);
+        rest();
+        ok(t->p[P_E3] == 13 && hist_n == n0 && hist_head == h0 && !hist_edited,
+           "RIBBON: K4's ribbon turned (and left there): no UNDO step, not EDITED");
+        knob(0, 6);
+        rest();
+        ok(hist_head != h0 && hist_edited, "RIBBON: BRILL turned: a step, EDITED");
+    }
+#endif
     printf(fails ? "hist_ui: %d FAILED\n" : "hist_ui: all passed\n", fails);
     return fails;
 }
