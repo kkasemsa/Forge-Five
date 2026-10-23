@@ -123,7 +123,10 @@ static int32_t chordd_amp(track_t *t, voice_t *v, int32_t adsr)
     }
     if (!v->s[6])
         v->s[6] = adsr > 0 ? adsr : 1;
-    return (int32_t)(((int64_t)adsr * 32767) / v->s[6]);
+    if (adsr >= v->s[6])
+        return 32767;
+    /* (32-bit: adsr < s[6] <= 32767, so adsr * 32767 < 2^30; the FM-1 has no 64-bit divide, no __divdi3) */
+    return (int32_t)((uint32_t)(adsr > 0 ? adsr : 0) * 32767u / (uint32_t)v->s[6]);
 }
 
 /* RELEASE (EDIT 2) and the ENV page's R are one value: the one that moved is copied to the other (a sound load sets
