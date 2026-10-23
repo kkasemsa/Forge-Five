@@ -655,17 +655,62 @@ static void trk_sustain_up1(track_t *t)
         }
 }
 
-/* Forge Five Phase 3: CHORD-D's chord memory (eng_chordd.c). MEM: a key plays the chord over it, the notes it took
- * kept per key (cm_held) so its note-off lets the same ones go whatever changed meanwhile. LEARN: the keys held
- * together are collected; when the last is let go, the chord is learnt (chordd_learn: MEM from then). Per part, after
- * the layer's routing, before the voices: the arpeggiator and the sequencer play chords too */
+/* Forge Five Phase 3: CHORD-D's chord memory (eng_chordd.c). MEM: a key plays the chord over it. Each key held is kept
+ * in a small table with the intervals its chord took (cm_key), so its note-off lets the same ones go whatever changed
+ * meanwhile; each note counts the keys holding it (cm_cnt), so two chords sharing a note keep it until the last key
+ * is let go. LEARN: the keys held together are collected; when the last is let go, the chord is learnt (chordd_learn:
+ * MEM from then). Per part, after the layer's routing, before the voices: the arpeggiator and the sequencer play
+ * chords too. A key past the table's size plays alone */
 #if FORGE_FIVE
 #define CM_LEARN_N 8u
-static uint32_t cm_held[NPART][128];                    /* per key: the intervals its chord took (bit k: k up) */
+#define CM_KEYS 16u
+typedef struct {
+    uint8_t key, m[3];                                  /* key: the note + 1, 0 free; m: the intervals 1 .. 24 (bit k - 1) */
+} cm_key_t;
+static cm_key_t cm_key[NPART][CM_KEYS];
+static uint8_t cm_cnt[NPART][128];                      /* per note: the keys holding it */
 static uint8_t cm_ln[NPART][CM_LEARN_N], cm_lc[NPART], cm_down[NPART];   /* LEARN: the notes, how many, keys down */
+static void cm_reset(uint32_t pi)
+{
+    memset(cm_key[pi], 0, sizeof cm_key[0]);
+    memset(cm_cnt[pi], 0, sizeof cm_cnt[0]);
+    cm_down[pi] = cm_lc[pi] = 0;
+}
+/* the slot of key (its note + 1), or a free one (0) */
+static cm_key_t *cm_find(uint32_t pi, uint32_t key)
+{
+    uint32_t k;
+    for (k = 0; k < CM_KEYS; k++)
+        if (cm_key[pi][k].key == key)
+            return &cm_key[pi][k];
+    return 0;
+}
+static void cm_hold(track_t *t, uint32_t pi, uint32_t n, uint32_t vel)
+{
+    if (cm_cnt[pi][n] < 255u)
+        cm_cnt[pi][n]++;
+    trk_note_on0(t, n, vel);                            /* (held already: struck again, as a key played twice) */
+}
+static void cm_let_go(track_t *t, uint32_t pi, uint32_t n)
+{
+    if (cm_cnt[pi][n] && --cm_cnt[pi][n])
+        return;                                         /* another key's chord still holds it */
+    trk_note_off0(t, n);
+}
+/* a key's chord let go: the root and each interval it took */
+static void cm_release(track_t *t, uint32_t pi, cm_key_t *e)
+{
+    uint32_t m = e->m[0] | (uint32_t)e->m[1] << 8 | (uint32_t)e->m[2] << 16, k, n = e->key - 1u;
+    e->key = 0;
+    cm_let_go(t, pi, n);
+    for (k = 1; k <= 24u; k++)
+        if ((m >> (k - 1u)) & 1u && n + k <= 127u)
+            cm_let_go(t, pi, n + k);
+}
 static void trk_note_on1(track_t *t, uint32_t note, uint32_t vel)
 {
     uint32_t pi = (uint32_t)(t - trk), m, k;
+    cm_key_t *e;
     if (pi >= NPART || note > 127u || t->engine != ENGI_CHORDD || is_drum(t)) {
         trk_note_on0(t, note, vel);
         return;
@@ -680,28 +725,37 @@ static void trk_note_on1(track_t *t, uint32_t note, uint32_t vel)
         if (k == cm_lc[pi] && k < CM_LEARN_N)
             cm_ln[pi][cm_lc[pi]++] = (uint8_t)note;
     }
-    m = chordd_mask(t);
-    cm_held[pi][note] = m;
-    trk_note_on0(t, note, vel);
-    for (k = 1; m >> k; k++)
-        if ((m >> k) & 1u && note + k <= 127u)
-            trk_note_on0(t, note + k, vel);
+    e = cm_find(pi, note + 1u);
+    if (e)                                              /* (the same key again, no note-off between: the old one first) */
+        cm_release(t, pi, e);
+    e = cm_find(pi, 0);
+    if (!e) {                                           /* (the table full: this key alone) */
+        trk_note_on0(t, note, vel);
+        return;
+    }
+    m = chordd_mask(t) >> 1;                            /* (bit k - 1: k up) */
+    e->key = (uint8_t)(note + 1u);
+    e->m[0] = (uint8_t)m, e->m[1] = (uint8_t)(m >> 8), e->m[2] = (uint8_t)(m >> 16);
+    cm_hold(t, pi, note, vel);
+    for (k = 1; k <= 24u; k++)
+        if ((m >> (k - 1u)) & 1u && note + k <= 127u)
+            cm_hold(t, pi, note + k, vel);
 }
 static void trk_note_off1(track_t *t, uint32_t note)
 {
-    uint32_t pi = (uint32_t)(t - trk), m, k;
+    uint32_t pi = (uint32_t)(t - trk);
+    cm_key_t *e;
     if (pi >= NPART || note > 127u) {
         trk_note_off0(t, note);
         return;
     }
     if (t->engine == ENGI_CHORDD && t->xp[CX_CHORD] == CM_LEARN && cm_down[pi] && !--cm_down[pi] && cm_lc[pi] > 1u)
         chordd_learn(t, cm_ln[pi], cm_lc[pi]);         /* (one key alone: not a chord, still LEARN) */
-    m = cm_held[pi][note];
-    cm_held[pi][note] = 0;
-    trk_note_off0(t, note);
-    for (k = 1; m >> k; k++)
-        if ((m >> k) & 1u && note + k <= 127u)
-            trk_note_off0(t, note + k);
+    e = cm_find(pi, note + 1u);
+    if (e)
+        cm_release(t, pi, e);                           /* (whatever the engine or the chord is now) */
+    else
+        trk_note_off0(t, note);
 }
 #else
 #define trk_note_on1 trk_note_on0
@@ -712,10 +766,8 @@ static void trk_all_off1(track_t *t)
 {
     uint32_t i;
 #if FORGE_FIVE
-    if ((uint32_t)(t - trk) < NPART) {
-        memset(cm_held[t - trk], 0, sizeof cm_held[0]);
-        cm_down[t - trk] = cm_lc[t - trk] = 0;
-    }
+    if ((uint32_t)(t - trk) < NPART)
+        cm_reset((uint32_t)(t - trk));
 #endif
     strum_cancel(t, 0, 1);
     for (i = 0; i < NVOICE; i++) {

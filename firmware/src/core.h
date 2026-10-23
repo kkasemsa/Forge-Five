@@ -48,7 +48,12 @@ static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /*
 #error "SLICE is a groovebox engine (CLIPPER_SYNTH 0)"
 #endif
 #define CLIPPER_NENG 10          /* WAVE ACID STRINGS MACRO VPS TERRAIN FMX WSEQ JUNO VECTOR */
-#define NENGINES (13 + CLIPPER_NENG + 2 * FORGE_FIVE)   /* Forge Five: its engines after Clipper's (append-only) */
+#if FORGE_FIVE
+#define FF_NENG 2                /* Forge Five's engines, after Clipper's: LADDER, CHORD-D (engines.c checks the count) */
+#else
+#define FF_NENG 0
+#endif
+#define NENGINES (13 + CLIPPER_NENG + FF_NENG)   /* Forge Five: its engines after Clipper's (append-only) */
 #define ENGI_WAVE 13u            /* Clipper 0.2: wavetables (eng_wave.c) */
 #define ENGI_ACID 14u            /*   a 303-style bass line (eng_acid.c) */
 #define ENGI_STRINGS 15u         /*   a string machine (eng_strings.c) */

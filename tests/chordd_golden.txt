@@ -1,6 +1,9 @@
-# CHORD-D presets: FNV-1a of half a second of a key (tests/chordd_test.c t_golden)
+# CHORD-D: FNV-1a of half a second of a key: each preset's voices, the chorus's modes through the mix (tests/chordd_test.c t_golden)
 DUB STAB|984980fe1cf86643
 ECHO CHORD|faf08b6842442edd
-DEEP PAD|7391de5837b29729
+DEEP PAD|b9a0bab2a05cf4c1
 SUB PULSE|aaac18b1d1388a65
-CHOR STRINGS|91f7a5bfb0f077a7
+CHOR STRINGS|e0cdfd8f97337c09
+CHORUS I|a972e7f79bf12746
+CHORUS II|5504b57a3c9b7055
+CHORUS I+II|27ab22b90c23bea8

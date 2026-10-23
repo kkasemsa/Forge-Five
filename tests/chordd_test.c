@@ -14,8 +14,10 @@
  * 8. levels: every preset's key (its chord), its loudest 50 ms with its trim (P_ED_FX, in the mix), within 4 dB of a
  *    JUNO pad note's; corners: every preset at five notes, RESO and CUTOFF up, under full scale a voice;
  *    three chord keys never past the voice budget.
- * 9. golden: every preset's first half second of a key hashes as tests/chordd_golden.txt (GOLDEN_UPDATE=1 rewrites).
- * 10. demos (DEMODIR): each preset playing a phrase through the full mix (its sends). */
+ * 9. shared notes: two chords sharing notes, one key let go: the shared notes stay; the same key twice; 20 keys.
+ * 10. golden: every preset's first half second of a key, and the chorus's three modes through the mix, hash as
+ *    tests/chordd_golden.txt says (GOLDEN_UPDATE=1 rewrites).
+ * 11. demos (DEMODIR): each preset playing a phrase through the full mix (its sends). */
 #define main hostsim_main
 #include "hostsim.c"
 #undef main
@@ -36,7 +38,10 @@ static void setup(track_t *t, uint32_t e, uint32_t pi)
 }
 static void fresh(void)
 {
+    uint32_t i;
     memset(trk, 0, sizeof trk);
+    for (i = 0; i < NPART; i++)                         /* (the chord memory's keys too, as a panic clears them) */
+        cm_reset(i);
     host_tracks_init();
     trk[1].p[P_LYMODE] = LY_OFF;
 }
@@ -350,15 +355,20 @@ static void t_bounded(void)
     check(m, !fails);
 }
 
+/* the golden renders: each preset's voice sum (track_render), and the chorus in its three modes through the mix
+ * (stereo: the BBD after the voices, fx.c juno_chorus), a key of DUB STAB, the sends off */
+#define NGOLD (32u + 3u)
+static const char *const GCHOR[3] = {"CHORUS I", "CHORUS II", "CHORUS I+II"};
 static void t_golden(void)
 {
-    static int32_t b[CTL];
-    static uint64_t h[32];
+    static int32_t b[CTL], o[CTL * 2];
+    static uint64_t h[NGOLD];
+    static const char *name[NGOLD];
     char line[160];
     const char *path = "tests/chordd_golden.txt";
-    uint32_t pi, i, k, np = ENG_CHORDD.npresets, changed = 0, missing = 0;
+    uint32_t pi, i, k, n = 0, changed = 0, missing = 0;
     FILE *f;
-    for (pi = 0; pi < np && pi < 32u; pi++) {
+    for (pi = 0; pi < ENG_CHORDD.npresets && pi < 32u; pi++, n++) {
         uint64_t x = 1469598103934665603ull;
         fresh();
         memset(jc, 0, sizeof jc);
@@ -370,14 +380,31 @@ static void t_golden(void)
             for (k = 0; k < CTL; k++)
                 x = (x ^ (uint32_t)b[k]) * 1099511628211ull;
         }
-        h[pi] = x;
+        h[n] = x, name[n] = ENG_CHORDD.presets[pi].name;
+    }
+    for (pi = 0; pi < 3u; pi++, n++) {
+        uint64_t x = 1469598103934665603ull;
+        fresh();
+        memset(jc, 0, sizeof jc);
+        setup(&trk[0], ENGI_CHORDD, 0);
+        trk[0].p[P_E3] = (int16_t)(pi + 1u);
+        trk[0].p[P_SPREAD] = 0;
+        trk_note_on(&trk[0], 48, 100);
+        for (i = 0; i < FS / 2 / CTL; i++) {
+            mix_block(o, CTL);
+            for (k = 0; k < 2u * CTL; k++)
+                x = (x ^ (uint32_t)o[k]) * 1099511628211ull;
+        }
+        trk_note_off(&trk[0], 48);
+        h[n] = x, name[n] = GCHOR[pi];
     }
     if (getenv("GOLDEN_UPDATE")) {
         f = fopen(path, "w");
         if (f) {
-            fprintf(f, "# CHORD-D presets: FNV-1a of half a second of a key (tests/chordd_test.c t_golden)\n");
-            for (pi = 0; pi < np && pi < 32u; pi++)
-                fprintf(f, "%s|%016llx\n", ENG_CHORDD.presets[pi].name, (unsigned long long)h[pi]);
+            fprintf(f, "# CHORD-D: FNV-1a of half a second of a key: each preset's voices, the chorus's modes through the mix "
+                       "(tests/chordd_test.c t_golden)\n");
+            for (i = 0; i < n; i++)
+                fprintf(f, "%s|%016llx\n", name[i], (unsigned long long)h[i]);
             fclose(f);
         }
         check("golden: tests/chordd_golden.txt rewritten", f != 0);
@@ -388,30 +415,61 @@ static void t_golden(void)
         check("golden: tests/chordd_golden.txt present (GOLDEN_UPDATE=1 writes it)", 0);
         return;
     }
-    for (pi = 0; pi < np && pi < 32u; pi++) {
+    for (i = 0; i < n; i++) {
         unsigned long long want = 0;
         int found = 0;
-        size_t ln = strlen(ENG_CHORDD.presets[pi].name);
+        size_t ln = strlen(name[i]);
         rewind(f);
         while (fgets(line, sizeof line, f))
-            if (!strncmp(line, ENG_CHORDD.presets[pi].name, ln) && line[ln] == '|' &&
-                sscanf(line + ln + 1, "%llx", &want) == 1) {
+            if (!strncmp(line, name[i], ln) && line[ln] == '|' && sscanf(line + ln + 1, "%llx", &want) == 1) {
                 found = 1;
                 break;
             }
         if (!found) {
-            printf("chordd: golden: %s has no entry\n", ENG_CHORDD.presets[pi].name);
+            printf("chordd: golden: %s has no entry\n", name[i]);
             missing++;
-        } else if (want != h[pi]) {
-            printf("chordd: golden: %s changed (%016llx, was %016llx)\n", ENG_CHORDD.presets[pi].name,
-                   (unsigned long long)h[pi], want);
+        } else if (want != h[i]) {
+            printf("chordd: golden: %s changed (%016llx, was %016llx)\n", name[i], (unsigned long long)h[i], want);
             changed++;
         }
     }
     fclose(f);
-    snprintf(line, sizeof line, "golden: %u presets render as tests/chordd_golden.txt says (%u changed, %u missing)", np,
-             changed, missing);
+    snprintf(line, sizeof line, "golden: %u presets and the chorus's 3 modes render as tests/chordd_golden.txt says "
+             "(%u changed, %u missing)", ENG_CHORDD.npresets, changed, missing);
     check(line, !changed && !missing);
+}
+
+/* two chords sharing notes: a key let go keeps the notes the other still holds; the same key twice; a table's worth */
+static void t_shared(void)
+{
+    uint32_t k;
+    fresh();
+    setup(&trk[0], ENGI_CHORDD, 0);                     /* DUB STAB: m7 */
+    trk_note_on(&trk[0], 48, 100);                      /* 48 51 55 58 */
+    trk_note_on(&trk[0], 51, 100);                      /* 51 54 58 61: 51 and 58 shared */
+    blocks(2);
+    trk_note_off(&trk[0], 48);
+    blocks(2);
+    check("shared notes: key 48 let go: 51 and 58 still sound (key 51's chord holds them), 48 and 55 released",
+          sounding_note(0, 51) && sounding_note(0, 58) && sounding_note(0, 54) && sounding_note(0, 61) &&
+              !sounding_note(0, 48) && !sounding_note(0, 55));
+    trk_note_off(&trk[0], 51);
+    blocks(2);
+    check("shared notes: key 51 let go too: all released", !held(0));
+    trk_note_on(&trk[0], 60, 100);
+    trk_note_on(&trk[0], 60, 90);                       /* (the same key twice, no note-off between) */
+    blocks(2);
+    trk_note_off(&trk[0], 60);
+    blocks(2);
+    check("the same key twice, then one note-off: its chord released, nothing left", !held(0));
+    trk[0].xp[CX_CHORD] = CM_OFF;                       /* (one note a key: the table, not the voices, the limit) */
+    for (k = 0; k < 20u; k++)
+        trk_note_on(&trk[0], 30 + 3 * k, 100);
+    blocks(2);
+    for (k = 0; k < 20u; k++)
+        trk_note_off(&trk[0], 30 + 3 * k);
+    blocks(2);
+    check("20 keys, more than the 16 a part keeps: all let go, nothing left", !held(0));
 }
 
 /* a phrase through the full mix: a dub chord stab pattern at 120 (a pad: a chord a bar), its sends on */
@@ -463,7 +521,10 @@ static void demo(const char *dir, uint32_t pi, FILE *tour)
 int main(int argc, char **argv)
 {
     song.master_q12 = 4096;
+    t_golden();                                         /* (first: from the power-on state. VINTAGE and the voices'
+                                                         * random values draw from seeds every test before would move) */
     t_memory();
+    t_shared();
     t_learn();
     t_split();
     t_gate();
@@ -472,7 +533,6 @@ int main(int argc, char **argv)
     t_patch();
     t_levels();
     t_bounded();
-    t_golden();
     if (argc > 1) {
         char path[512];
         uint32_t pi;

@@ -160,6 +160,10 @@ static const engine_t *const ENGINES[NENGINES] = {&ENG_ANALOG, &ENG_DIGITAL, &EN
                                                     &ENG_CHORDD,                           /* 24 (ENGI_CHORDD) */
 #endif
 };
+#if FORGE_FIVE                                          /* (FF_NENG: the last engine's number + 1 is NENGINES) */
+_Static_assert(ENGI_CHORDD + 1u == NENGINES && sizeof(ENGINES) / sizeof(ENGINES[0]) == NENGINES,
+               "Forge Five: FF_NENG counts its engines (core.h)");
+#endif
 #if CLIPPER_SYNTH
 _Static_assert(ENGI_WAVE == 13u && ENGI_ACID == 14u && ENGI_STRINGS == 15u && ENGI_MACRO == 16u && ENGI_VPS == 17u &&
                ENGI_TERRAIN == 18u && ENGI_FMX == 19u && ENGI_WSEQ == 20u && ENGI_JUNO == 21u && ENGI_VECTOR == 22u,
