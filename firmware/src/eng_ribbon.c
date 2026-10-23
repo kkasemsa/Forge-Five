@@ -321,7 +321,7 @@ static const ribbon_xp_t RIBBON_XP[NELEM(RIBBON_PRESETS)] = {
     {{RW_PLS, 50, 0, 1, RW_SAW, 64, 30, 2, 80, 100, 100, 20, 90, 100, 90, 16, 80, 100, 120, 110, 20, 0, 0, 1, 12, 0, 1, 108}},
     /* RIBBON BEND: a lead made for the ribbon: an octave each way, springing back */
     {{RW_SAW, 64, 0, 1, RW_SINE, 64, 0, 1, 0, 70, 90, 24, 0, 70, 90, 10, 0, 60, 127, 100, 40, 0, 0, 1, 12, 0, 1, 96}},
-    /* RAIN BELL: two sines two octaves apart rung against each other (RING), a long fall */
+    /* RAIN BELL: two sines an octave apart (8' and 4') rung against each other (RING), a long fall */
     {{RW_SINE, 64, 0, 1, RW_SINE, 64, 0, 2, 0, 90, 0, 0, 0, 90, 0, 0, 0, 80, 0, 90, 0, 90, 0, 2, 12, 0, 1, 96}},
     /* FILM STRINGS: two saws, high-passed a little, a slow swell */
     {{RW_SAW, 64, 30, 1, RW_SAW, 64, 40, 2, 70, 90, 110, 10, 80, 90, 110, 10, 60, 90, 120, 100, 0, 0, 0, 1, 12, 0, 1, 104}},
