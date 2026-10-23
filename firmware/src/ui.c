@@ -643,6 +643,7 @@ static const char *const BANK_KIND[] = {"BASS", "KEYS", "ORGN", "PAD", "LEAD", "
 #define BK_ENGI_JUNO(k, n) BK_E21(k, n)
 #define BK_ENGI_LADDER(k, n) {k, ENGI_LADDER, n},
 #define BK_ENGI_CHORDD(k, n) {k, ENGI_CHORDD, n},
+#define BK_ENGI_BRASS(k, n) {k, ENGI_BRASS, n},
 #define BK(k, e, n) BK_##e(k, n)
 static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     BK(BK_BASS, ENGI_HYBRID, "ACID") BK(BK_BASS, ENGI_HYBRID, "WOBBLE") BK(BK_BASS, ENGI_HYBRID, "REESE") BK(BK_BASS, ENGI_HYBRID, "FOLD BASS")
@@ -810,6 +811,12 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     /* Forge Five Phase 3: CHORD-D (eng_chordd.c) */
     BK(BK_STAB, ENGI_CHORDD, "DUB STAB") BK(BK_STAB, ENGI_CHORDD, "ECHO CHORD") BK(BK_PAD, ENGI_CHORDD, "DEEP PAD")
     BK(BK_BASS, ENGI_CHORDD, "SUB PULSE") BK(BK_PAD, ENGI_CHORDD, "CHOR STRINGS")
+    /* Forge Five Phase 4: BRASS (eng_brass.c) */
+    BK(BK_STAB, ENGI_BRASS, "JUMP BRASS") BK(BK_LEAD, ENGI_BRASS, "SYNC LEAD") BK(BK_PAD, ENGI_BRASS, "WARM PAD")
+    BK(BK_KEYS, ENGI_BRASS, "POLYMOD BELL") BK(BK_STAB, ENGI_BRASS, "STACK BRASS") BK(BK_PAD, ENGI_BRASS, "STRINGS")
+    BK(BK_PAD, ENGI_BRASS, "NOTCH SWEEP") BK(BK_PAD, ENGI_BRASS, "PWM PAD") BK(BK_PLUCK, ENGI_BRASS, "BP PLUCK")
+    BK(BK_BASS, ENGI_BRASS, "POLY BASS") BK(BK_LEAD, ENGI_BRASS, "GROWL") BK(BK_PAD, ENGI_BRASS, "AGED PAD")
+    BK(BK_PLUCK, ENGI_BRASS, "ARP PLUCK")
 #endif
 };
 #define NBANK (sizeof BANK / sizeof BANK[0])
