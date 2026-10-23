@@ -29,6 +29,8 @@ presets); WAVE-P follows (the [roadmap](#roadmap)). Their voices run on both cor
 from the unit (docs/INSTALL.md). Install at your own risk, with a way back ready.
 
 - **Install:** [docs/INSTALL.md](docs/INSTALL.md) — GitHub builds the package, one script sends it to the FM-1.
+- **Play:** [docs/USER-GUIDE.md](docs/USER-GUIDE.md) — getting around, the two parts, the voice budget, every engine's
+  pages and every preset.
 - **Build it yourself:** [BUILDING.md](BUILDING.md) (Linux x86-64 natively, macOS through Docker, Windows through WSL).
 - **Clipper's own documentation** (everything Forge Five has not changed): [docs/CLIPPER-README.md](docs/CLIPPER-README.md),
   [docs/midi.md](docs/midi.md), the [Felucca wiki](https://github.com/hugelton/Felucca/wiki/Home).
