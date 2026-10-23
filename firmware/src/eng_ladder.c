@@ -407,6 +407,14 @@ static const char *const LADDER_PAGES[] = {"OSC 1-2", "OSC 2-3", "MIX", "MIX 2",
 static const xp_info_t LADDER_XPI = {LADDER_X, LX_COUNT, LADDER_PAGES, ladder_load};
 _Static_assert(LX_COUNT <= NXP && (LX_COUNT + 3u) / 4u == NELEM(LADDER_PAGES), "LADDER: its pages and values");
 
+/* once per block, before the voices (and before any is handed to the second core): the part's arena claimed here,
+ * so the renders on both cores only read whose it is */
+static void ladder_block(track_t *t)
+{
+    if (t >= &trk[0] && t < &trk[NPART])
+        (void)eng_arena_of(t, ENGI_LADDER);
+}
+
 static const engine_t ENG_LADDER = {
     .name = "LADDER",
     .page_title = {"FILTER", "CONTOUR"},
@@ -427,6 +435,7 @@ static const engine_t ENG_LADDER = {
     .fil_page = 0,
     .color = 0xFD20,             /* the hot flame */
     .macro = {P_E0, P_E1, P_E2, P_GLIDE},
-    .poly = 4,                   /* POLY and UNISON: at most four (a voice costs ~2.5 x ANALOG's; tests/ladder_test.c) */
+    .poly = 4,                   /* POLY and UNISON: at most four (a voice ~9 % of the FM-1's CPU: engines.c eng_weight) */
+    .block = ladder_block,
 };
 _Static_assert(NELEM(LADDER_XP) == NELEM(LADDER_PRESETS), "LADDER: a row of extra values per preset");

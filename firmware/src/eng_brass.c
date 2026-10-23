@@ -318,6 +318,9 @@ static int16_t br_last[NTRK][4];
 static void brass_block(track_t *t)
 {
     int16_t *l = br_last[(uint32_t)(t - trk) % NTRK];
+    if (t >= &trk[0] && t < &trk[NPART])                /* the part's arena claimed here, on this core, before the voices
+                                                         * (both cores' renders then only read whose it is) */
+        (void)eng_arena_of(t, ENGI_BRASS);
     if (t->p[P_E6] != l[0])
         t->p[P_ATK] = t->p[P_E6];
     else if (t->p[P_ATK] != l[1])

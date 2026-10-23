@@ -19,7 +19,8 @@
  * 10. levels: every preset's note within 4 dB of the DCO pad's in the mix; corners: every preset at five notes with
  *    RESO, CUTOFF, PMOD, PM ENV, every destination, SYNC and AGE up: within 2 x VOICE_FS a voice (its clamp),
  *    silent once released.
- * 11. cost: ns per sample and voice against ANALOG's in the same run (the budget's weight 1.5 waits for the unit).
+ * 11. cost: ns per sample and voice against ANALOG's in the same run (a sanity bound: the budget's weight, 1.0, is the
+ *    FM-1's measure, engines.c eng_weight).
  * 12. demos (DEMODIR). */
 #include <ctype.h>
 #define main hostsim_main

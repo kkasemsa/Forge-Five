@@ -207,16 +207,16 @@ static const xp_info_t *eng_xp(uint32_t e)   /* the engine's extra values, 0 = n
     return e == ENGI_LADDER ? &LADDER_XPI : e == ENGI_CHORDD ? &CHORDD_XPI : e == ENGI_BRASS ? &BRASS_XPI : 0;
 }
 #endif
-/* Forge Five: the cost of one voice of engine e in the shared budget (voice.c), Q4: 16 = one unit (Clipper's engines,
- * measured as about ANALOG's); the engines to come: LADDER 40 (2.5), BRASS 24 (1.5), RIBBON 32 (2.0), WAVE-P 21 (1.3),
- * CHORD-D 16 (spec v0.3 section 3: to be measured on the unit) */
+/* Forge Five: the cost of one voice of engine e in the shared budget (voice.c), Q4: 16 = one unit (Clipper's engines).
+ * Measured on the FM-1 (GLO > SYSTEM, both cores, 23 Oct 2026; 14 % with nothing playing): LADDER 9.0 % a voice (FAT
+ * LEAD, 3), BRASS 6.2 % (STACK BRASS, 5), CHORD-D 6.3 % (DEEP PAD, the full 8). A unit is set at ~8 %: the whole budget
+ * then stays under ~80 % whatever plays it. LADDER 20 (1.25: 6 voices ~68 %), BRASS and CHORD-D 16 (8 voices ~64 %).
+ * The spec's first guesses (v0.3 section 3: LADDER 2.5, BRASS 1.5) were on one core. RIBBON and WAVE-P: to be measured */
 static uint32_t eng_weight(uint32_t e)
 {
 #if FORGE_FIVE
     if (e == ENGI_LADDER)
-        return 40u;
-    if (e == ENGI_BRASS)
-        return 24u;                     /* (1.5: the spec's; provisional until measured on the unit) */
+        return 20u;
 #else
     (void)e;
 #endif

@@ -94,7 +94,7 @@ static uint32_t trk_nvoice(const track_t *t)
 
 /* ------------------------------------------------- the shared voice budget --- */
 /* Forge Five: the budget is NVOICE units of 16 (VOICE_BUDGET), and a voice costs its engine's weight (engines.c
- * eng_weight, Q4: 16 = one unit, Clipper's engines; the heavy ones more, LADDER 40 = 2.5). voices_cost sums the
+ * eng_weight, Q4: 16 = one unit, Clipper's engines; the heavy ones more, LADDER 20 = 1.25). voices_cost sums the
  * sounding voices; voice_fits says whether one more of part t goes in. Without FORGE_FIVE every voice is one unit:
  * the count as before. */
 #define VOICE_BUDGET ((uint32_t)NVOICE * 16u)
@@ -232,20 +232,21 @@ static voice_t *voice_alloc(track_t *t, uint32_t note)
     uint32_t i, np = trk_nvoice(t), best = np, low = np, nfree = 0;
     int32_t bd = 0x7FFFFFFF;
     for (i = 0; i < np; i++) {
-        if (t->v[i].active && t->v[i].note == note)
-            return &t->v[i];
+        if (t->v[i].active && t->v[i].note == note && (!FORGE_FIVE || t->v[i].stage != 4u))
+            return &t->v[i];                            /* (Forge Five: not one fading out: it is off the budget, and
+                                                         * back on it unchecked; the note takes a voice as a new one) */
         nfree += !t->v[i].active;
     }
-    if (nfree && !voice_fits(t)) {
+    while (nfree && !voice_fits(t)) {                   /* (a heavy voice: as many as it takes) */
         track_t *vp = 0;
         uint32_t k = voice_victim(t, 0, &vp);
+        if (k == NVOICE)
+            break;                                      /* nothing to take (cannot happen with 3 parts) */
         if (k < np && vp == t)
             return &t->v[k];                            /* our own: restart it in place (no click) */
-        if (k < NVOICE) {
-            voice_kill(&vp->v[k]);
-            while (!voice_fits(t) && (k = voice_victim(t, 0, &vp)) < NVOICE && vp != t)   /* (a heavy voice: more) */
-                voice_kill(&vp->v[k]);
-        }
+        voice_kill(&vp->v[k]);                          /* (Forge Five: the next victim our own, it is restarted here,
+                                                         * where the budget was let past before: two parts of a heavy
+                                                         * engine went over it, tests/ff_store_test.c) */
     }
     if (t->p[P_ALLOC] || t->p[P_GLIDE]) {
         for (i = 0; i < np; i++) {
@@ -277,9 +278,27 @@ static voice_t *voice_alloc(track_t *t, uint32_t note)
         if (!t->v[i].gate && t->v[i].stage != 4u && (best == np || t->v[i].age < t->v[best].age))
             best = i;
     if (best == np)
-        for (i = 0; i < np; i++)                         /* oldest held, not the bass */
+        for (i = 0; i < np; i++)                         /* oldest held, not the bass (Forge Five: nor one fading out,
+                                                          * given up for the budget: restarted it would count again) */
+            if (i != low && (!FORGE_FIVE || t->v[i].stage != 4u) && (best == np || t->v[i].age < t->v[best].age))
+                best = i;
+#if FORGE_FIVE
+    if (best == np) {                                    /* only the bass and voices fading out: one of those, the room
+                                                          * for it taken first as for a free one */
+        for (i = 0; i < np; i++)
             if (i != low && (best == np || t->v[i].age < t->v[best].age))
                 best = i;
+        while (best < np && !voice_fits(t)) {
+            track_t *vp = 0;
+            uint32_t k = voice_victim(t, 0, &vp);
+            if (k == NVOICE)
+                break;
+            if (k < np && vp == t)
+                return &t->v[k];
+            voice_kill(&vp->v[k]);
+        }
+    }
+#endif
     return &t->v[best == np ? 0 : best];
 }
 
@@ -1279,7 +1298,12 @@ static int vs_ok(const engine_t *e)                 /* its render may run on two
 {
     return e == &ENG_HYBRID || e == &ENG_FMX || e == &ENG_WAVE || e == &ENG_ANALOG || e == &ENG_FM6 || e == &ENG_VPS ||
            e == &ENG_TERRAIN || e == &ENG_WSEQ || e == &ENG_MACRO || e == &ENG_STRINGS || e == &ENG_TRIO ||
-           e == &ENG_PHASE || e == &ENG_DIGITAL || e == &ENG_LOFI || e == &ENG_ACID || e == &ENG_JUNO || e == &ENG_VECTOR;
+           e == &ENG_PHASE || e == &ENG_DIGITAL || e == &ENG_LOFI || e == &ENG_ACID || e == &ENG_JUNO || e == &ENG_VECTOR
+#if FORGE_FIVE      /* (Forge Five: their renders write their voice and its own slot of the part's arena only; the arena
+                     * is claimed in their block hooks, on this core, before the voices are handed over) */
+           || e == &ENG_LADDER || e == &ENG_CHORDD || e == &ENG_BRASS
+#endif
+        ;
 }
 static void vs_finish(track_t *t, const engine_t *e, int32_t *out, uint32_t n)
 {
