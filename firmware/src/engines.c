@@ -95,6 +95,10 @@ typedef union {
     brass_part_t brass;                  /* eng_brass.c: the voices' DC blockers and AGE walks */
 #endif
 } eng_arena_t;
+#if FORGE_FIVE                          /* (Forge Five's engines fit in HYBRID's share: the arena, .pool, does not grow) */
+_Static_assert(sizeof(ladder_part_t) <= sizeof(hy_part_t) && sizeof(brass_part_t) <= sizeof(hy_part_t),
+               "Forge Five: an engine's per-part state larger than HYBRID's grows .pool (engines.c eng_arena_t)");
+#endif
 static eng_arena_t eng_arena[NPART] __attribute__((section(".pool")));
 static uint8_t eng_arena_own[NPART];            /* the engine + 1 whose state is in it, 0 = none */
 #ifdef ARENA_STATS

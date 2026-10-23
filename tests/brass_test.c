@@ -2,8 +2,8 @@
  * Copyright (C) 2026 Khantipol Kasemsant; built on Clipper (isod89 / 3dSam), SLOOP and Felucca */
 /* BRASS engine test (firmware/src/eng_brass.c) on the host, through hostsim.c.
  *   build/host/brass_test [DEMODIR]          (DEMODIR: a WAV per preset and a tour of them all)
- * 1. golden (first, from the power-on state): every preset's first half second of a note hashes as
- *    tests/brass_golden.txt says (GOLDEN_UPDATE=1 rewrites it).
+ * 1. golden (first, from the power-on state): every preset's first half second of a note, and 4P at RESO 120 and
+ *    127 (with OSC B on the cutoff), hash as tests/brass_golden.txt says (GOLDEN_UPDATE=1 rewrites it).
  * 2. pitch: OSC A at A4 440 Hz at 8' (+-0.3 %), 16' and 4' its octaves; B FREQ +-56 a fifth up / down; DETUNE 100 a
  *    semitone up (+-0.3 %).
  * 3. SYNC: A at 4' synced to B at 8': the output repeats at B's 440 Hz (its band 20 dB up on the unsynced A's).
@@ -92,32 +92,45 @@ static void voice_render(uint32_t note, double skip_s, double *y, uint32_t n)
 #include "spectra.h"
 
 /* ---------------------------------------------------------------- golden --- */
+/* the golden renders: each preset, and 4P at high resonance (STACK BRASS, RESO 120; and at 127 with OSC B on the
+ * cutoff, the second filter's states and the poly-mod's coefficient updates at work) */
+#define NGOLD (32u + 2u)
+static const char *const G4P[2] = {"4P RESO 120", "4P RESO 127 PM FILT"};
 static void t_golden(void)
 {
     static int32_t b[CTL];
-    static uint64_t h[32];
+    static uint64_t h[NGOLD];
+    static const char *name[NGOLD];
     char line[160];
     const char *path = "tests/brass_golden.txt";
-    uint32_t pi, i, k, np = ENG_BRASS.npresets, changed = 0, missing = 0;
+    uint32_t pi, i, k, n = 0, changed = 0, missing = 0;
     FILE *f;
-    for (pi = 0; pi < np && pi < 32u; pi++) {
+    for (pi = 0; pi < ENG_BRASS.npresets + 2u && n < NGOLD; pi++, n++) {
         uint64_t x = 1469598103934665603ull;
-        setup((int32_t)pi);
-        trk_note_on(&trk[0], 48 + (pi % 24u), 100);
+        uint32_t extra = pi >= ENG_BRASS.npresets ? pi - ENG_BRASS.npresets + 1u : 0u;
+        setup(extra ? 4 : (int32_t)pi);                 /* (the extras: STACK BRASS) */
+        if (extra) {
+            trk[0].p[P_E5] = BT_4P;
+            trk[0].p[P_E1] = extra == 1u ? 120 : 127;
+            if (extra == 2u)
+                trk[0].p[P_E4] = 100, trk[0].xp[BX_PMFLT] = 1;
+        }
+        trk_note_on(&trk[0], extra ? 45u : 48 + (pi % 24u), 100);
         for (i = 0; i < FS / 2 / CTL; i++) {
             memset(b, 0, sizeof b);
             track_render(&trk[0], b, CTL);
             for (k = 0; k < CTL; k++)
                 x = (x ^ (uint32_t)b[k]) * 1099511628211ull;
         }
-        h[pi] = x;
+        h[n] = x, name[n] = extra ? G4P[extra - 1u] : ENG_BRASS.presets[pi].name;
     }
     if (getenv("GOLDEN_UPDATE")) {
         f = fopen(path, "w");
         if (f) {
-            fprintf(f, "# BRASS presets: FNV-1a of half a second of a note (tests/brass_test.c t_golden)\n");
-            for (pi = 0; pi < np && pi < 32u; pi++)
-                fprintf(f, "%s|%016llx\n", ENG_BRASS.presets[pi].name, (unsigned long long)h[pi]);
+            fprintf(f, "# BRASS: FNV-1a of half a second of a note: each preset, 4P at high resonance "
+                       "(tests/brass_test.c t_golden)\n");
+            for (i = 0; i < n; i++)
+                fprintf(f, "%s|%016llx\n", name[i], (unsigned long long)h[i]);
             fclose(f);
         }
         check("golden: tests/brass_golden.txt rewritten", f != 0);
@@ -128,29 +141,27 @@ static void t_golden(void)
         check("golden: tests/brass_golden.txt present (GOLDEN_UPDATE=1 writes it)", 0);
         return;
     }
-    for (pi = 0; pi < np && pi < 32u; pi++) {
+    for (i = 0; i < n; i++) {
         unsigned long long want = 0;
         int found = 0;
-        size_t ln = strlen(ENG_BRASS.presets[pi].name);
+        size_t ln = strlen(name[i]);
         rewind(f);
         while (fgets(line, sizeof line, f))
-            if (!strncmp(line, ENG_BRASS.presets[pi].name, ln) && line[ln] == '|' &&
-                sscanf(line + ln + 1, "%llx", &want) == 1) {
+            if (!strncmp(line, name[i], ln) && line[ln] == '|' && sscanf(line + ln + 1, "%llx", &want) == 1) {
                 found = 1;
                 break;
             }
         if (!found) {
-            printf("brass: golden: %s has no entry\n", ENG_BRASS.presets[pi].name);
+            printf("brass: golden: %s has no entry\n", name[i]);
             missing++;
-        } else if (want != h[pi]) {
-            printf("brass: golden: %s changed (%016llx, was %016llx)\n", ENG_BRASS.presets[pi].name,
-                   (unsigned long long)h[pi], want);
+        } else if (want != h[i]) {
+            printf("brass: golden: %s changed (%016llx, was %016llx)\n", name[i], (unsigned long long)h[i], want);
             changed++;
         }
     }
     fclose(f);
-    snprintf(line, sizeof line, "golden: %u presets render as tests/brass_golden.txt says (%u changed, %u missing)", np,
-             changed, missing);
+    snprintf(line, sizeof line, "golden: %u presets and 4P at high resonance render as tests/brass_golden.txt says "
+             "(%u changed, %u missing)", ENG_BRASS.npresets, changed, missing);
     check(line, !changed && !missing);
 }
 
