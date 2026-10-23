@@ -671,9 +671,9 @@ async function fmxPatch() {
   const p1 = E.parse[E.CMD.MSEQ_PUT](await rq(q));
   const g1 = E.parse[E.CMD.MSEQ_GET](await rq(E.req.mseqGet(1)));
   const bad = E.parse[E.CMD.MSEQ_GET](await rq(E.req.mseqGet(5)));
-  ok(info.engines.includes("JUNO") && info.engines.includes("VECTOR") && !g0.rc && g0.steps.length === 64 && g0.steps[0] === -8 && g0.steps[15] === 7
+  ok(info.engines.includes("DCO") && info.engines.includes("VECTOR") && !g0.rc && g0.steps.length === 64 && g0.steps[0] === -8 && g0.steps[15] === 7
     && !p1.rc && !g1.rc && g1.steps[16] === -8 && g1.steps[31] === 7 && bad.rc === 1,
-    "MOD SEQ through the mock: JUNO, VECTOR listed; the shapes to start from; PUT, GET back; a part out of range (rc 1)");
+    "MOD SEQ through the mock: DCO, VECTOR listed; the shapes to start from; PUT, GET back; a part out of range (rc 1)");
   /* Clipper 0.9 (protocol 14): the TUNING (editor_fmx.c ED_TUNE_GET / ED_TUNE_PUT) and Scala .scl files */
   const scl = E.parseScl("! test.scl\n!\nQuarter-tone test\n 5\n!\n 150.0\n 6/5\n 500.\n 3/2 comment\n 2/1\n");
   ok(scl && scl.desc === "Quarter-tone test" && scl.deg.length === 5 && scl.deg[0] === 0 && scl.deg[1] === 2400
@@ -1501,7 +1501,7 @@ function editorClipperPages() {
   const pcs = (re) => ((re.exec(pc) || [])[1] || "").match(/"[^"]*"/g).map((x) => x.slice(1, -1));
   const amode = pcs(/N_AMODE\[\] = \{([^}]*)\}/), itype = pcs(/N_ITYPE\[\] = \{([^}]*)\}/), irate = pcs(/N_IRATE\[\] = \{([^}]*)\}/);
   const insc = [...((/INS_DESC\[4\]\[3\] = \{([\s\S]*?)\n\};/.exec(pc) || [])[1] || "").matchAll(/PU\("([^"]+)"/g)].map((x) => x[1]);
-  ok(amode.indexOf("TURNG") === X.AM_TURING && itype.length === X.INS_NTYPE && itype[9] === "JUNO1" && js(irate) === js(X.INS_RATE)
+  ok(amode.indexOf("TURNG") === X.AM_TURING && itype.length === X.INS_NTYPE && itype[9] === "BBD1" && js(irate) === js(X.INS_RATE)
     && js(insc) === js(X.INS_DESC.flat().map((x) => x[0])),
     "editor: TURNG, the INSERT's types, CRUSH's RATE names and the A B C labels as params.c");
   const info = { pe0: 91 }, pd = [];

@@ -802,7 +802,7 @@ int main(int argc, char **argv)
         track_t *t = TSEL;
         uint32_t ea = FORGE_FIVE ? ENGI_JUNO : ENGI_ACID, pa = 0, k, eb = 0;   /* (Forge Five: no ACID; JUNO's TURING JUNO) */
         for (k = 0; k < ENGINES[ea]->npresets; k++)
-            if (!strcmp(ENGINES[ea]->presets[k].name, FORGE_FIVE ? "TURING JUNO" : "ACID ARP"))
+            if (!strcmp(ENGINES[ea]->presets[k].name, FORGE_FIVE ? "TURING DCO" : "ACID ARP"))
                 pa = k;
         t->p[P_AMODE] = 0;
         set_engine_of(t, ea); apply_preset_to(t, pa); frames(2);

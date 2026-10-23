@@ -149,7 +149,7 @@ static const preset_t VECTOR_PRESETS[] = {
      XP(P_GLIDE + 1, 16)},
     {"CHOIR VS", {7, 8, 0, 10, 0, 20, VM_SWEEP, 100}, {90, 100, 120, 100}, 0, 0, FX(0, 40, 20, 80)},
     /* 0.9: the filter MODELs (FX > FILTER > MODL), VINTAGE */
-    {"MS20 VECTOR", {2, 11, 3, 12, 20, -20, VM_EIGHTF, 66}, {0, 80, 100, 40}, 30, 1, FX(10, 0, 26, 24),
+    {"DIRTY VECTOR", {2, 11, 3, 12, 20, -20, VM_EIGHTF, 66}, {0, 80, 100, 40}, 30, 1, FX(10, 0, 26, 24),
      XP(P_FMODEL + 1, FM_MS20, P_GLIDE + 1, 18, P_VINT + 1, 30)},
     {"DIODE VS BASS", {2, 3, 4, 0, -50, -50, VM_SWEEPF, 52}, {0, 70, 90, 24}, 40, 1, FX(6, 0, 0, 8),
      XP(P_FMODEL + 1, FM_DIODE, P_VINT + 1, 40)},

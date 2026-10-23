@@ -273,7 +273,7 @@ static void t_juno(void)
         trk_note_on(t, 57, 100);
         run(800);
         s0 = side_ratio(8192, 16384);
-        ok(s1 > 0.15 && s0 < 1e-3 && memcmp(a1, a3, sizeof a1) && !strcmp(N_ITYPE[IT_JUNO1], "JUNO1"),
+        ok(s1 > 0.15 && s0 < 1e-3 && memcmp(a1, a3, sizeof a1) && !strcmp(N_ITYPE[IT_JUNO1], "BBD1"),
            "JUNO chorus as an INSERT (JUNO1, JUN12) on ANALOG: stereo, each its own; MIX 0: mono");
         t->p[P_ITYPE] = 0, t->p[P_IMIX] = 127;
     }

@@ -74,9 +74,9 @@ another identity after the install.
 
 - The boot screen shows the Forge Five mark, the version (`0.1 DEV` or the release's) and "based on clipper + felucca";
   HOME held > SYS > ABOUT shows the credits.
-- The sounds: PRESETS lists the four base engines' sounds (ANALOG, HYBRID, WAVE, JUNO — the bases of the five Forge
+- The sounds: PRESETS lists the four base engines' sounds (ANALOG, HYBRID, WAVE, DCO — the bases of the five Forge
   Five engines to come); play from Move on channel 1 (every channel plays the instrument until a layer or split is on).
-- GLO > SYSTEM shows the CPU: hold eight HYBRID notes, then a JUNO chord with its chorus. Above ~80 % is worth
+- GLO > SYSTEM shows the CPU: hold eight HYBRID notes, then a DCO chord with its chorus. Above ~80 % is worth
   reporting: the voice costs of the engines to come are planned from these numbers.
 - Settings, user presets and projects live in flash outside the firmware image. A Forge Five install over Clipper keeps
   Clipper's: sounds of the engines Forge Five leaves out load silent (ENG_OFF). Take a backup from the web editor first.

@@ -2524,9 +2524,9 @@ function makeMockDevice(opt = {}) {
     { name: "PHASE", titles: ["PHS", "LINE"], edit: [E("WAVE", ["SAW", "SQR", "PLS", "DSIN", "SPLS", "RSAW", "RTRI", "RTRP"], 0),
         E("WAVE2", ["--", "SAW", "SQR", "PLS", "DSIN", "SPLS", "RSAW", "RTRI", "RTRP"], 0), D("DCW", F.PCT, 0, 127, 60), D("ENV", F.PCT, 0, 127, 64),
         D("DTN", F.INT, 0, 127, 0, null, "ct"), E("LINE", ["MIX", "RING"], 0), D("SUB", F.PCT, 0, 127, 0), NONE],
-      presets: [P("CZ BASS", [5, 0, 28, 70, 0, 0, 40, 0], [0, 60, 50, 22], 1), P("SOFT KEYS", [3, 0, 40, 70, 0, 0, 0, 0], [0, 80, 20, 50], 0),
-        P("CZ STRING", [0, 4, 50, 40, 12, 0, 0, 0], [50, 90, 105, 75], 0), P("RESO PLUCK", [5, 0, 60, 60, 0, 0, 0, 0], [0, 70, 30, 60], 0, 1),
-        P("CZ BRASS", [0, 0, 30, 90, 0, 0, 0, 0], [8, 70, 90, 40], 0)] },
+      presets: [P("PD BASS", [5, 0, 28, 70, 0, 0, 40, 0], [0, 60, 50, 22], 1), P("SOFT KEYS", [3, 0, 40, 70, 0, 0, 0, 0], [0, 80, 20, 50], 0),
+        P("PD STRING", [0, 4, 50, 40, 12, 0, 0, 0], [50, 90, 105, 75], 0), P("RESO PLUCK", [5, 0, 60, 60, 0, 0, 0, 0], [0, 70, 30, 60], 0, 1),
+        P("PD BRASS", [0, 0, 30, 90, 0, 0, 0, 0], [8, 70, 90, 40], 0)] },
     { name: "LOFI", titles: ["CHIP", "MOTN"], edit: [E("CHIP", ["4BIT", "4B/2", "8BIT", "1BIT", "STEP"], 0), E("WAVE", ["PLS", "TRI", "SAW", "NOIS", "WRAM"], 0), D("DUTY", F.INT, 0, 127, 64),
         D("CRSH", F.PCT, 0, 127, 0), D("SWP", F.PCT, 0, 127, 0), D("VIB", F.PCT, 0, 127, 0), E("ARP", ["OFF", "OCT", "MAJ", "MIN"], 0), D("TONE", F.PCT, 0, 127, 127)],
       presets: [P("GAME LEAD", [0, 0, 32, 0, 0, 20, 0, 127], [0, 60, 90, 30], 1), P("GB BASS", [1, 1, 0, 0, 0, 0, 0, 90], [0, 50, 70, 20], 1),
@@ -2671,16 +2671,16 @@ function makeMockDevice(opt = {}) {
         ge.names = [...ge.names, "FMX", "WSEQ"];
         if (opt.clipper !== "0.6" && opt.clipper !== "0.7") {   /* Clipper 0.8: JUNO, VECTOR, protocol 13 (the MOD SEQ); 0.9:
                                                      protocol 14 (the TUNING) */
-          ENG.push({ name: "JUNO", titles: ["DCO", "VCF"], edit: [E("WAVE", ["SAW", "PLS", "S+P"], 2), D("PW", F.PCT, 0, 127, 30),
+          ENG.push({ name: "DCO", titles: ["DCO", "VCF"], edit: [E("WAVE", ["SAW", "PLS", "S+P"], 2), D("PW", F.PCT, 0, 127, 30),
             D("SUB", F.PCT, 0, 127, 40), D("NOIS", F.PCT, 0, 127, 0), E("HPF", ["0", "1", "2", "3"], 1), D("CUT", F.CUTOFF, 0, 127, 90),
             D("RES", F.PCT, 0, 127, 20), E("CHOR", ["OFF", "I", "II", "I+II"], 1)],
-            presets: ["JUNO 106 PAD", "JUNO BRASS", "JUNO BASS", "JUNO STRINGS"].map((n, i) => P(n, [[2, 0, 1, 0][i], 40, 40, 0, 1, 88, 20, [1, 0, 0, 2][i]], [70, 100, 115, 95], 0)) });
+            presets: ["DCO PAD", "DCO BRASS", "DCO BASS", "DCO STRINGS"].map((n, i) => P(n, [[2, 0, 1, 0][i], 40, 40, 0, 1, 88, 20, [1, 0, 0, 2][i]], [70, 100, 115, 95], 0)) });
           const VW = ["SINE", "TRI", "SAW", "SQR", "PLS25", "PLS10", "ORGAN", "VOX A", "VOX O", "BELL", "HOLLW", "BRASS", "RESO", "DIGI", "STRNG", "METAL"];
           ENG.push({ name: "VECTOR", titles: ["WAVES", "JOYSTICK"], edit: [E("A", VW, 2), E("B", VW, 7), E("C", VW, 14), E("D", VW, 9),
             D("X", F.BIPCT, -64, 63, 0), D("Y", F.BIPCT, -64, 63, 0),
             E("MOVE", ["OFF", "CIRC", "CIRC+", "8", "8+", "SWEEP", "SWP+", "LOOP", "LOOP+", "RND", "RND+"], 1), D("CUT", F.CUTOFF, 0, 127, 100)],
             presets: ["VS PAD", "VECTOR SWEEP", "VS BRASS", "GLASS VS"].map((n) => P(n, [2, 7, 14, 9, 0, 0, 1, 100], [70, 100, 115, 95], 0)) });
-          ge.names = [...ge.names, "JUNO", "VECTOR"];
+          ge.names = [...ge.names, "DCO", "VECTOR"];
         }
       }
     }
@@ -2688,7 +2688,7 @@ function makeMockDevice(opt = {}) {
   }
   const HY_E = ENG.findIndex((e) => e.name === "HYBRID");
   const FX_E = ENG.findIndex((e) => e.name === "FMX");
-  const JU_E = ENG.findIndex((e) => e.name === "JUNO");   /* (Clipper 0.8: protocol 13, the MOD SEQ) */
+  const JU_E = ENG.findIndex((e) => e.name === "DCO");   /* (Clipper 0.8: protocol 13, the MOD SEQ) */
   const FM6_E = ENG.findIndex((e) => e.name === "FM6"), FM6_BANK = 27, FM6_NPART = 3;
   const v9 = !opt.legacy && !opt.v3 && !opt.noBackup && !opt.v7 && !opt.v8;   /* SLOOP 2.4: FM6 patches */
   const v10 = v9 && !opt.v9;                         /* SLOOP 2.5: the SYN drum kits */

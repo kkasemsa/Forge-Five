@@ -20,7 +20,7 @@ Voices share a budget of eight units (an engine's voice costs what it costs); a 
 engine on CC 16–19, a simple arpeggiator, Clipper's effects, modulation matrix, web editor and installer.
 
 **Status: in development, not yet run on hardware.** The current build (`FF 0.1 DEV`) is Clipper trimmed to the four
-engines the five are built on (ANALOG for its filter models, HYBRID, WAVE, JUNO) plus the first two Forge Five
+engines the five are built on (ANALOG for its filter models, HYBRID, WAVE, DCO: Clipper's one-DCO poly) plus the first two Forge Five
 engines: **LADDER** (three oscillators with RANGE and FREQ on extra pages, the ladder filter, 14 presets) and
 **CHORD-D** (one DCO, the stereo bucket-brigade chorus, chord memory with LEARN, an ENV / GATE amplifier, 5 presets);
 the other engines follow, one release each (the [roadmap](#roadmap)). Install at your own risk, with a way back ready.
