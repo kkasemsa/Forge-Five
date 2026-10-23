@@ -10,6 +10,21 @@ keyboard or sequencer. This guide covers what the current build does; installing
 > edges, keep a way back ready (INSTALL.md, step 6), and report anything odd in the
 > [Issues](https://github.com/kkasemsa/Forge-Five/issues).
 
+**The engines and the instruments they follow**
+
+| Engine | In the style of | For |
+| --- | --- | --- |
+| **LADDER** | Moog Minimoog Model D-style (1970): three oscillators into the four-pole transistor ladder | Berlin School basses and leads |
+| **CHORD-D** | Roland Juno-60 / Juno-106-style: one DCO, sub, four-position high-pass, the BBD chorus I / II / I+II | dub techno chords |
+| **BRASS** | Oberheim SEM-style voice (its filter sweeping low-pass to notch to high-pass) with Sequential Prophet-5-style poly-mod and sync | pads and brass |
+| **RIBBON** | Yamaha CS-80-style: two layers a voice, the ribbon, brilliance and touch | film-score brass, leads and pads |
+| **WAVE-P** (to come) | PPG Wave-style: wavetables stepped without smoothing | digital pads and bells |
+| DCO (base) | Clipper's engine in the Roland Juno-6 / 60 / 106-style | — |
+
+Each engine is written from the published behaviour of those instruments: Forge Five contains none of their code, ROMs,
+wavetables or samples, and is not affiliated with or endorsed by their makers. The names are trademarks of their
+owners, used here only to describe a style; the firmware, its screens and its preset names use neutral names.
+
 **Contents** —
 [1. Getting around](#1-getting-around) ·
 [2. Finding sounds](#2-finding-sounds) ·
@@ -115,6 +130,8 @@ or its MONO / LEGATO note. Both of the FM-1's cores render the voices.
 
 ## 7. LADDER
 
+*In the style of the Moog Minimoog Model D-style monosynth (its oscillator bank, mixer overload and ladder filter).*
+
 **Berlin School basses and leads.** Three oscillators into a four-pole transistor-ladder low-pass, in the manner of the
 classic 1970s three-oscillator portable monosynth. The mixer drives the filter's input: one oscillator stays clean,
 three at full saturate it — the "fat" sound — and OVERLOAD pushes it further. Up to 4 voices a part (VOICE: POLY);
@@ -166,6 +183,9 @@ The loudness envelope is the ENV page (A D S R); glide is on VOICE.
 
 ## 8. CHORD-D
 
+*In the style of the Roland Juno-60 / Juno-106-style DCO polysynths and their bucket-brigade chorus; the chord memory
+follows the dub techno way of playing one-finger chords.*
+
 **Dub techno chords.** One DCO per voice (saw, a pulse whose width moves, or both), a square sub an octave down, noise, a
 four-position high-pass, a 24 dB resonant low-pass, one envelope for filter and amplifier (or the amplifier gated), and a
 stereo **bucket-brigade chorus** (I, II, I+II). Its signature is the **chord memory**: one key plays a whole chord.
@@ -213,6 +233,9 @@ stereo **bucket-brigade chorus** (I, II, I+II). Its signature is the **chord mem
 | CHOR STRINGS | PAD | Saw strings, high-passed, chorus II wide; chord memory off — play the chords by hand |
 
 ## 9. BRASS
+
+*In the style of the Oberheim SEM-style state-variable voice (the module the Two-, Four- and Eight-Voice polysynths
+were built from: SEM-style) and the Sequential Prophet-5-style poly-mod and sync.*
 
 **Pads and brass.** Two oscillators per voice in the manner of the classic late-1970s American two-oscillator polysynths:
 hard sync, **poly-mod**, a 2-pole state-variable filter that sweeps from low-pass through notch to high-pass, a 4-pole
@@ -264,6 +287,8 @@ boards of the originals. 8 voices.
 | ARP PLUCK | PLUCK | Short and bright, for the arpeggiator |
 
 ## 10. RIBBON
+
+*In the style of the Yamaha CS-80-style two-layer polysynth, its ribbon controller and its touch-sensitive brilliance.*
 
 **The big film-score sound.** Two layers per voice in the manner of the classic late-1970s two-layer polysynth with a
 ribbon above its keys. Each layer has its own oscillator, a high-pass into a low-pass, and its own filter envelope;
