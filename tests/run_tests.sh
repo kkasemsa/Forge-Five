@@ -116,6 +116,8 @@ $SYN -include ctype.h -o "$OUT/chordd_test" tests/chordd_test.c -lm
 run "Forge Five CHORD-D: chord memory (MEM, LEARN, SPLIT), VCA GATE, the BBD chorus, RELEASE, the patch, levels, golden" "$OUT/chordd_test"
 $SYN -o "$OUT/brass_test" tests/brass_test.c -lm
 run "Forge Five BRASS: pitch, SYNC, 2P / 4P / BP / notch, poly-mod, AGE, ATTACK / RELEASE, the patch, levels, corners, cost, golden" "$OUT/brass_test"
+$SYN -o "$OUT/ribbon_test" tests/ribbon_test.c -lm
+run "Forge Five RIBBON: two layers, BAL, the ribbon (LAST / ALL, the spring), TOUCH, RING, HPF, the envelopes, the patch, levels, corners, golden" "$OUT/ribbon_test"
 $SYN -o "$OUT/clipper_ui_test" tests/clipper_ui_test.c -lm
 run "Clipper synth: HOME, presets, keys, pages, one track, MIDI omni, no drums / song" "$OUT/clipper_ui_test" "$OUT/clipper"
 $SYN -o "$OUT/clipper_stress" tests/stress_test.c -lm

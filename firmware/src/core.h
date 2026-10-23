@@ -49,7 +49,7 @@ static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /*
 #endif
 #define CLIPPER_NENG 10          /* WAVE ACID STRINGS MACRO VPS TERRAIN FMX WSEQ JUNO VECTOR */
 #if FORGE_FIVE
-#define FF_NENG 3                /* Forge Five's engines, after Clipper's: LADDER, CHORD-D, BRASS (engines.c checks it) */
+#define FF_NENG 4                /* Forge Five's engines, after Clipper's: LADDER, CHORD-D, BRASS, RIBBON (engines.c checks it) */
 #else
 #define FF_NENG 0
 #endif
@@ -67,6 +67,7 @@ static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /*
 #define ENGI_LADDER 23u          /* Forge Five Phase 2: LADDER, three VCOs into a four-pole ladder (eng_ladder.c) */
 #define ENGI_CHORDD 24u          /* Forge Five Phase 3: CHORD-D, one DCO, the BBD chorus, the chord memory (eng_chordd.c) */
 #define ENGI_BRASS 25u           /* Forge Five Phase 4: BRASS, two VCOs, sync, poly-mod, 2P / 4P / BP, AGE (eng_brass.c) */
+#define ENGI_RIBBON 26u          /* Forge Five Phase 5: RIBBON, two layers a voice, the ribbon on K4, TOUCH (eng_ribbon.c) */
 #else
 #define NENGINES (13 + FELUCCA_SLICE)
 #endif

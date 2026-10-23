@@ -78,6 +78,7 @@ static inline int32_t fm_model(const track_t *t)
 #include "eng_ladder.c"         /* LADDER: three VCOs into a four-pole ladder (Forge Five Phase 2) */
 #include "eng_chordd.c"         /* CHORD-D: one DCO, the BBD chorus, the chord memory (Forge Five Phase 3) */
 #include "eng_brass.c"          /* BRASS: two VCOs, sync, poly-mod, 2P / 4P / BP, AGE (Forge Five Phase 4) */
+#include "eng_ribbon.c"         /* RIBBON: two layers a voice, the ribbon on K4, TOUCH (Forge Five Phase 5) */
 #endif
 
 typedef union {
@@ -93,10 +94,12 @@ typedef union {
 #if FORGE_FIVE
     ladder_part_t ladder;                /* eng_ladder.c: the voices' pink noise and drift */
     brass_part_t brass;                  /* eng_brass.c: the voices' DC blockers and AGE walks */
+    ribbon_part_t ribbon;                /* eng_ribbon.c: the voices' envelopes and touch */
 #endif
 } eng_arena_t;
 #if FORGE_FIVE                          /* (Forge Five's engines fit in HYBRID's share: the arena, .pool, does not grow) */
-_Static_assert(sizeof(ladder_part_t) <= sizeof(hy_part_t) && sizeof(brass_part_t) <= sizeof(hy_part_t),
+_Static_assert(sizeof(ladder_part_t) <= sizeof(hy_part_t) && sizeof(brass_part_t) <= sizeof(hy_part_t) &&
+                   sizeof(ribbon_part_t) <= sizeof(hy_part_t),
                "Forge Five: an engine's per-part state larger than HYBRID's grows .pool (engines.c eng_arena_t)");
 #endif
 static eng_arena_t eng_arena[NPART] __attribute__((section(".pool")));
@@ -165,10 +168,11 @@ static const engine_t *const ENGINES[NENGINES] = {&ENG_ANALOG, &ENG_DIGITAL, &EN
                                                     &ENG_LADDER,                           /* 23 (ENGI_LADDER) */
                                                     &ENG_CHORDD,                           /* 24 (ENGI_CHORDD) */
                                                     &ENG_BRASS,                            /* 25 (ENGI_BRASS) */
+                                                    &ENG_RIBBON,                           /* 26 (ENGI_RIBBON) */
 #endif
 };
 #if FORGE_FIVE                                          /* (FF_NENG: the last engine's number + 1 is NENGINES) */
-_Static_assert(ENGI_BRASS + 1u == NENGINES && sizeof(ENGINES) / sizeof(ENGINES[0]) == NENGINES,
+_Static_assert(ENGI_RIBBON + 1u == NENGINES && sizeof(ENGINES) / sizeof(ENGINES[0]) == NENGINES,
                "Forge Five: FF_NENG counts its engines (core.h)");
 #endif
 #if CLIPPER_SYNTH
@@ -204,7 +208,7 @@ _Static_assert(ENGI_GRAIN == 8u && ENGI_PHYS == 10u && ENGI_NOISE == 11u && ENGI
 #if FORGE_FIVE
 static const xp_info_t *eng_xp(uint32_t e)   /* the engine's extra values, 0 = none (Clipper's engines) */
 {
-    return e == ENGI_LADDER ? &LADDER_XPI : e == ENGI_CHORDD ? &CHORDD_XPI : e == ENGI_BRASS ? &BRASS_XPI : 0;
+    return e == ENGI_LADDER ? &LADDER_XPI : e == ENGI_CHORDD ? &CHORDD_XPI : e == ENGI_BRASS ? &BRASS_XPI : e == ENGI_RIBBON ? &RIBBON_XPI : 0;
 }
 #endif
 /* Forge Five: the cost of one voice of engine e in the shared budget (voice.c), Q4: 16 = one unit (Clipper's engines).
@@ -217,6 +221,8 @@ static uint32_t eng_weight(uint32_t e)
 #if FORGE_FIVE
     if (e == ENGI_LADDER)
         return 20u;
+    if (e == ENGI_RIBBON)
+        return 32u;                     /* (2.0: the spec's, provisional until measured on the unit) */
 #else
     (void)e;
 #endif

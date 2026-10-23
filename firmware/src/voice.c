@@ -1301,7 +1301,7 @@ static int vs_ok(const engine_t *e)                 /* its render may run on two
            e == &ENG_PHASE || e == &ENG_DIGITAL || e == &ENG_LOFI || e == &ENG_ACID || e == &ENG_JUNO || e == &ENG_VECTOR
 #if FORGE_FIVE      /* (Forge Five: their renders write their voice and its own slot of the part's arena only; the arena
                      * is claimed in their block hooks, on this core, before the voices are handed over) */
-           || e == &ENG_LADDER || e == &ENG_CHORDD || e == &ENG_BRASS
+           || e == &ENG_LADDER || e == &ENG_CHORDD || e == &ENG_BRASS || e == &ENG_RIBBON
 #endif
         ;
 }
