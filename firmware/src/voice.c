@@ -1279,7 +1279,12 @@ static int vs_ok(const engine_t *e)                 /* its render may run on two
 {
     return e == &ENG_HYBRID || e == &ENG_FMX || e == &ENG_WAVE || e == &ENG_ANALOG || e == &ENG_FM6 || e == &ENG_VPS ||
            e == &ENG_TERRAIN || e == &ENG_WSEQ || e == &ENG_MACRO || e == &ENG_STRINGS || e == &ENG_TRIO ||
-           e == &ENG_PHASE || e == &ENG_DIGITAL || e == &ENG_LOFI || e == &ENG_ACID || e == &ENG_JUNO || e == &ENG_VECTOR;
+           e == &ENG_PHASE || e == &ENG_DIGITAL || e == &ENG_LOFI || e == &ENG_ACID || e == &ENG_JUNO || e == &ENG_VECTOR
+#if FORGE_FIVE      /* (Forge Five: their renders write their voice and its own slot of the part's arena only; the arena
+                     * is claimed in their block hooks, on this core, before the voices are handed over) */
+           || e == &ENG_LADDER || e == &ENG_CHORDD || e == &ENG_BRASS
+#endif
+        ;
 }
 static void vs_finish(track_t *t, const engine_t *e, int32_t *out, uint32_t n)
 {
