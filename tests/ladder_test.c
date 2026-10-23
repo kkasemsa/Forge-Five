@@ -25,7 +25,7 @@
 #define NFFT 16384
 #define LADDER_COST_MAX 6.0             /* x Clipper's ANALOG on the host (its ANALOG is ~1.6 x lighter than Felucca's
                                          * there: LADDER measured 2.7 x Felucca's). The weight in the budget (engines.c
-                                         * eng_weight: 2.5) waits for the unit (spec v0.3 section 3) */
+                                         * eng_weight: 1.25) is the FM-1's measure, not this one */
 
 static int bad;
 static void check(const char *what, int ok)

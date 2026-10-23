@@ -172,6 +172,53 @@ int main(void)
         blocks(2);
     }
     ok(sounding(0) <= NVOICE && voices_cost() <= VOICE_BUDGET, "eleven keys: never past the budget");
+    /* the weights measured on the FM-1 (engines.c eng_weight): LADDER 1.25, BRASS and CHORD-D one unit */
+    ok(eng_weight(ENGI_LADDER) == 20u && eng_weight(ENGI_BRASS) == 16u && eng_weight(ENGI_CHORDD) == 16u,
+       "the weights: LADDER 1.25 units, BRASS and CHORD-D 1.0 (measured on the FM-1)");
+    memset(trk, 0, sizeof trk);                         /* (the HYBRID keys above still held: from silence) */
+    host_tracks_init();
+    for (i = 0; i < NPART; i++)
+        host_preset(&trk[i], ENGI_LADDER, 0);
+    trk[1].p[P_LYMODE] = LY_LAYER;                      /* (both parts LADDER: past one part's cap of four) */
+    trk[0].p[P_VOICE] = trk[1].p[P_VOICE] = V_POLY;
+    for (k = 0; k < 6u; k++) {
+        trk_note_on(&trk[0], 48 + 2 * k, 100);
+        blocks(2);
+    }
+    ok(sounding(0) + sounding(1) <= 6u && voices_cost() <= VOICE_BUDGET && voices_cost() >= 6u * 20u - 20u,
+       "the budget with LADDER on both parts: six voices at most (1.25 each: 7.5 of the 8 units)");
+    {   /* random keys on two parts of mixed weights, LAYER and SPLIT: never past the budget after a note-on (a voice
+         * given up for another part and fading out was restarted unchecked: 30 % of the note-ons went over) */
+        static const uint32_t E[4] = {ENGI_LADDER, ENGI_HYBRID, ENGI_BRASS, ENGI_CHORDD};
+        uint32_t trial, over = 0, notes = 0, rs = 12345u;
+#define FF_RND(n) ((rs = rs * 1664525u + 1013904223u), (rs >> 8) % (n))
+        for (trial = 0; trial < 300u; trial++) {
+            uint8_t down[128] = {0};
+            memset(trk, 0, sizeof trk);
+            host_tracks_init();
+            host_preset(&trk[0], E[FF_RND(4u)], 0);
+            host_preset(&trk[1], E[FF_RND(4u)], 0);
+            trk[0].xp[CX_CHORD] = trk[1].xp[CX_CHORD] = 0;   /* (a CHORD-D: its keys alone) */
+            trk[1].p[P_LYMODE] = FF_RND(2u) ? LY_LAYER : LY_SPLIT;
+            trk[0].p[P_VOICE] = trk[1].p[P_VOICE] = V_POLY;
+            for (k = 0; k < 40u; k++) {
+                uint32_t n = 36u + FF_RND(40u);
+                if (down[n]) {
+                    trk_note_off(&trk[0], n);
+                    down[n] = 0;
+                } else {
+                    trk_note_on(&trk[0], n, 100);
+                    down[n] = 1;
+                    notes++;
+                    over += voices_cost() > VOICE_BUDGET;
+                }
+                blocks(1u + FF_RND(3u));
+            }
+        }
+#undef FF_RND
+        printf("ff_store:   (%u note-ons on two parts of mixed weights, %u past the budget)\n", notes, over);
+        ok(!over, "the budget: random keys on two parts of mixed weights, LAYER and SPLIT: never past it");
+    }
 
     printf("ff_store: %s\n", fails ? "FAILED" : "all passed");
     return fails ? 1 : 0;

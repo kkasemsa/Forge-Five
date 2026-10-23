@@ -435,7 +435,7 @@ static const engine_t ENG_LADDER = {
     .fil_page = 0,
     .color = 0xFD20,             /* the hot flame */
     .macro = {P_E0, P_E1, P_E2, P_GLIDE},
-    .poly = 4,                   /* POLY and UNISON: at most four (a voice costs ~2.5 x ANALOG's; tests/ladder_test.c) */
+    .poly = 4,                   /* POLY and UNISON: at most four (a voice ~9 % of the FM-1's CPU: engines.c eng_weight) */
     .block = ladder_block,
 };
 _Static_assert(NELEM(LADDER_XP) == NELEM(LADDER_PRESETS), "LADDER: a row of extra values per preset");
