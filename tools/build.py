@@ -253,6 +253,10 @@ def check(img, syms, dis, rt):
                 errors.append(f"reference to ROM address {val:#010x}")
     if len(img) > APP_SLOT:
         errors.append(f"image {len(img)} B exceeds the app slot")
+    # (Forge Five) the FM-1's runtime has no 64-bit divide or modulo: none of their helpers may reach the image
+    di3 = sorted(set(re.findall(r"\b(__u?(?:div|mod)di3)\b", syms + dis)))
+    if di3:
+        errors.append(f"64-bit division helpers in the image: {', '.join(di3)} (divide in 32 bits)")
 
     def sym(name):
         mm = re.search(r"^([0-9a-f]+) .*\s" + name + r"$", syms, re.M)

@@ -48,7 +48,12 @@ static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /*
 #error "SLICE is a groovebox engine (CLIPPER_SYNTH 0)"
 #endif
 #define CLIPPER_NENG 10          /* WAVE ACID STRINGS MACRO VPS TERRAIN FMX WSEQ JUNO VECTOR */
-#define NENGINES (13 + CLIPPER_NENG + FORGE_FIVE)   /* Forge Five: its engines after Clipper's (append-only) */
+#if FORGE_FIVE
+#define FF_NENG 2                /* Forge Five's engines, after Clipper's: LADDER, CHORD-D (engines.c checks the count) */
+#else
+#define FF_NENG 0
+#endif
+#define NENGINES (13 + CLIPPER_NENG + FF_NENG)   /* Forge Five: its engines after Clipper's (append-only) */
 #define ENGI_WAVE 13u            /* Clipper 0.2: wavetables (eng_wave.c) */
 #define ENGI_ACID 14u            /*   a 303-style bass line (eng_acid.c) */
 #define ENGI_STRINGS 15u         /*   a string machine (eng_strings.c) */
@@ -60,6 +65,7 @@ static inline int voice_poly(int m) { return m == V_POLY || m >= V_PUNI2; }   /*
 #define ENGI_JUNO 21u            /* Clipper 0.8: the Juno poly and its chorus (eng_juno.c, fx.c juno_chorus) */
 #define ENGI_VECTOR 22u          /*   vector synthesis: four waves, a joystick (eng_vector.c, after the Prophet VS) */
 #define ENGI_LADDER 23u          /* Forge Five Phase 2: LADDER, three VCOs into a four-pole ladder (eng_ladder.c) */
+#define ENGI_CHORDD 24u          /* Forge Five Phase 3: CHORD-D, one DCO, the BBD chorus, the chord memory (eng_chordd.c) */
 #else
 #define NENGINES (13 + FELUCCA_SLICE)
 #endif

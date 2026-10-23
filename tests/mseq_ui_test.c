@@ -144,7 +144,7 @@ int main(int argc, char **argv)
         }
         ok(juno == ENGINES[ENGI_JUNO]->npresets && vec == ENGINES[ENGI_VECTOR]->npresets,
            "PRESETS: every JUNO and VECTOR preset in the list");
-        ok(!strcmp(N_ENGNAME[ENGI_JUNO], "JUNO") && !strcmp(N_ENGNAME[ENGI_VECTOR], "VECTOR"), "ENG: JUNO and VECTOR named");
+        ok(!strcmp(N_ENGNAME[ENGI_JUNO], "DCO") && !strcmp(N_ENGNAME[ENGI_VECTOR], "VECTOR"), "ENG: JUNO and VECTOR named");
         set_engine_of(t, ENGI_JUNO);
         apply_preset_to(t, 0);
         frames(3);
@@ -171,7 +171,7 @@ int main(int argc, char **argv)
         ui.force = 1;
         frame();
         ppm("mseq-insert-juno");
-        ok(!strcmp(N_ITYPE[IT_JUNO12], "JUN12") && !strcmp(ins_desc(IT_JUNO1, 0)->label, "WIDTH"),
+        ok(!strcmp(N_ITYPE[IT_JUNO12], "BBD12") && !strcmp(ins_desc(IT_JUNO1, 0)->label, "WIDTH"),
            "INSERT: JUNO1 JUNO2 JUN12, their A B C: WIDTH TONE NOISE");
         t->p[P_ITYPE] = 0;
     }

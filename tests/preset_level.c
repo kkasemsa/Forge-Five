@@ -11,7 +11,7 @@ enum { R_BASS, R_HELD, R_COMP, R_MELODY, R_ONE };
 static int has(const char *n, const char *w) { return strstr(n, w) != 0; }
 static int role_of(const char *n)
 {
-    if (has(n, "BASS") || has(n, "808") || has(n, "TAURUS") || has(n, "ACID") || has(n, "REESE") || has(n, "WOBBLE") || has(n, "SUB") || has(n, "BOOM"))
+    if (has(n, "BASS") || has(n, "808") || has(n, "PEDAL BASS") || has(n, "ACID") || has(n, "REESE") || has(n, "WOBBLE") || has(n, "SUB") || has(n, "BOOM"))
         return R_BASS;
     if (has(n, "PAD") || has(n, "STR") || has(n, "CHOIR") || has(n, "OOH") || has(n, "ORGAN") || has(n, "ORGN") || has(n, "GOSPEL") ||
         has(n, "B3") || has(n, "CLOUD") || has(n, "HAZE") || has(n, "ATMOS") || has(n, "ENSEMBLE") || has(n, "DRONE") ||

@@ -111,6 +111,15 @@ static void host_preset_req(track_t *t, uint32_t e, uint32_t pi)
     t->eng_req = (uint8_t)e;
     t->preset = (uint8_t)(pi % ENGINES[e]->npresets);
 #if FORGE_FIVE
+    for (i = 0; i < P_E0; i++)                    /* the rest of the sound to its defaults, as ui.c apply_preset_to does
+                                                   * (param_kept: the part's own values stay): no extras of the sound
+                                                   * before (a VINTAGE, an LFO rate) carry into this one */
+        if (!(i == P_LEVEL || i == P_PAN || i == P_MUTE || (i >= P_SLEN && i <= P_SGATE) ||
+              (i >= P_ROOT && i <= P_QUANT) || i == P_CHORD || i == P_TFLT || i == P_STRUM || i == P_VLEAD ||
+              i == P_MAXV))
+            t->p[i] = TP[i].def;
+#endif
+#if FORGE_FIVE
     xp_load(t, (int32_t)(pi % ENGINES[e]->npresets));   /* (the engine patch: the preset's extra values) */
 #endif
     for (i = 0; i < 8u; i++)

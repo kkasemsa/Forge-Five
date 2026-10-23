@@ -126,7 +126,7 @@ static double rms(uint32_t a, uint32_t n)
     return sqrt(e / n);
 }
 
-static const char *const MN[9] = {"", "SVF", "LADDR", "MS20", "DIODE", "2POLE", "NOTCH", "BP", "HP"};
+static const char *const MN[9] = {"", "SVF", "LADDR", "SKEY", "DIODE", "2POLE", "NOTCH", "BP", "HP"};
 static void t_models(void)
 {
     static const uint32_t engs[3] = {0, ENGI_WAVE, ENGI_VECTOR};

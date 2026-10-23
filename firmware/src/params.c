@@ -32,7 +32,7 @@ static const char *const N_SLCR[] = {"OFF", "GATE", "STUT"};             /* SL_O
 #if FORGE_FIVE
 static const char *const N_MAXV[] = {"ALL", "1", "2", "3", "4", "5", "6", "7", "8"};   /* P_MAXV */
 #endif
-static const char *const N_FMODEL[] = {"SVF", "LADDR", "MS20", "DIODE", "2POLE", "NOTCH", "BP", "HP"};   /* P_FMODEL: FM_* */
+static const char *const N_FMODEL[] = {"SVF", "LADDR", "SKEY", "DIODE", "2POLE", "NOTCH", "BP", "HP"};   /* P_FMODEL: FM_* */
 static const char *const N_SLDIV[] = {"1/8", "1/16", "1/32", "8T", "16T", "32T"};   /* SL_DEN */
 static const char *const N_CHORD[] = {"OFF", "TRIAD", "7TH", "9TH", "SUS4", "POWER"};   /* seq.c CHORD_DEG */
 static const char *const N_RTYPE[] = {"ROOM", "PLATE", "HALL", "SHIMR"};   /* (1.0: HALL, SHIMMER) */
@@ -43,7 +43,7 @@ static const char *const N_MODDST[] = {"OFF", "VIB", "CUT", "SHP", "WAH", "TREM"
 /* Clipper 0.6: the INSERT's types (fx.c IT_*; SLOOP 2.6's, same order: a SLOOP 2.6 sound keeps its INSERT). Its three
  * values A B C mean what the type says (ins_desc) */
 static const char *const N_ITYPE[] = {"OFF", "SOFT", "HARD", "FOLD", "FUZZ", "CRUSH", "PHASR", "FLANG", "CHOR",
-                                     "JUNO1", "JUNO2", "JUN12"};   /* (0.8: the JUNO chorus, I II I+II, on any sound) */
+                                     "BBD1", "BBD2", "BBD12"};   /* (0.8: the JUNO chorus, I II I+II, on any sound) */
 /* CRUSH: BITS 1..16 and RATE (the held sample's rate) over the range in 16 even parts (0-terminated) */
 static const char *const N_IBITS[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15",
                                       "16", 0};
@@ -67,10 +67,10 @@ static const char *const N_ENGNAME[] = {"ANALOG", "DIGITAL", "PHASE", "LOFI", "S
 #endif
 #if CLIPPER_SYNTH
                                         "WAVE", "ACID", "STRINGS", "MACRO", "VPS", "TERRAIN", "FMX", "WSEQ",
-                                        "JUNO", "VECTOR",
+                                        "DCO", "VECTOR",
 #endif
 #if FORGE_FIVE
-                                        "LADDER",
+                                        "LADDER", "CHORD-D",
 #endif
 };
 
