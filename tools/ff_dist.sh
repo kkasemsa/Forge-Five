@@ -35,10 +35,10 @@ UV=$(sed -n 's/^#define FELUCCA_VERSION *"\([^"]*\)".*/\1/p' firmware/src/ui.c)
     echo "ref         $REF"
     echo "run         $RUN"
     echo "built       $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-    echo "engines     $(git -C firmware/engines rev-parse HEAD 2>/dev/null || echo unknown) (Felucca-Engines, MIT)"
+    echo "base        Clipper 1.1 (isod89/clipper-fm1 e69067211c4690f34e494b5b896e4585163dcc2b)"
     echo "build flags $(env | grep -o '^FELUCCA_[A-Z0-9_]*=[0-9]' | sort | tr '\n' ' ')(unset: the defaults in firmware/src/ui.c / core.h)"
     echo "host tests  $TESTS"
-    echo "source      https://github.com/kkasemsa/Forge-Five (branch main); upstream https://github.com/hugelton/Felucca"
+    echo "source      https://github.com/kkasemsa/Forge-Five (branch main); upstream https://github.com/isod89/clipper-fm1"
     echo "licence     GPL-3.0-only (LICENSE, LICENSING.md, LICENSES/)"
 } > "$D/MANIFEST.txt"
 (cd "$D" && sha256sum forge-five.fwsc forge-five.bin loader/ota.bin MANIFEST.txt > SHA256SUMS)

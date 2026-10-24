@@ -117,7 +117,7 @@ jobs:
       # The installable firmware is published only after the build AND the host tests passed (a failed run keeps its
       # logs under another name, below). dist/ is what a release ships: the package, the app, the loader, checksums,
       # a manifest, the licence texts and the sample attribution (LICENSING.md: the package carries Apache-2.0 SDK
-      # files and MIT engines, so their texts travel with it).
+      # files and MIT-licensed code, so their texts travel with it).
       - name: Distribution
         run: sh tools/ff_dist.sh build/dist "${{ github.sha }}" "${{ github.ref_name }}" "${{ github.run_id }}" passed
 
@@ -147,7 +147,7 @@ jobs:
           if-no-files-found: ignore
 
       # A tag ff-X.Y: the release carries the package, the checksums, the distribution folder (licences, manifest)
-      # and the whole source with the engines submodule's files (GitHub's own source archive leaves it empty)
+      # and the whole source
       - name: Release
         if: startsWith(github.ref, 'refs/tags/ff-')
         env:
@@ -162,4 +162,4 @@ jobs:
           gh release create "$GITHUB_REF_NAME" "build/forge-five-$V.fwsc" build/dist/SHA256SUMS build/dist/MANIFEST.txt \
             "build/forge-five-$V-dist.zip" "build/forge-five-$V-source.tar.gz" \
             --title "Forge Five FF $V" \
-            --notes "Forge Five FF $V: classic synths with their real front panels on four MIDI channels, on Felucca 1.6.1. GPL-3.0; the licence texts are in the dist zip, the source tarball has the engines submodule. Install at your own risk: python3 tools/fm1_install.py forge-five-$V.fwsc"
+            --notes "Forge Five FF $V: a synthesizer firmware for the M-VAVE FM-1, five engines tuned each to one kind of music on two parts (layer or split), based on Clipper (isod89 / 3dSam), SLOOP and Felucca (Leo Kuroshita / Huegelton Instruments). Not affiliated with M-VAVE. GPL-3.0-only; the licence texts are in the dist zip, the whole source in the tarball. Install at your own risk: python3 tools/fm1_install.py forge-five-$V.fwsc"
