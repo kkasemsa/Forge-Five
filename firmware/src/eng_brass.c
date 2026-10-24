@@ -368,9 +368,9 @@ static const brass_xp_t BRASS_XP[NELEM(BRASS_PRESETS)] = {
     {{BW_SAW, 64, 1, 120, BW_PLS, 44, 1, 110, 0, 0, 0, 50, 60, 90, 100, 90, 0, 1, 0, 40, 0, 1, 0, 0}},
     /* POLYMOD BELL: B a fifth and an octave up into A's frequency: an inharmonic, decaying ring */
     {{BW_TRI, 64, 1, 127, BW_TRI, 64, 2, 0, 56, 0, 0, 0, 0, 90, 0, 80, 0, 2, 0, 16, 20, 1, 0, 0}},
-    /* STACK BRASS: the 24 dB ladder, two saws, more age */
+    /* STACK BRASS: the 24 dB filter (4P), two saws, more age */
     {{BW_SAW, 64, 1, 127, BW_SAW, 64, 0, 100, 0, 0, 0, 0, 16, 72, 70, 50, 0, 1, 24, 50, 0, 1, 0, 0}},
-    /* STRINGS: saws at 8' and 4', slow */
+    /* SOFT STRINGS: saws at 8' and 4', slow */
     {{BW_SAW, 64, 1, 127, BW_SAW, 64, 2, 70, 0, 0, 0, 0, 50, 80, 110, 80, 0, 1, 0, 30, 0, 1, 0, 0}},
     /* NOTCH SWEEP: MODE at the notch, the LFO on the cutoff, a little noise */
     {{BW_SAW, 64, 1, 127, BW_SAW, 64, 1, 110, 0, 0, 10, 0, 80, 100, 90, 90, 64, 1, 0, 24, 0, 1, 0, 0}},
@@ -378,7 +378,7 @@ static const brass_xp_t BRASS_XP[NELEM(BRASS_PRESETS)] = {
     {{BW_PLS, 60, 1, 127, BW_PLS, 50, 1, 120, 0, 0, 0, 90, 70, 90, 110, 95, 0, 1, 0, 30, 0, 1, 0, 0}},
     /* BP PLUCK: the band-pass, resonant */
     {{BW_SAW, 64, 1, 127, BW_SAW, 64, 1, 110, 0, 0, 0, 0, 0, 64, 0, 40, 0, 2, 30, 20, 0, 1, 0, 0}},
-    /* POLY BASS: a saw and a square an octave down, the ladder */
+    /* POLY BASS: a saw and a square an octave down, the 24 dB filter (4P) */
     {{BW_BOTH, 60, 0, 127, BW_SAW, 64, 0, 90, 0, 0, 0, 0, 0, 56, 50, 36, 0, 1, 20, 16, 0, 1, 0, 0}},
     /* GROWL: OSC B into the cutoff (poly-mod to the filter) and A's pitch: a snarling bass-lead */
     {{BW_SAW, 64, 0, 127, BW_SAW, 64, 0, 40, 3, 0, 0, 0, 0, 60, 80, 40, 0, 1, 20, 20, 0, 1, 0, 1}},
