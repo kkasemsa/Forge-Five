@@ -21,12 +21,13 @@ engine on CC 16–19, a simple arpeggiator, Clipper's effects, modulation matrix
 
 **Status: in development, first measures on the FM-1 done (23 Oct 2026).** The current build (`FF 0.1 DEV`) is Clipper
 trimmed to the four engines the five are built on (ANALOG for its filter models, HYBRID, WAVE, DCO: Clipper's
-one-DCO poly) plus four Forge Five engines: **LADDER** (three oscillators, the ladder filter, 14 presets), **CHORD-D**
+one-DCO poly) plus the five Forge Five engines: **LADDER** (three oscillators, the ladder filter, 14 presets), **CHORD-D**
 (one DCO, the stereo bucket-brigade chorus, chord memory with LEARN, 5 presets), **BRASS** (two oscillators, sync,
-poly-mod, a 2-pole filter sweeping low-pass to notch to high-pass, 4-pole and band-pass, per-voice AGE, 13 presets) and
+poly-mod, a 2-pole filter sweeping low-pass to notch to high-pass, 4-pole and band-pass, per-voice AGE, 13 presets),
 **RIBBON** (two layers a voice, a pitch ribbon on K4 that springs back, brilliance from the touch, ring and sub, 8
-presets); WAVE-P follows (the [roadmap](#roadmap)). Their voices run on both cores; the voice budget's weights come
-from the unit (docs/INSTALL.md). Install at your own risk, with a way back ready.
+presets) and **WAVE-P** (eight 8-bit wavetables of 64 waves made by formula, STEP and SMOOTH, two oscillators, a wave
+envelope, a 24 dB filter, 9 presets). Their voices run on both cores; the voice budget's weights come from the unit
+(docs/INSTALL.md; WAVE-P's is still the spec's). Install at your own risk, with a way back ready.
 
 - **Install:** [docs/INSTALL.md](docs/INSTALL.md) — GitHub builds the package, one script sends it to the FM-1.
 - **Play:** [docs/USER-GUIDE.md](docs/USER-GUIDE.md) — getting around, the two parts, the voice budget, every engine's
@@ -46,8 +47,8 @@ from the unit (docs/INSTALL.md). Install at your own risk, with a way back ready
 | 3 | 0.2 | CHORD-D |
 | 4 | 0.3 | BRASS, AGE |
 | 5 | 0.4 | RIBBON (the ribbon on K4, TOUCH from velocity and the time a key is held) |
-| 6 | 0.5 | WAVE-P |
-| 7 | 1.0 | MORPH A/B, the presets, the editor, a Thai manual; and, moved here from Phase 5: the encoder turned while a key is held as a per-note expression, the 8-slot modulation matrix (spec v0.2 section 4) |
+| 6 | 0.5 | WAVE-P (STEP / SMOOTH, BITS, the wave envelope; tables from formulas, no import yet: Phase 7) |
+| 7 | 1.0 | MORPH A/B, the presets, the editor (and WAVE-P tables sent from it), a Thai manual; and, moved here from Phase 5: the encoder turned while a key is held as a per-note expression, the 8-slot modulation matrix (spec v0.2 section 4) |
 
 The earlier Forge Five, built on Felucca 1.6.1 with four parts (FF 0.2: the LADDER engine, the engine patch, a MULTI page),
 is kept on the branch `archive/felucca-base` and the tag `ff-0.2-felucca`; its LADDER, voice budget, macros and engine

@@ -176,6 +176,7 @@ int main(void)
     ok(eng_weight(ENGI_LADDER) == 20u && eng_weight(ENGI_BRASS) == 16u && eng_weight(ENGI_CHORDD) == 16u &&
            eng_weight(ENGI_RIBBON) == 16u,
        "the weights: LADDER 1.25 units, BRASS, CHORD-D and RIBBON 1.0 (measured on the FM-1)");
+    ok(eng_weight(ENGI_WAVEP) == 21u, "the weights: WAVE-P 1.3 units (the spec's, until measured on the FM-1)");
     memset(trk, 0, sizeof trk);                         /* (the HYBRID keys above still held: from silence) */
     host_tracks_init();
     for (i = 0; i < NPART; i++)

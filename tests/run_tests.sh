@@ -49,6 +49,7 @@ mkdir -p build/gen
 [ build/gen/felucca_tables.h -nt tools/gen_tables.py ] || python3 tools/gen_tables.py build/gen/felucca_tables.h
 [ build/gen/felucca_fm6.h -nt tools/gen_fm6_patches.py ] || python3 tools/gen_fm6_patches.py build/gen/felucca_fm6.h
 python3 tools/gen_wavetables.py build/gen/felucca_wavetables.h >/dev/null   # (cached: only when the script changed)
+python3 tools/gen_wavep_tables.py build/gen/forge_wavep.h >/dev/null        # (Forge Five WAVE-P; cached the same way)
 
 $CC -o "$OUT/storage_test" tests/storage_test.c
 run "flash storage (A/B, torn writes)" "$OUT/storage_test"
@@ -118,6 +119,8 @@ $SYN -o "$OUT/brass_test" tests/brass_test.c -lm
 run "Forge Five BRASS: pitch, SYNC, 2P / 4P / BP / notch, poly-mod, AGE, ATTACK / RELEASE, the patch, levels, corners, cost, golden" "$OUT/brass_test"
 $SYN -o "$OUT/ribbon_test" tests/ribbon_test.c -lm
 run "Forge Five RIBBON: two layers, BAL, the ribbon (LAST / ALL, the spring), TOUCH, RING, HPF, the envelopes, the patch, levels, corners, golden" "$OUT/ribbon_test"
+$SYN -o "$OUT/wavep_test" tests/wavep_test.c -lm
+run "Forge Five WAVE-P: the tables, pitch, STEP (a wave a cycle) and SMOOTH, the position, BITS, the 24 dB filter, the patch, levels, corners, golden" "$OUT/wavep_test"
 $SYN -o "$OUT/clipper_ui_test" tests/clipper_ui_test.c -lm
 run "Clipper synth: HOME, presets, keys, pages, one track, MIDI omni, no drums / song" "$OUT/clipper_ui_test" "$OUT/clipper"
 $SYN -o "$OUT/clipper_stress" tests/stress_test.c -lm

@@ -1301,7 +1301,7 @@ static int vs_ok(const engine_t *e)                 /* its render may run on two
            e == &ENG_PHASE || e == &ENG_DIGITAL || e == &ENG_LOFI || e == &ENG_ACID || e == &ENG_JUNO || e == &ENG_VECTOR
 #if FORGE_FIVE      /* (Forge Five: their renders write their voice and its own slot of the part's arena only; the arena
                      * is claimed in their block hooks, on this core, before the voices are handed over) */
-           || e == &ENG_LADDER || e == &ENG_CHORDD || e == &ENG_BRASS || e == &ENG_RIBBON
+           || e == &ENG_LADDER || e == &ENG_CHORDD || e == &ENG_BRASS || e == &ENG_RIBBON || e == &ENG_WAVEP
 #endif
         ;
 }
@@ -1376,6 +1376,14 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
      * SPACE (fx.c: the reverb and delay sends, and SPREAD); SPREAD: the voices' gains from the last block's to this
      * one's */
     int32_t mac1 = clamp(t->p[P_MAC1], -64, 63), mac2 = clamp(t->p[P_MAC2], -64, 63), mac3 = clamp(t->p[P_MAC3], 0, 127);
+#if FORGE_FIVE      /* (Forge Five) BRITE's cutoff glides to a new value over a few blocks (~3 ms): a jump of the knob or
+                     * of CC 16 moved a resonant filter 2.5 octaves in one block, and could click (clean_test) */
+    static int32_t mac1_q8[NTRK];
+    int32_t *mq = &mac1_q8[(uint32_t)(t - trk) % NTRK];
+    *mq += ((mac1 << 8) - *mq) >> 2;
+    if ((*mq >> 2) == (mac1 << 6))
+        *mq = mac1 << 8;
+#endif
     int32_t spr = clamp(t->p[P_SPREAD] + clamp(t->p[P_MAC4], 0, 127) / 2, 0, 127), spr0 = t->spr;
     int sided = (uint32_t)(t - trk) < NPART && (spr || spr0);
 #endif
@@ -1603,7 +1611,11 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
             if (p[P_ATDST] == MD_SHP)
                 m.shape += a * 128;
             m.cutoff += clamp(mcut, -32767, 32767);    /* the matrix */
+#if FORGE_FIVE
+            m.cutoff += (*mq * 160) >> 8;               /* (1.0) BRITE: +-40 steps (about +-2.5 octaves), glided */
+#else
             m.cutoff += mac1 * 160;                     /* (1.0) BRITE: +-40 steps (about +-2.5 octaves) */
+#endif
             if (mac3)                                   /* .. MOTN: LFO 3 on the cutoff, up to +-24 steps */
                 m.cutoff += (l3free * mac3) >> 10;
             m.shape = clamp(m.shape + mac2 * 128, 0, 127 << 8);   /* .. TIMBR: +-32 steps of the shape */
