@@ -172,9 +172,10 @@ int main(void)
         blocks(2);
     }
     ok(sounding(0) <= NVOICE && voices_cost() <= VOICE_BUDGET, "eleven keys: never past the budget");
-    /* the weights measured on the FM-1 (engines.c eng_weight): LADDER 1.25, BRASS and CHORD-D one unit */
-    ok(eng_weight(ENGI_LADDER) == 20u && eng_weight(ENGI_BRASS) == 16u && eng_weight(ENGI_CHORDD) == 16u,
-       "the weights: LADDER 1.25 units, BRASS and CHORD-D 1.0 (measured on the FM-1)");
+    /* the weights measured on the FM-1 (engines.c eng_weight): LADDER 1.25, BRASS, CHORD-D and RIBBON one unit */
+    ok(eng_weight(ENGI_LADDER) == 20u && eng_weight(ENGI_BRASS) == 16u && eng_weight(ENGI_CHORDD) == 16u &&
+           eng_weight(ENGI_RIBBON) == 16u,
+       "the weights: LADDER 1.25 units, BRASS, CHORD-D and RIBBON 1.0 (measured on the FM-1)");
     memset(trk, 0, sizeof trk);                         /* (the HYBRID keys above still held: from silence) */
     host_tracks_init();
     for (i = 0; i < NPART; i++)
