@@ -221,8 +221,6 @@ static uint32_t eng_weight(uint32_t e)
 #if FORGE_FIVE
     if (e == ENGI_LADDER)
         return 20u;
-    if (e == ENGI_RIBBON)
-        return 32u;                     /* (2.0: the spec's, provisional until measured on the unit) */
 #else
     (void)e;
 #endif

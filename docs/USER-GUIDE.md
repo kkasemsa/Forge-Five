@@ -112,7 +112,7 @@ The two parts share **8 voices' worth of CPU**. A voice of a heavier engine cost
 | LADDER | 1.25 | 6 (4 a part) | 4 notes: 44 % |
 | CHORD-D | 1 | 8 | 8 voices: 64 % |
 | BRASS | 1 | 8 | 8 notes: 56 % |
-| RIBBON | 2 (provisional) | 4 | not measured yet |
+| RIBBON | 1 | 8 | 8 notes: 53 % |
 
 (CPU with nothing playing: 14 %. GLO > SYSTEM shows CPU, LATE and PEAK in turn.) When the budget is full, a new note
 takes the place of an older one: released notes first, then held ones, but never a part's lowest held note (the bass)
@@ -294,7 +294,7 @@ boards of the originals. 8 voices.
 ribbon above its keys. Each layer has its own oscillator, a high-pass into a low-pass, and its own filter envelope;
 layer II has its own loudness envelope too, so it can swell in after layer I. **BRILL** opens both filters, **TOUCH**
 brightens a note the harder you strike it and the longer you hold it, and **K4 is the ribbon**: a pitch bend that springs
-back. 4 voices while its weight is provisional (section 5).
+back. 8 voices, as many as BRASS (section 5).
 
 **HOME knobs**: BRILL · RESO · BAL · **RIBBON**
 
@@ -375,7 +375,6 @@ pages and controls are described in [CLIPPER-README.md](CLIPPER-README.md) and C
 - **WAVE-P**, the fifth engine, is the next to come.
 - **Later (Phase 7)**: MORPH between two versions of a sound for these engines, per-engine macro meanings, the encoder
   turned while a key is held as a per-note expression, an 8-slot modulation matrix, a full preset library, a Thai manual.
-- RIBBON's voice weight (2) is provisional until it is measured on the FM-1; it may well drop to ~1 (8 voices).
 
 ---
 
