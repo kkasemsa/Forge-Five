@@ -5169,9 +5169,13 @@ let tab = (() => {
   return "sound";
 })();
 const hasTracks = () => !!dev && !!dev.info && !!dev.info.ntrk;
-/* Clipper (CLIPPER_SYNTH=1): one instrument like the original FM-1: no track bar, no Tracks / Song / drum pages */
-const synthOnly = () => !!dev && !!dev.info && /CLIPPER/.test(dev.info.version || "");
+/* Clipper (CLIPPER_SYNTH=1): one instrument like the original FM-1: no track bar, no Tracks / Song / drum pages.
+   Forge Five ("FELUCCA FF x.y", built on Clipper) is one too, and has no step sequencer either (spec v0.3: the
+   arpeggiator alone, firmware core.h FF_SEQ): no Sequencer tab */
+const ffDevice = () => !!dev && !!dev.info && /^FELUCCA FF /.test(dev.info.version || "");
+const synthOnly = () => !!dev && !!dev.info && (/CLIPPER/.test(dev.info.version || "") || ffDevice());
 const SYNTH_HIDE = new Set(["tracks", "song", "kits", "drumsynth"]);
+const FF_HIDE = new Set(["sequencer"]);
 function showTab(name) {
   if (!TABS.includes(name)) name = "sound";
   const prev = tab;
@@ -5185,13 +5189,16 @@ function renderPanels() {
   /* the Tracks tab only with a four-track firmware */
   const tracksOk = !dev || hasTracks() || !dev.info;
   const syn = synthOnly();
-  const want = (tab === "tracks" && dev && dev.info && !hasTracks()) || (syn && SYNTH_HIDE.has(tab)) ? "sound" : tab;
+  const ff = ffDevice();
+  const want = (tab === "tracks" && dev && dev.info && !hasTracks()) || (syn && SYNTH_HIDE.has(tab)) || (ff && FF_HIDE.has(tab))
+    ? "sound" : tab;
   for (const b of $("tabs").querySelectorAll("button[data-tab]")) {
     const on = b.dataset.tab === want;
     b.setAttribute("aria-selected", on ? "true" : "false");
     b.tabIndex = on ? 0 : -1;
     if (b.dataset.tab === "tracks") b.hidden = !tracksOk;
     if (SYNTH_HIDE.has(b.dataset.tab)) b.hidden = syn || (b.dataset.tab === "tracks" && !tracksOk);
+    if (FF_HIDE.has(b.dataset.tab)) b.hidden = ff;
     /* (Clipper 1.0: no samples, no projects on the FM-1: the tabs are the wavetables and the backup) */
     const lab = b.dataset.tab === "samples" ? (syn ? "wtTab" : "samples") : b.dataset.tab === "projects" ? (syn ? "bkTitle" : "projects") : null;
     if (lab && b.dataset.t !== lab) { b.dataset.t = lab; setLabel(b, t(lab)); }

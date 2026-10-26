@@ -346,10 +346,10 @@ typedef struct {
  *                      X: O1RNG O1WAV O2RNG O2WAV  O2FRQ O3RNG O3FRQ O3WAV  MIX1 MIX2 MIX3 MIXN  NCOL OVLD O3KBD DRIFT
  *                         MODMIX MODAMT OSCMOD FLTMOD  | GLIDE */
 static const preset_t LADDER_PRESETS[] = {
-    {"BERLIN BASS", {40, 50, 72, 1, 0, 52, 8, 1}, {0, 70, 100, 30}, 0, 1, FX(0, 0, 18, 12)},
+    {"BERLIN BASS", {40, 50, 72, 1, 0, 52, 8, 1}, {0, 70, 100, 30}, 0, 1, FX(0, 0, 18, 12), ARP(1, 2, 2, 50)},
     {"FAT LEAD", {68, 38, 46, 2, 6, 64, 70, 1}, {2, 70, 110, 45}, 0, 1, FX(0, 10, 40, 30)},
     {"PEDAL SUB", {26, 22, 48, 1, 0, 74, 40, 1}, {0, 80, 110, 50}, 0, 1, FX(0, 0, 0, 8)},
-    {"SEQ PLUCK", {54, 80, 92, 1, 0, 46, 0, 0}, {0, 66, 0, 24}, 0, 1, FX(0, 0, 45, 25)},
+    {"ARP ZAP", {54, 80, 92, 1, 0, 46, 0, 0}, {0, 66, 0, 24}, 0, 1, FX(0, 0, 45, 25), ARP(3, 2, 2, 30)},
     {"BRASS", {38, 26, 66, 2, 34, 70, 64, 1}, {24, 70, 104, 46}, 0, 1, FX(0, 20, 20, 40)},
     {"WHISTLE", {64, 127, 0, 3, 0, 0, 127, 1}, {10, 70, 120, 50}, 0, 1, FX(0, 0, 50, 50)},
     {"WOBBLE", {30, 70, 30, 1, 0, 60, 60, 1}, {0, 70, 110, 30}, 0, 1, FX(0, 0, 20, 10)},
@@ -362,13 +362,14 @@ static const preset_t LADDER_PRESETS[] = {
     {"KICK BASS", {30, 60, 100, 2, 0, 46, 0, 0}, {0, 62, 0, 26}, 0, 1, FX(0, 0, 0, 0)},
 };
 static const ladder_xp_t LADDER_XP[NELEM(LADDER_PRESETS)] = {
-    /* BERLIN BASS: three saws, OSC 2 a hair sharp, OSC 3 an octave down; sequencer bass */
+    /* BERLIN BASS: three saws, OSC 2 a hair sharp, OSC 3 an octave down; the arp running 16ths up two octaves: one key
+     * held is the sequencer bass line (Forge Five has no step sequencer: core.h FF_SEQ) */
     {{LD_16, LW_SAW, LD_16, LW_SAW, 3, LD_32, 0, LW_SAW, 127, 110, 80, 0, 0, 0, 1, 18, 0, 0, 0, 0}, 0},
     /* FAT LEAD: detuned saws and a square at 4', glide */
     {{LD_8, LW_SAW, LD_8, LW_SAW, -4, LD_4, 0, LW_SQR, 127, 120, 70, 0, 0, 0, 1, 24, 0, 0, 0, 0}, 38},
     /* PEDAL SUB: the bass pedal sound: two 32' saws and a 16' triangle, dark */
     {{LD_32, LW_SAW, LD_32, LW_SAW, 2, LD_16, 0, LW_TRI, 127, 100, 90, 0, 0, 0, 1, 12, 0, 0, 0, 0}, 0},
-    /* SEQ PLUCK: resonant zap for 16th sequences, no sustain */
+    /* ARP ZAP (was SEQ PLUCK): a resonant zap, no sustain, the arp up and down two octaves in 16ths */
     {{LD_8, LW_SAW, LD_8, LW_SQR, 5, LD_16, 0, LW_SAW, 127, 110, 80, 0, 0, 20, 1, 16, 0, 0, 0, 0}, 0},
     /* BRASS: the filter opens slowly, two detuned saws */
     {{LD_8, LW_SAW, LD_8, LW_SAW, -5, LD_16, 0, LW_SAW, 127, 127, 50, 0, 0, 0, 1, 26, 0, 0, 0, 0}, 0},

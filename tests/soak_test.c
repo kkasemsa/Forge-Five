@@ -153,8 +153,11 @@ int main(int argc, char **argv)
     }
     printf("soak: free takes %u, closed into a loop %u\n", ft_starts, ft_count);
     fflush(stdout);
-    if (minutes >= 3u)                                       /* (a shorter run may close none: a smoke test) */
+    if (minutes >= 3u && FF_SEQ)                             /* (a shorter run may close none: a smoke test;
+                                                              * Forge Five, FF_SEQ 0: no free take at all) */
         assert(ft_count > 0);
+    if (!FF_SEQ)
+        assert(ft_starts == 0u && ft_count == 0u);
     printf("soak: random live use, bounded output, no hanging voices, idle after stop PASS\n");
     return 0;
 }

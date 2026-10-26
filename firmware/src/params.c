@@ -602,7 +602,11 @@ static const page_t PAGES[] = {
 #else
     {"VOICE 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_ALLOC, P_DETUNE, P_PAN, P_MUTE}},
 #endif
+#if FF_SEQ
     {"GLOBAL", FAM_GLO, SC_GLOBAL, GR_NONE, {G_BPM, G_SWING, G_CLOCK, G_TUNE}},
+#else                                            /* (Forge Five: SWING moved the steps only; the arp's is ARP 2 > SWG) */
+    {"GLOBAL", FAM_GLO, SC_GLOBAL, GR_NONE, {G_BPM, 0xFF, G_CLOCK, G_TUNE}},
+#endif
 #if CLIPPER_SYNTH                                                        /* (no kick to duck to, no note repeat) */
     {"MASTER", FAM_GLO, SC_GLOBAL, GR_NONE, {G_DUST, G_FILT, 0xFF, 0xFF}},
     {"TUNING", FAM_GLO, SC_SYN, GR_NONE, {47, 48, 49, 0xFF}},   /* (0.9) X_TSYS X_TROOT (1.0: X_TA4): voice.c tune_cfg */
@@ -620,7 +624,11 @@ static const page_t PAGES[] = {
                                                      * the autosave; the sounds by the user presets) */
     {"PROJECT", FAM_SAVE, SC_GLOBAL, GR_SLOTS, {G_SLOT, 0xFF, G_LOAD, G_SAVE}},
 #endif
+#if FF_SEQ
     {"TOOLS", FAM_SAVE, SC_GLOBAL, GR_NONE, {G_CLRSEQ, G_INITSND, 0xFF, G_NEWPRJ}},
+#else                                            /* (Forge Five: no pattern to clear, core.h FF_SEQ) */
+    {"TOOLS", FAM_SAVE, SC_GLOBAL, GR_NONE, {0xFF, G_INITSND, 0xFF, G_NEWPRJ}},
+#endif
     {"ARP", FAM_ARP, SC_TRACK, GR_ARP, {P_AMODE, P_ARATE, P_AOCT, P_AGATE}},
     {"ARP 2", FAM_ARP, SC_TRACK, GR_NONE, {P_ASWING, P_APROB, P_AHOLD, P_AORDER}},
 #if CLIPPER_SYNTH
@@ -637,6 +645,8 @@ static const page_t PAGES[] = {
 /* a page not there for the sound selected (0.6: FMX's own pages on another engine): the page walks pass it */
 static int page_hidden(uint32_t i)
 {
+    if (!FF_SEQ && i < NPAGES && PAGES[i].fam == FAM_SEQ)   /* (Forge Five: NOTES and PATTERN, core.h FF_SEQ) */
+        return 1;
 #if FORGE_FIVE
     if (i < NPAGES && PAGES[i].graph == GR_XP)      /* an engine patch page the sound's engine does not have */
         return !xp_title(TSEL, PAGES[i].id[0] / 4u);

@@ -53,7 +53,15 @@ owners, used here only to describe a style; the firmware, its screens and its pr
 | **FX** | Sends, the sound's filter, INSERT, delay, reverb, chorus, EQ and compressor. |
 | **GLO** | Tempo, master, tuning, **SYSTEM** (CPU / LATE / PEAK), MIDI settings. |
 | **SAVE** | **PRESETS** (the list, filtered by engine), **USER** (your presets), tools. |
+| **ARP** | The arpeggiator's pages (ARP, ARP 2, SPICE). **Held**: note repeat — a key held repeats at the arp's rate. |
+| **PLAY** | Starts and stops the clock (the arp's tempo, MIDI clock out). |
+| **SEQ**, **REC** | Nothing for now: Forge Five has no step sequencer (below). SEQ, EDIT, SEL and GLO held open no layer: the keys play through them (they are kept free for a later per-note expression). |
 | **HOME held** | The menu (SYS > ABOUT shows the version and credits). |
+
+**No step sequencer.** Forge Five is played from a sequencer (Move, a DAW) or a keyboard, and has the **arpeggiator**
+for patterns of its own (15 modes, HOLD, SPICE, the TURNG Turing machine; ARP held repeats a key). Clipper's step
+sequencer, its NOTES and PATTERN pages and recording are switched off (a build flag, FF_SEQ: the code stays in the
+source).
 
 **UNDO / COMPARE** (EDIT > UNDO): each change you make becomes a step once you stop turning; KNOB 1 steps back and
 forward through up to 16, KNOB 2 compares the loaded sound with your edits. HOME shows **EDITED** when the sound differs
@@ -168,10 +176,10 @@ The loudness envelope is the ENV page (A D S R); glide is on VOICE.
 
 | Preset | Family | Description |
 | --- | --- | --- |
-| BERLIN BASS | BASS | Three saws, OSC 2 a hair sharp, OSC 3 an octave down: the sequencer bass |
+| BERLIN BASS | BASS | Three saws, OSC 2 a hair sharp, OSC 3 an octave down; the arp on (UP, 16ths, two octaves): hold one key for the Berlin sequence (ARP MODE OFF to play it from a sequencer) |
 | FAT LEAD | LEAD | Detuned saws and a square at 4′, with glide |
 | PEDAL SUB | BASS | The bass-pedal sound: two 32′ saws and a 16′ triangle, dark |
-| SEQ PLUCK | PLUCK | A resonant zap for 16th-note sequences, no sustain |
+| ARP ZAP | PLUCK | A resonant zap, no sustain, the arp up and down two octaves in 16ths (was SEQ PLUCK) |
 | BRASS | LEAD | Two detuned saws, the filter opening slowly |
 | WHISTLE | LEAD | No oscillators: the filter self-oscillating as a sine, tracking the keys in full |
 | WOBBLE | BASS | OSC 3 as a slow triangle on the cutoff |
@@ -219,7 +227,7 @@ stereo **bucket-brigade chorus** (I, II, I+II). Its signature is the **chord mem
 
 - **MEM**: every key plays the stored chord built on it. Releasing the key releases the notes it started, even if
   you changed the chord meanwhile; two chords that share a note keep it until both keys are up. Works with SPLIT,
-  LAYER, the arpeggiator and the sequencer.
+  LAYER and the arpeggiator.
 - **LEARN**: set CHORD to LEARN, **hold a chord, let go** — it is stored (intervals from the lowest note, up to 7
   notes) and CHORD switches to MEM. A single key alone is not learnt.
 - Or set N2–N7 by hand: m3 + 5 + m7 is a minor seventh, add 9 for a minor ninth.
@@ -442,6 +450,8 @@ pages and controls are described in [CLIPPER-README.md](CLIPPER-README.md) and C
 - **The web editor** does not know LADDER, CHORD-D, BRASS, RIBBON or WAVE-P yet: edit them on the FM-1. Their sounds are
   kept in user presets and backups all the same. WAVE-P's own tables cannot be replaced from the editor yet (WAVE's user
   tables can).
+- **No step sequencer**, song mode or drum track (spec v0.3: the arpeggiator alone); the web editor shows no
+  Sequencer tab for Forge Five. A sequencer would come with a new spec version.
 - **WAVE-P** reads 8-bit tables only (the spec's 12-bit option would take 96 KB more flash). High notes in STEP fold some
   harmonics back: that grit is part of the sound (SMOOTH is cleaner).
 - **Later (Phase 7)**: MORPH between two versions of a sound for these engines, per-engine macro meanings, the encoder
