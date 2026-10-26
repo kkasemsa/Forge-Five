@@ -17,7 +17,7 @@
  *    everything up (BITS 4, DRIVE, RESO, NOISE, SUB, UPPER, ENV>W at both ends): within 2 x VOICE_FS, silent once
  *    released.
  * 11. cost: a voice against BRASS's on the host, STEP, SMOOTH, and with SUB, NOISE, DRIVE on (the weight, 1.0, is the
- *    FM-1's measure: 4.5 % a voice).
+ *    FM-1's measure: ~4-4.5 % a voice).
  * 12. demos (DEMODIR). */
 #include <ctype.h>
 #define main hostsim_main
