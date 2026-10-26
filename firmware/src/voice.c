@@ -1381,7 +1381,7 @@ static uint32_t track_render(track_t *t, int32_t *out, uint32_t n)
     static int32_t mac1_q8[NTRK];
     int32_t *mq = &mac1_q8[(uint32_t)(t - trk) % NTRK];
     *mq += ((mac1 << 8) - *mq) >> 2;
-    if ((*mq >> 2) == (mac1 << 6))
+    if (*mq - (mac1 << 8) < 4 && *mq - (mac1 << 8) > -4)   /* (the last steps: a shift of a few stalls short of it) */
         *mq = mac1 << 8;
 #endif
     int32_t spr = clamp(t->p[P_SPREAD] + clamp(t->p[P_MAC4], 0, 127) / 2, 0, 127), spr0 = t->spr;

@@ -16,7 +16,8 @@
  * 10. levels: every preset's note within 4 dB of the DCO pad's in the mix; corners: every preset at five notes with
  *    everything up (BITS 4, DRIVE, RESO, NOISE, SUB, UPPER, ENV>W at both ends): within 2 x VOICE_FS, silent once
  *    released.
- * 11. cost: a voice against BRASS's on the host, STEP, SMOOTH, and with SUB, NOISE, DRIVE on (the weight waits for the unit).
+ * 11. cost: a voice against BRASS's on the host, STEP, SMOOTH, and with SUB, NOISE, DRIVE on (the weight, 1.0, is the
+ *    FM-1's measure: 4.5 % a voice).
  * 12. demos (DEMODIR). */
 #include <ctype.h>
 #define main hostsim_main
@@ -278,6 +279,33 @@ static void t_step(void)
     snprintf(m, sizeof m, "STEP: the climb moves OSC 1 to another wave %u times, each in a block where a cycle began (%u)",
              moves, at_start);
     check(m, moves > 20 && at_start == moves);
+    {   /* a key struck again while its voice still sounds: the voice keeps its wave until its cycle's start */
+        uint32_t k, same = 0, wrapped = 0, vi = NVOICE;
+        setup(-1);
+        trk[0].p[P_E0] = 10;
+        trk_note_on(&trk[0], 45, 100);
+        blocks_of(0, FS / 4);
+        for (k = 0; k < NVOICE; k++)
+            if (trk[0].v[k].active)
+                vi = k;
+        for (k = 0; k < 40u && vi < NVOICE; k++) {        /* struck again 40 times, at different points of the cycle */
+            voice_t *v = &trk[0].v[vi];
+            int32_t w0;
+            uint32_t p0;
+            blocks_of(0, CTL * (20u + k % 5u));           /* (a cycle or more: the wave settled) */
+            w0 = v->s[4], p0 = v->ph[0];
+            trk[0].p[P_E0] = (int16_t)(k & 1u ? 10 : 40); /* WAVE moved and the key struck at once: a wave to go to */
+            trk_note_on(&trk[0], 45, 100);
+            blocks_of(0, CTL);
+            if (v->s[4] == w0)
+                same++;
+            else
+                wrapped += v->ph[0] < p0;
+        }
+        snprintf(m, sizeof m, "STEP: a key struck again under its own note: the wave kept (%u) or changed where a cycle began (%u), of 40",
+                 same, wrapped);
+        check(m, vi < NVOICE && same + wrapped == 40u);
+    }
     /* SMOOTH against STEP high up: the images of a 128-point cycle read point by point */
     setup(-1);
     trk[0].p[P_E0] = 39;

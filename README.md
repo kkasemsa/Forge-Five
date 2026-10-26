@@ -27,7 +27,7 @@ poly-mod, a 2-pole filter sweeping low-pass to notch to high-pass, 4-pole and ba
 **RIBBON** (two layers a voice, a pitch ribbon on K4 that springs back, brilliance from the touch, ring and sub, 8
 presets) and **WAVE-P** (eight 8-bit wavetables of 64 waves made by formula, STEP and SMOOTH, two oscillators, a wave
 envelope, a 24 dB filter, 9 presets). Their voices run on both cores; the voice budget's weights come from the unit
-(docs/INSTALL.md; WAVE-P's is still the spec's). Install at your own risk, with a way back ready.
+(docs/INSTALL.md). Install at your own risk, with a way back ready.
 
 - **Install:** [docs/INSTALL.md](docs/INSTALL.md) — GitHub builds the package, one script sends it to the FM-1.
 - **Play:** [docs/USER-GUIDE.md](docs/USER-GUIDE.md) — getting around, the two parts, the voice budget, every engine's

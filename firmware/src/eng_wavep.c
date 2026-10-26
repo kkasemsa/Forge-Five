@@ -85,8 +85,10 @@ static void wavep_note_on(track_t *t, voice_t *v)
         v->s[0] = v->s[1] = v->s[2] = v->s[3] = 0;
         v->ph[0] = 0, v->ph[1] = 0, v->ph[2] = 0;
         x->we = 0;
+        v->s[6] = -1;                                 /* (the position taken afresh, the waves with it; a voice still
+                                                       * sounding keeps its waves until each cycle's start, and its
+                                                       * position glides from where it was over the block) */
     }
-    v->s[6] = -1;                                     /* (the position: taken afresh, the waves with it) */
     if (!v->s[7])
         v->s[7] = 0x2545F491 + (int32_t)v->age * 2654435;
     x->ws = 1;

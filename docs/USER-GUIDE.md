@@ -114,7 +114,7 @@ The two parts share **8 voices' worth of CPU**. A voice of a heavier engine cost
 | CHORD-D | 1 | 8 | 8 voices: 64 % |
 | BRASS | 1 | 8 | 8 notes: 56 % |
 | RIBBON | 1 | 8 | 8 notes: 53 % |
-| WAVE-P | 1.3 (provisional) | 6 | not measured yet |
+| WAVE-P | 1 | 8 | 6 notes: 41 % |
 
 (CPU with nothing playing: 14 %. GLO > SYSTEM shows CPU, LATE and PEAK in turn.) When the budget is full, a new note
 takes the place of an older one: released notes first, then held ones, but never a part's lowest held note (the bass)
@@ -132,7 +132,7 @@ or its MONO / LEGATO note. Both of the FM-1's cores render the voices.
 
 ## 7. LADDER
 
-*In the style of the Moog Minimoog Model D-style monosynth (its oscillator bank, mixer overload and ladder filter).*
+*After the Moog Minimoog Model D-style monosynth (its oscillator bank, mixer overload and ladder filter).*
 
 **Berlin School basses and leads.** Three oscillators into a four-pole transistor-ladder low-pass, in the manner of the
 classic 1970s three-oscillator portable monosynth. The mixer drives the filter's input: one oscillator stays clean,
@@ -185,7 +185,7 @@ The loudness envelope is the ENV page (A D S R); glide is on VOICE.
 
 ## 8. CHORD-D
 
-*In the style of the Roland Juno-60 / Juno-106-style DCO polysynths and their bucket-brigade chorus; the chord memory
+*After the Roland Juno-60 / Juno-106-style DCO polysynths and their bucket-brigade chorus; the chord memory
 follows the dub techno way of playing one-finger chords.*
 
 **Dub techno chords.** One DCO per voice (saw, a pulse whose width moves, or both), a square sub an octave down, noise, a
@@ -236,7 +236,7 @@ stereo **bucket-brigade chorus** (I, II, I+II). Its signature is the **chord mem
 
 ## 9. BRASS
 
-*In the style of the Oberheim SEM-style state-variable voice (the module the Two-, Four- and Eight-Voice polysynths
+*After the Oberheim SEM-style state-variable voice (the module the Two-, Four- and Eight-Voice polysynths
 were built from: SEM-style) and the Sequential Prophet-5-style poly-mod and sync.*
 
 **Pads and brass.** Two oscillators per voice in the manner of the classic late-1970s American two-oscillator polysynths:
@@ -290,7 +290,7 @@ boards of the originals. 8 voices.
 
 ## 10. RIBBON
 
-*In the style of the Yamaha CS-80-style two-layer polysynth, its ribbon controller and its touch-sensitive brilliance.*
+*After the Yamaha CS-80-style two-layer polysynth, its ribbon controller and its touch-sensitive brilliance.*
 
 **The big film-score sound.** Two layers per voice in the manner of the classic late-1970s two-layer polysynth with a
 ribbon above its keys. Each layer has its own oscillator, a high-pass into a low-pass, and its own filter envelope;
@@ -347,15 +347,14 @@ its full amount at HOLD. Strike hard for an instant bright attack; hold a chord 
 
 ## 11. WAVE-P
 
-*In the style of the PPG Wave-style wavetable synths of the early 1980s: 8-bit waves read without smoothing, the table
+*After the PPG Wave-style wavetable synths of the early 1980s: 8-bit waves read without smoothing, the table
 swept wave by wave, an analog-style filter after them.*
 
 **Digital pads, bells and choirs.** Two oscillators per voice read one of eight wavetables. A table holds 64 waves, each
 one cycle of 128 points at 8 bits; **WAVE** picks the place in it, and the wave envelope, the LFO, the keyboard and
 velocity move it. In **STEP** (the default) the points are played as they are and an oscillator moves to the next wave
 only where its cycle starts, so a sweep steps through the waves audibly, with the grain of 8 bits; **SMOOTH** joins the
-points and crossfades the waves for a clean sweep. Then a 24 dB low-pass. 6 voices while its weight is provisional
-(section 5).
+points and crossfades the waves for a clean sweep. Then a 24 dB low-pass. 8 voices (section 5).
 
 **HOME knobs**: WAVE · CUTOFF · ENV>W · RESO
 
@@ -443,8 +442,8 @@ pages and controls are described in [CLIPPER-README.md](CLIPPER-README.md) and C
 - **The web editor** does not know LADDER, CHORD-D, BRASS, RIBBON or WAVE-P yet: edit them on the FM-1. Their sounds are
   kept in user presets and backups all the same. WAVE-P's own tables cannot be replaced from the editor yet (WAVE's user
   tables can).
-- **WAVE-P** reads 8-bit tables only (the spec's 12-bit option would take 96 KB more flash); its weight (1.3) waits for a
-  measure on the FM-1. High notes in STEP fold some harmonics back: that grit is part of the sound (SMOOTH is cleaner).
+- **WAVE-P** reads 8-bit tables only (the spec's 12-bit option would take 96 KB more flash). High notes in STEP fold some
+  harmonics back: that grit is part of the sound (SMOOTH is cleaner).
 - **Later (Phase 7)**: MORPH between two versions of a sound for these engines, per-engine macro meanings, the encoder
   turned while a key is held as a per-note expression, an 8-slot modulation matrix, a full preset library, a Thai manual.
 

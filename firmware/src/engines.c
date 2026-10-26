@@ -220,15 +220,14 @@ static const xp_info_t *eng_xp(uint32_t e)   /* the engine's extra values, 0 = n
  * LEAD, 3), BRASS 6.2 % (STACK BRASS, 5), CHORD-D 6.3 % (DEEP PAD, the full 8). A unit is set at ~8 %: the whole budget
  * then stays under ~80 % whatever plays it. LADDER 20 (1.25: 6 voices ~68 %), BRASS and CHORD-D 16 (8 voices ~64 %).
  * The spec's first guesses (v0.3 section 3: LADDER 2.5, BRASS 1.5) were on one core. RIBBON (25 Oct): 6 % a voice
- * (NOIR BRASS, 8 notes 53 %), one unit. WAVE-P: to be measured */
+ * (NOIR BRASS, 8 notes 53 %), one unit. WAVE-P (26 Oct): 4.5 % a voice (DIGITAL CHOIR and FRACTAL PAD, SMOOTH, 6
+ * notes 41 %), one unit; its heaviest set-up (SMOOTH with SUB, NOISE and DRIVE: x1.4 DIGITAL CHOIR's on the host) ~6 %,
+ * 8 voices ~64 % as CHORD-D's */
 static uint32_t eng_weight(uint32_t e)
 {
 #if FORGE_FIVE
     if (e == ENGI_LADDER)
         return 20u;
-    if (e == ENGI_WAVEP)
-        return 21u;                     /* (1.3: the spec's, provisional until measured on the unit; on the host its
-                                         * STEP voice costs what BRASS's does, SMOOTH ~1.3 x, SUB + NOISE + DRIVE ~1.5 x) */
 #else
     (void)e;
 #endif
