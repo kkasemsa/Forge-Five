@@ -279,8 +279,10 @@ static void t_step(void)
     snprintf(m, sizeof m, "STEP: the climb moves OSC 1 to another wave %u times, each in a block where a cycle began (%u)",
              moves, at_start);
     check(m, moves > 20 && at_start == moves);
-    {   /* a key struck again while its voice still sounds: the voice keeps its wave until its cycle's start */
-        uint32_t k, same = 0, wrapped = 0, vi = NVOICE;
+    {   /* a key struck again while its voice still sounds, with WAVE moved: rendered one sample at a time from there,
+         * the voice keeps its wave until the very sample its phase wraps (a cycle starts), then takes the new one */
+        uint32_t k, n, kept = 0, at_wrap = 0, vi = NVOICE;
+        static int32_t one[1];
         setup(-1);
         trk[0].p[P_E0] = 10;
         trk_note_on(&trk[0], 45, 100);
@@ -290,21 +292,24 @@ static void t_step(void)
                 vi = k;
         for (k = 0; k < 40u && vi < NVOICE; k++) {        /* struck again 40 times, at different points of the cycle */
             voice_t *v = &trk[0].v[vi];
-            int32_t w0;
-            uint32_t p0;
+            int32_t w0, ok_until = 1;
             blocks_of(0, CTL * (20u + k % 5u));           /* (a cycle or more: the wave settled) */
-            w0 = v->s[4], p0 = v->ph[0];
+            w0 = v->s[4];
             trk[0].p[P_E0] = (int16_t)(k & 1u ? 10 : 40); /* WAVE moved and the key struck at once: a wave to go to */
             trk_note_on(&trk[0], 45, 100);
-            blocks_of(0, CTL);
-            if (v->s[4] == w0)
-                same++;
-            else
-                wrapped += v->ph[0] < p0;
+            for (n = 0; n < 2u * FS / 110u && v->s[4] == w0; n++) {   /* (two cycles of A2 at most) */
+                uint32_t p0 = v->ph[0];
+                one[0] = 0;
+                track_render(&trk[0], one, 1);
+                if (v->s[4] != w0)
+                    ok_until = v->ph[0] < p0;             /* the sample it changed in: the one its phase wrapped in */
+            }
+            kept += v->s[4] != w0;
+            at_wrap += v->s[4] != w0 && ok_until;
         }
-        snprintf(m, sizeof m, "STEP: a key struck again under its own note: the wave kept (%u) or changed where a cycle began (%u), of 40",
-                 same, wrapped);
-        check(m, vi < NVOICE && same + wrapped == 40u);
+        snprintf(m, sizeof m, "STEP: a key struck again under its own note, WAVE moved: the new wave in %u of 40, each at the "
+                 "sample its cycle began (%u)", kept, at_wrap);
+        check(m, vi < NVOICE && kept == 40u && at_wrap == 40u);
     }
     /* SMOOTH against STEP high up: the images of a 128-point cycle read point by point */
     setup(-1);
