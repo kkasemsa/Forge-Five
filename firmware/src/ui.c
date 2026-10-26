@@ -645,6 +645,7 @@ static const char *const BANK_KIND[] = {"BASS", "KEYS", "ORGN", "PAD", "LEAD", "
 #define BK_ENGI_CHORDD(k, n) {k, ENGI_CHORDD, n},
 #define BK_ENGI_BRASS(k, n) {k, ENGI_BRASS, n},
 #define BK_ENGI_RIBBON(k, n) {k, ENGI_RIBBON, n},
+#define BK_ENGI_WAVEP(k, n) {k, ENGI_WAVEP, n},
 #define BK(k, e, n) BK_##e(k, n)
 static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     BK(BK_BASS, ENGI_HYBRID, "ACID") BK(BK_BASS, ENGI_HYBRID, "WOBBLE") BK(BK_BASS, ENGI_HYBRID, "REESE") BK(BK_BASS, ENGI_HYBRID, "FOLD BASS")
@@ -822,6 +823,10 @@ static const struct { uint8_t kind, e; const char *name; } BANK[] = {
     BK(BK_STAB, ENGI_RIBBON, "NOIR BRASS") BK(BK_LEAD, ENGI_RIBBON, "VICTORY LEAD") BK(BK_PAD, ENGI_RIBBON, "MEMORY PAD")
     BK(BK_LEAD, ENGI_RIBBON, "RIBBON BEND") BK(BK_KEYS, ENGI_RIBBON, "RAIN BELL") BK(BK_PAD, ENGI_RIBBON, "FILM STRINGS")
     BK(BK_LEAD, ENGI_RIBBON, "BREATH FLUTE") BK(BK_STAB, ENGI_RIBBON, "TOUCH BRASS")
+    /* Forge Five Phase 6: WAVE-P (eng_wavep.c) */
+    BK(BK_PAD, ENGI_WAVEP, "DIGITAL CHOIR") BK(BK_PAD, ENGI_WAVEP, "GLASS SWEEP") BK(BK_KEYS, ENGI_WAVEP, "STEP BELLS")
+    BK(BK_BASS, ENGI_WAVEP, "HOLLOW BASS") BK(BK_PAD, ENGI_WAVEP, "FRACTAL PAD") BK(BK_LEAD, ENGI_WAVEP, "SWEEP LEAD")
+    BK(BK_STAB, ENGI_WAVEP, "RESO STAB") BK(BK_KEYS, ENGI_WAVEP, "CRUNCH KEYS") BK(BK_ORGAN, ENGI_WAVEP, "STEP ORGAN")
 #endif
 };
 #define NBANK (sizeof BANK / sizeof BANK[0])
