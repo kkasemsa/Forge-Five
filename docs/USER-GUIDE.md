@@ -114,7 +114,7 @@ The two parts share **8 voices' worth of CPU**. A voice of a heavier engine cost
 | CHORD-D | 1 | 8 | 8 voices: 64 % |
 | BRASS | 1 | 8 | 8 notes: 56 % |
 | RIBBON | 1 | 8 | 8 notes: 53 % |
-| WAVE-P | 1 | 8 | 6 notes: 41 % |
+| WAVE-P | 1 | 8 | 8 notes: 47 % |
 
 (CPU with nothing playing: 14 %. GLO > SYSTEM shows CPU, LATE and PEAK in turn.) When the budget is full, a new note
 takes the place of an older one: released notes first, then held ones, but never a part's lowest held note (the bass)
