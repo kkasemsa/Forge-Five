@@ -121,8 +121,13 @@ $SYN -o "$OUT/ribbon_test" tests/ribbon_test.c -lm
 run "Forge Five RIBBON: two layers, BAL, the ribbon (LAST / ALL, the spring), TOUCH, RING, HPF, the envelopes, the patch, levels, corners, golden" "$OUT/ribbon_test"
 $SYN -o "$OUT/wavep_test" tests/wavep_test.c -lm
 run "Forge Five WAVE-P: the tables, pitch, STEP (a wave a cycle) and SMOOTH, the position, BITS, the 24 dB filter, the patch, levels, corners, golden" "$OUT/wavep_test"
-$SYN -o "$OUT/clipper_ui_test" tests/clipper_ui_test.c -lm
-run "Clipper synth: HOME, presets, keys, pages, one track, MIDI omni, no drums / song" "$OUT/clipper_ui_test" "$OUT/clipper"
+# (Clipper's UI with its step sequencer, FF_SEQ 1: Forge Five keeps that code for Clipper's merges, so it stays tested
+# as Clipper ships it; Forge Five's own build, FF_SEQ 0, is ff_arp_only_test below)
+$SYN -DFF_SEQ=1 -o "$OUT/clipper_ui_test" tests/clipper_ui_test.c -lm
+run "Clipper synth: HOME, presets, keys, pages, one track, MIDI omni, no drums / song [FF_SEQ=1]" "$OUT/clipper_ui_test" "$OUT/clipper"
+mkdir -p "$OUT/ff"
+$SYN -o "$OUT/ff_arp_only_test" tests/ff_arp_only_test.c -lm
+run "Forge Five, the arp alone (FF_SEQ 0): no pattern plays, REC and SEQ do nothing, SEQ EDIT SEL GLO held free, ARP held repeats, no NOTES / PATTERN, the arp presets" "$OUT/ff_arp_only_test" "$OUT/ff"
 $SYN -o "$OUT/clipper_stress" tests/stress_test.c -lm
 run "Clipper synth: stress (hard random use, clean stop)" "$OUT/clipper_stress" "${STRESS_FRAMES:-40000}"
 $SYN -o "$OUT/clipper_soak" tests/soak_test.c -lm
@@ -227,9 +232,13 @@ fi
 if $SYN_UBALL -o "$OUT/engines2_asan" tests/engines2_test.c -lm 2>/dev/null; then
     run "Clipper 0.2 new engines under ASan + UBSan" sh -c "'$OUT/engines2_asan' >/dev/null && echo clean"
 fi
-if $SYN_UB -o "$OUT/clipper_ui_asan" tests/clipper_ui_test.c -lm 2>/dev/null; then
+if $SYN_UB -DFF_SEQ=1 -o "$OUT/clipper_ui_asan" tests/clipper_ui_test.c -lm 2>/dev/null; then
     mkdir -p "$OUT/clipper_asan"
-    run "Clipper synth: UI under ASan + UBSan" sh -c "'$OUT/clipper_ui_asan' '$OUT/clipper_asan' >/dev/null && echo clean"
+    run "Clipper synth: UI under ASan + UBSan [FF_SEQ=1]" sh -c "'$OUT/clipper_ui_asan' '$OUT/clipper_asan' >/dev/null && echo clean"
+fi
+if $SYN_UB -o "$OUT/ff_arp_only_asan" tests/ff_arp_only_test.c -lm 2>/dev/null; then
+    mkdir -p "$OUT/ff_asan"
+    run "Forge Five, the arp alone: UI under ASan + UBSan" sh -c "'$OUT/ff_arp_only_asan' '$OUT/ff_asan' >/dev/null && echo clean"
 fi
 
 $CC -o "$OUT/upreset_test" tests/upreset_test.c

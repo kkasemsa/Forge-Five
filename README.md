@@ -17,7 +17,8 @@ or any MIDI sequencer:
 | **WAVE-P** | wavetables with a stepped (uninterpolated) mode, two oscillators, a 24 dB filter | digital wavetable pads and bells |
 
 Voices share a budget of eight units (an engine's voice costs what it costs); a part can be capped. Four macros per
-engine on CC 16–19, a simple arpeggiator, Clipper's effects, modulation matrix, web editor and installer.
+engine on CC 16–19, the arpeggiator (no step sequencer: Forge Five is played from Move or a DAW), Clipper's effects,
+modulation matrix, web editor and installer.
 
 **Status: in development, first measures on the FM-1 done (23 Oct 2026).** The current build (`FF 0.1 DEV`) is Clipper
 trimmed to the four engines the five are built on (ANALOG for its filter models, HYBRID, WAVE, DCO: Clipper's
@@ -33,7 +34,8 @@ envelope, a 24 dB filter, 9 presets). Their voices run on both cores; the voice 
 - **Play:** [docs/USER-GUIDE.md](docs/USER-GUIDE.md) — getting around, the two parts, the voice budget, every engine's
   pages and every preset.
 - **Build it yourself:** [BUILDING.md](BUILDING.md) (Linux x86-64 natively, macOS through Docker, Windows through WSL).
-- **Clipper's own documentation** (everything Forge Five has not changed): [docs/CLIPPER-README.md](docs/CLIPPER-README.md),
+- **Clipper's own documentation** (everything Forge Five has not changed; its step sequencer, recording, song mode and
+  drum track are not in Forge Five): [docs/CLIPPER-README.md](docs/CLIPPER-README.md),
   [docs/midi.md](docs/midi.md), the [Felucca wiki](https://github.com/hugelton/Felucca/wiki/Home).
 - Issues and ideas: https://github.com/kkasemsa/Forge-Five/issues
 

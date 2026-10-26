@@ -22,6 +22,13 @@
 #if FORGE_FIVE && !CLIPPER_SYNTH
 #error "FORGE_FIVE builds on the Clipper synth (CLIPPER_SYNTH 1)"
 #endif
+/* Forge Five (spec v0.3): no step sequencer, song mode or drum track, the arpeggiator alone (its note repeat, ARP held,
+ * too). FF_SEQ 0 leaves their code in the tree, built but out of reach (Clipper's merges stay simple): the patterns are
+ * neither played nor recorded, SEQ, EDIT, SEL and GLO held open no layer (free for Phase 7's per-note expression), SEQ
+ * and REC do nothing, the NOTES and PATTERN pages and TOOLS > CLEAR SEQ are hidden. FF_SEQ 1: as Clipper ships it */
+#ifndef FF_SEQ
+#define FF_SEQ (!FORGE_FIVE)
+#endif
 /* Clipper 0.5.1 (the crackle hunt): written by the audio interrupt (audio.c), shown in GLO > SYSTEM's CPU column
  * (ui_draw.c) */
 static volatile uint32_t diag_late;      /* halves the DMA had already moved past: since power-on */

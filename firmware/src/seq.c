@@ -164,7 +164,12 @@ static uint32_t layer_buttons(void) { return fm1_in.buttons | (ly_lock != LY_PLA
 /* Clipper: the layers a synth keeps: SEQ (the steps), SEL (key and chords) and (1.0, the sequencer of SLOOP 2.7.2)
  * EDIT (erase, SHIFT, LENGTH, TRANSPOSE, undo / redo), ARP (note repeat) and GLO (fill, fill bar, tap tempo, the level).
  * FX and SAVE only open their pages; held, the keys still play */
-static int ly_on(uint32_t l) { return !CLIPPER_SYNTH || (l != LY_FX && l != LY_SONG); }
+static int ly_on(uint32_t l)
+{
+    if (!FF_SEQ)                                /* (Forge Five: ARP held, the note repeat, alone: core.h FF_SEQ) */
+        return l == LY_ROLL;
+    return !CLIPPER_SYNTH || (l != LY_FX && l != LY_SONG);
+}
 static uint32_t layer_now(void)
 {
     uint32_t b = layer_buttons(), l;
@@ -3126,9 +3131,12 @@ static void events_block(uint32_t n)
         rec_begin();                                /* started some other way: record now */
     adv = mclk_on() && song.playing ? mclk_adv(n) : n * (uint32_t)song.g[G_BPM];   /* (after a START) */
     clkout_block(n);                                  /* (0.7) CLOCK OUT */
-    ft_block();
+    if (FF_SEQ)
+        ft_block();
 #if FELUCCA_ARRANGER
-    if (song.playing && arrangement_clock.running) {
+    if (!FF_SEQ) {
+        /* (Forge Five: no song mode, no sections: core.h FF_SEQ) */
+    } else if (song.playing && arrangement_clock.running) {
         int scene = arr_next(&arrangement_clock, &arrangement, FS);
         if (scene == ARR_DONE) {
             arrangement_clock.running = 1;          /* (arr_next cleared it: seq_stop brings the loop back) */
@@ -3191,7 +3199,8 @@ static void events_block(uint32_t n)
     if (pr)
         mi_pen[0] = mi_pen[1] = mi_pen[2] = mi_pen[3] = 0;   /* (1.0: the MIDI pen's notes held: never stuck either) */
     keyboard_block();
-    drum_audition_poll();                             /* (the editor's DRUM SYNTH page) */
+    if (FF_SEQ)
+        drum_audition_poll();                         /* (the editor's DRUM SYNTH page; Forge Five: no drum track) */
     strum_block(n);                                   /* (voice.c: the strummed notes due) */
     while (mi_r != mi_w) {                            /* USB-MIDI (and TRS) in */
         uint32_t pkt = midi_in_q[mi_r % MQ], st = (pkt >> 8) & 0xF0u, ch = (pkt >> 8) & 0x0Fu;
@@ -3277,7 +3286,8 @@ static void events_block(uint32_t n)
             input_off(t, d1);
         }
     }
-    for (i = 0; i < (CLIPPER_SYNTH ? 1u : NTRK); i++)  /* (Clipper: the instrument's sequencer only) */
+    for (i = 0; FF_SEQ && i < (CLIPPER_SYNTH ? 1u : NTRK); i++)   /* (Clipper: the instrument's sequencer only;
+                                                                  * Forge Five: none, core.h FF_SEQ) */
         seq_tick(&trk[i], adv);
     click_tick();
     roll_block(adv);

@@ -736,6 +736,8 @@ static void layer_tap(uint32_t layer)
         break;
     case LY_ERASE:
     case LY_STEP:
+        if (!FF_SEQ && layer == LY_STEP)                  /* (Forge Five: SEQ has no pages, core.h FF_SEQ) */
+            break;
         if (on_drum_page()) {                             /* DRUMS: GRID <-> KIT */
             drum_page = (uint8_t)((drum_page + 1u) % 2u);
             ui.force = 1;
@@ -968,8 +970,8 @@ static void holds_input(uint32_t pressed, uint32_t now_ms)
     uint32_t rec_down = (fm1_in.buttons & rb) != 0u, save_down = (fm1_in.buttons & sb) != 0u;
     if (on_song_page())
         rec_down = 0, pressed &= ~rb;                     /* (the song page: REC stores a section) */
-    /* REC */
-    if (pressed & rb) {
+    /* REC (Forge Five: no sequencer to record into, core.h FF_SEQ: REC does nothing) */
+    if (FF_SEQ && (pressed & rb)) {
         eaten = (uint8_t)ft_owns_press();                 /* (the press closed a free take: seq.c) */
         prev_rec = song.rec;
         prev_wait = rec_wait;

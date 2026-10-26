@@ -1420,6 +1420,17 @@ function editorTabs() {
   const TABS = JSON.parse((/const TABS = (\[[^\]]*\]);/.exec(html) || [])[1] || "[]");
   ok(tabs.length === 10 && js(tabs) === js(TABS) && js(panels.map((x) => x[1])) === js(TABS) && panels.every(([a, b]) => a === b),
     `editor: ${tabs.length} tabs, one panel each (${tabs.join(" ")})`);
+  {   /* Forge Five (spec v0.3, firmware FF_SEQ 0): a Clipper-like synth (no Tracks / Song / drum tabs) without the
+       Sequencer tab; Clipper keeps it */
+    const src = html.slice(html.indexOf("const ffDevice"), html.indexOf("function showTab"));
+    const ctx = { dev: null };
+    vm.runInNewContext(src.replace(/\bconst (\w+) =/g, "this.$1 ="), ctx);
+    const as = (v) => { ctx.dev = { info: { version: v } }; return [ctx.synthOnly(), ctx.ffDevice()]; };
+    ok(js(as("FELUCCA FF 0.1 DEV")) === js([true, true]) && js(as("FELUCCA CLIPPER 1.1 EXP")) === js([true, false]) &&
+       js(as("FELUCCA SLOOP 2.7")) === js([false, false]) && ctx.FF_HIDE.has("sequencer") && !ctx.SYNTH_HIDE.has("sequencer") &&
+       /\(ff && FF_HIDE\.has\(tab\)\)/.test(html) && /if \(FF_HIDE\.has\(b\.dataset\.tab\)\) b\.hidden = ff;/.test(html),
+       "editor: Forge Five a synth without the Sequencer tab");
+  }
   ok(/localStorage\.setItem\(TAB_KEY/.test(html) && /try \{ localStorage/.test(html) && /history\.replaceState\([^)]*"#" \+ name\)/.test(html)
     && /addEventListener\("hashchange"/.test(html), "editor: last tab in localStorage (try/catch) and in the URL hash");
   /* every string key in both languages */

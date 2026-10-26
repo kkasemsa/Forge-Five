@@ -53,7 +53,7 @@
 #if FELUCCA_UART
 #include "midi_uart.c"
 #endif
-#define FELUCCA_ARRANGER 1
+#define FELUCCA_ARRANGER 1           /* (Forge Five: built, not run: seq.c events_block, core.h FF_SEQ) */
 #include "arranger.c"
 #include "seq.c"
 #include "audio.c"
