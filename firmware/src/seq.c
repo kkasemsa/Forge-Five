@@ -875,6 +875,10 @@ static volatile uint8_t rec_go;               /* recording just started (the UI 
 static void seq_start(void);
 static void rec_begin(void)
 {
+    if (!FF_SEQ) {                                /* (Forge Five: nothing records, whatever armed it: core.h FF_SEQ) */
+        rec_wait = 0;
+        return;
+    }
     song.rec = (uint8_t)(1u << (song.sel % NTRK));
     rec_wait = 0;
     rec_go = 1;
@@ -1644,6 +1648,8 @@ static void arp_tick(track_t *t, uint32_t adv)
  * note is the downbeat (the transport starts, recording on) */
 static void arm_start(track_t *t)
 {
+    if (!FF_SEQ)                                  /* (Forge Five: no take, no downbeat: core.h FF_SEQ) */
+        rec_wait = 0;
     if (!rec_wait || t != TSEL || song.playing || ci_on)
         return;
     if (project_empty() && !rec_tempo) {
