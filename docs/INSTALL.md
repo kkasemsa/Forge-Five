@@ -80,7 +80,8 @@ another identity after the install.
 - GLO > SYSTEM shows the CPU. The measures the voice budget was set from (23 Oct 2026, both cores): nothing playing
   14 %; LADDER FAT LEAD on POLY, 3 notes 41 %, 4 notes 44 %; BRASS STACK BRASS, 5 notes 45 %, 8 notes 56 %; CHORD-D
   DEEP PAD, 2 keys (8 voices) 64 %; RIBBON NOIR BRASS (25 Oct), 4 notes 38 %, 8 notes 53 %. WAVE-P DIGITAL CHOIR and
-  FRACTAL PAD (26 Oct), 6 notes 41 % each; DIGITAL CHOIR, 8 notes 47 %. Above ~80 % is worth reporting, with the sound and the number of notes.
+  FRACTAL PAD (26 Oct), 6 notes 41 % each; DIGITAL CHOIR, 8 notes 47 %; LAYER of LADDER FAT LEAD (POLY) and
+  WAVE-P DIGITAL CHOIR, 4 keys (the budget full: 3 notes of each, the 4th stealing) 60 %. Above ~80 % is worth reporting, with the sound and the number of notes.
 - Settings, user presets and projects live in flash outside the firmware image. A Forge Five install over Clipper keeps
   Clipper's: sounds of the engines Forge Five leaves out load silent (ENG_OFF). Take a backup from the web editor first.
 
