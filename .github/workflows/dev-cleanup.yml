@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Forge Five: a pull request closed (merged or not): its development pre-release dev-pr-<n> (build.yml, publish) and
+# its tag go. Nothing is checked out or built; a fork's pull request has none (and a read-only token).
+name: Dev build clean-up
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Delete dev-pr-<n>
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: gh release delete "dev-pr-$PR_NUMBER" --cleanup-tag -y --repo "$REPO" || echo "no dev-pr-$PR_NUMBER"
