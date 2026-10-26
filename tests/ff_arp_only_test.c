@@ -6,7 +6,8 @@
  *   the arpeggiator plays (UP over a held chord: a voice's note moves), ARP held is the note repeat
  *   SEQ, EDIT, SEL and GLO held open no layer and the keys play through them; SEQ tapped opens no page; EDIT, SEL and
  *   GLO tapped open their pages
- *   no NOTES or PATTERN page on any walk; TOOLS without CLEAR SEQ
+ *   no NOTES or PATTERN page on any walk; TOOLS without CLEAR SEQ; GLOBAL without SWING (the steps' only: the arp
+ *   has ARP 2 > SWG)
  *   BERLIN BASS and ARP ZAP (was SEQ PLUCK) bring the arp on
  *   screens to DIR/ff-*.ppm. */
 #define UI_PAGES_HARNESS_ONLY
@@ -115,15 +116,18 @@ int main(int argc, char **argv)
     }
     /* no NOTES or PATTERN page; TOOLS without CLEAR SEQ */
     {
-        uint32_t seq_pages = 0, clr = 0;
+        uint32_t seq_pages = 0, clr = 0, swing = 0;
         for (i = 0; i < NPAGES; i++) {
             if (PAGES[i].fam == FAM_SEQ)
                 seq_pages += !page_hidden(i);
             if (!strcmp(PAGES[i].title, "TOOLS"))
                 for (j = 0; j < 4u; j++)
                     clr += PAGES[i].id[j] == G_CLRSEQ;
+            if (!strcmp(PAGES[i].title, "GLOBAL"))
+                for (j = 0; j < 4u; j++)
+                    swing += PAGES[i].id[j] == G_SWING;
         }
-        check(!seq_pages && !clr, "no NOTES or PATTERN page; TOOLS without CLEAR SEQ");
+        check(!seq_pages && !clr && !swing, "no NOTES or PATTERN page; TOOLS without CLEAR SEQ; GLOBAL without SWING");
     }
     /* the presets made for the sequencer: the arp instead */
     {

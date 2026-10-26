@@ -602,7 +602,11 @@ static const page_t PAGES[] = {
 #else
     {"VOICE 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_ALLOC, P_DETUNE, P_PAN, P_MUTE}},
 #endif
+#if FF_SEQ
     {"GLOBAL", FAM_GLO, SC_GLOBAL, GR_NONE, {G_BPM, G_SWING, G_CLOCK, G_TUNE}},
+#else                                            /* (Forge Five: SWING moved the steps only; the arp's is ARP 2 > SWG) */
+    {"GLOBAL", FAM_GLO, SC_GLOBAL, GR_NONE, {G_BPM, 0xFF, G_CLOCK, G_TUNE}},
+#endif
 #if CLIPPER_SYNTH                                                        /* (no kick to duck to, no note repeat) */
     {"MASTER", FAM_GLO, SC_GLOBAL, GR_NONE, {G_DUST, G_FILT, 0xFF, 0xFF}},
     {"TUNING", FAM_GLO, SC_SYN, GR_NONE, {47, 48, 49, 0xFF}},   /* (0.9) X_TSYS X_TROOT (1.0: X_TA4): voice.c tune_cfg */
