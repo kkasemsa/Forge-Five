@@ -18,7 +18,7 @@ keyboard or sequencer. This guide covers what the current build does; installing
 | **CHORD-D** | Roland Juno-60 / Juno-106-style: one DCO, sub, four-position high-pass, the BBD chorus I / II / I+II | dub techno chords |
 | **BRASS** | Oberheim SEM-style voice (its filter sweeping low-pass to notch to high-pass) with Sequential Prophet-5-style poly-mod and sync | pads and brass |
 | **RIBBON** | Yamaha CS-80-style: two layers a voice, the ribbon, brilliance and touch | film-score brass, leads and pads |
-| **WAVE-P** (to come) | PPG Wave-style: wavetables stepped without smoothing | digital pads and bells |
+| **WAVE-P** | PPG Wave-style: 8-bit wavetables stepped wave to wave, two oscillators, a 24 dB filter | digital pads, bells and choirs |
 | DCO (base) | Clipper's engine in the Roland Juno-6 / 60 / 106-style | — |
 
 Each engine is written from the published behaviour of those instruments: Forge Five contains none of their code, ROMs,
@@ -36,8 +36,9 @@ owners, used here only to describe a style; the firmware, its screens and its pr
 [8. CHORD-D](#8-chord-d) ·
 [9. BRASS](#9-brass) ·
 [10. RIBBON](#10-ribbon) ·
-[11. The base engines](#11-the-base-engines) ·
-[12. Known limits](#12-known-limits)
+[11. WAVE-P](#11-wave-p) ·
+[12. The base engines](#12-the-base-engines) ·
+[13. Known limits](#13-known-limits)
 
 ---
 
@@ -61,8 +62,8 @@ from what you loaded.
 ## 2. Finding sounds
 
 1. Tap **SAVE**, go to the **PRESETS** page.
-2. Turn **KNOB 2** to pick an engine: ALL, ANALOG, HYBRID, WAVE, DCO, **LADDER**, **CHORD-D**, **BRASS**, **RIBBON**, or
-   USER.
+2. Turn **KNOB 2** to pick an engine: ALL, ANALOG, HYBRID, WAVE, DCO, **LADDER**, **CHORD-D**, **BRASS**, **RIBBON**,
+   **WAVE-P**, or USER.
 3. Turn **KNOB 1** (or the PRESETS knob) through that engine's sounds.
 
 Or turn PRESETS from HOME through the whole list, and ALGORITHM to jump by family. KNOB 4 on the PRESETS page adds a sound
@@ -77,7 +78,7 @@ to the favourites at the top of the list.
   | Macro | CC | What it does |
   | --- | --- | --- |
   | **BRITE** | 16 | The cutoff (or RIBBON's brilliance), about ±2.5 octaves |
-  | **TIMBR** | 17 | The engine's "shape": LADDER the pulse widths (SQR, WIDE, NARW waves); CHORD-D the pulse width; BRASS the widths through its PWM amount (nothing while PWM is 0); RIBBON nothing yet |
+  | **TIMBR** | 17 | The engine's "shape": LADDER the pulse widths (SQR, WIDE, NARW waves); CHORD-D the pulse width; BRASS the widths through its PWM amount (nothing while PWM is 0); RIBBON nothing yet; WAVE-P the wave position (±16 waves) |
   | **MOTN** | 18 | Motion: a vibrato and an LFO on the cutoff |
   | **SPACE** | 19 | More reverb, delay and stereo spread |
 
@@ -113,6 +114,7 @@ The two parts share **8 voices' worth of CPU**. A voice of a heavier engine cost
 | CHORD-D | 1 | 8 | 8 voices: 64 % |
 | BRASS | 1 | 8 | 8 notes: 56 % |
 | RIBBON | 1 | 8 | 8 notes: 53 % |
+| WAVE-P | 1 | 8 | 6 notes: 41 % |
 
 (CPU with nothing playing: 14 %. GLO > SYSTEM shows CPU, LATE and PEAK in turn.) When the budget is full, a new note
 takes the place of an older one: released notes first, then held ones, but never a part's lowest held note (the bass)
@@ -122,15 +124,15 @@ or its MONO / LEGATO note. Both of the FM-1's cores render the voices.
 
 - What you play is kept across power cycles (the autosave).
 - **SAVE > USER** stores the sound as a user preset (32 slots): every value of the sound, **including the engine's own
-  pages** (everything on its OSC, F ENV, CHORD, RIBBON… pages). The layer set-up (EDIT > LAYER) belongs to the
+  pages** (everything on its OSC, F ENV, CHORD, RIBBON, W ENV… pages). The layer set-up (EDIT > LAYER) belongs to the
   instrument, not to a sound, and is kept by the autosave.
-- The web editor does not know the Forge Five engines yet (section 12): use the FM-1 for them.
+- The web editor does not know the Forge Five engines yet (section 13): use the FM-1 for them.
 
 ---
 
 ## 7. LADDER
 
-*In the style of the Moog Minimoog Model D-style monosynth (its oscillator bank, mixer overload and ladder filter).*
+*After the Moog Minimoog Model D-style monosynth (its oscillator bank, mixer overload and ladder filter).*
 
 **Berlin School basses and leads.** Three oscillators into a four-pole transistor-ladder low-pass, in the manner of the
 classic 1970s three-oscillator portable monosynth. The mixer drives the filter's input: one oscillator stays clean,
@@ -183,7 +185,7 @@ The loudness envelope is the ENV page (A D S R); glide is on VOICE.
 
 ## 8. CHORD-D
 
-*In the style of the Roland Juno-60 / Juno-106-style DCO polysynths and their bucket-brigade chorus; the chord memory
+*After the Roland Juno-60 / Juno-106-style DCO polysynths and their bucket-brigade chorus; the chord memory
 follows the dub techno way of playing one-finger chords.*
 
 **Dub techno chords.** One DCO per voice (saw, a pulse whose width moves, or both), a square sub an octave down, noise, a
@@ -234,7 +236,7 @@ stereo **bucket-brigade chorus** (I, II, I+II). Its signature is the **chord mem
 
 ## 9. BRASS
 
-*In the style of the Oberheim SEM-style state-variable voice (the module the Two-, Four- and Eight-Voice polysynths
+*After the Oberheim SEM-style state-variable voice (the module the Two-, Four- and Eight-Voice polysynths
 were built from: SEM-style) and the Sequential Prophet-5-style poly-mod and sync.*
 
 **Pads and brass.** Two oscillators per voice in the manner of the classic late-1970s American two-oscillator polysynths:
@@ -288,7 +290,7 @@ boards of the originals. 8 voices.
 
 ## 10. RIBBON
 
-*In the style of the Yamaha CS-80-style two-layer polysynth, its ribbon controller and its touch-sensitive brilliance.*
+*After the Yamaha CS-80-style two-layer polysynth, its ribbon controller and its touch-sensitive brilliance.*
 
 **The big film-score sound.** Two layers per voice in the manner of the classic late-1970s two-layer polysynth with a
 ribbon above its keys. Each layer has its own oscillator, a high-pass into a low-pass, and its own filter envelope;
@@ -343,9 +345,76 @@ its full amount at HOLD. Strike hard for an instant bright attack; hold a chord 
 | BREATH FLUTE | LEAD | A sine and its breath, layer I alone |
 | TOUCH BRASS | STAB | Dark until touched: TOUCH near the top, a short HOLD |
 
+## 11. WAVE-P
+
+*After the PPG Wave-style wavetable synths of the early 1980s: 8-bit waves read without smoothing, the table
+swept wave by wave, an analog-style filter after them.*
+
+**Digital pads, bells and choirs.** Two oscillators per voice read one of eight wavetables. A table holds 64 waves, each
+one cycle of 128 points at 8 bits; **WAVE** picks the place in it, and the wave envelope, the LFO, the keyboard and
+velocity move it. In **STEP** (the default) the points are played as they are and an oscillator moves to the next wave
+only where its cycle starts, so a sweep steps through the waves audibly, with the grain of 8 bits; **SMOOTH** joins the
+points and crossfades the waves for a clean sweep. Then a 24 dB low-pass. 8 voices (section 5).
+
+**HOME knobs**: WAVE · CUTOFF · ENV>W · RESO
+
+| Page | Control | Range | What it does |
+| --- | --- | --- | --- |
+| EDIT 1 (WAVE) | **WAVE** | 0–63 | The position in the table: 0–59 the table's sweep, 60–63 the upper waves |
+| | **CUTOFF**, **RESO** | 0–127 | The 24 dB low-pass (resonance short of self-oscillation) |
+| | **ENV>W** | −64…+63 | How far the wave envelope moves the position, either way (±63 waves at full) |
+| EDIT 2 (TABLE) | **TABLE** | BUILD, PULSE, VOCAL, SYNC, GLASS, ORGAN, FRACT, RESO | The wavetable (below) |
+| | **DETUNE** | 0–50 cents | OSC 2 against OSC 1 |
+| | **BITS** | 8, 6, 5, 4 | The oscillators' resolution: 8 the tables' own, down to 4 for a crushed sound |
+| | **RELEASE** | 0–127 | The loudness envelope's release (the same value as R on the ENV page) |
+| OSC 2 | **2 SEMI** | ±24 semitones | OSC 2's interval |
+| | **2 LEVEL** | 0–127 | OSC 2's level (0: one oscillator) |
+| | **2 OFFS** | −32…+31 | OSC 2 this many waves away from OSC 1 in the table |
+| | **SUB** | 0–127 | A square an octave under OSC 1 |
+| W ENV | **W ATK / W DEC / W SUS / W REL** | 0–127 | The wave envelope (the one ENV>W scales) |
+| WAVE MOD | **MODE** | STEP / SMOOTH | As above |
+| | **W KBD** | −64…+63 | The keyboard moves the position (a wave a semitone at full, from middle C) |
+| | **VEL>W** | −64…+63 | Velocity moves the position (±32 waves at full) |
+| | **UPPER** | OFF / ON | OFF: the modulation stays in the sweep (0–59); ON: it may reach the upper waves |
+| FILTER | **KBD** | OFF, HALF, FULL | Filter keyboard tracking |
+| | **VEL>F** | −64…+63 | Velocity to the cutoff |
+| | **DRIVE** | 0–127 | Drive into the filter |
+| | **NOISE** | 0–127 | Noise into the filter |
+
+The loudness envelope is the ENV page; its envelope also moves the cutoff through ENV > FLT (the presets set it), and the
+LFO moves the position through LFO DEST SHP (±32 waves at full).
+
+**The tables.** Each is made by a formula when the firmware is built — no waves of any instrument. Waves 60–63 of every
+table are the same four plain shapes: triangle, square, a 25 % pulse and a saw.
+
+| Table | Waves 0 → 59 |
+| --- | --- |
+| BUILD | A sine growing into a saw, a harmonic at a time, then the even harmonics fading (saw to square) |
+| PULSE | A square narrowing to a 3 % pulse, then two pulses a cycle |
+| VOCAL | Two formant peaks moving through five vowel-like places |
+| SYNC | The hard-sync sweep: a saw restarted each cycle, its own rate 1 to 7 times the cycle's |
+| GLASS | A soft fundamental under a bright cluster that climbs (bell and glass tones) |
+| ORGAN | Organ registrations, more stops pulled along the table |
+| FRACT | Random spectra (fixed seeds), one every 12 waves, morphing between them |
+| RESO | A saw through a resonance climbing from the 2nd harmonic to the 36th |
+
+**Presets**
+
+| Preset | Family | Description |
+| --- | --- | --- |
+| DIGITAL CHOIR | PAD | The vowel table drifting, two oscillators a few waves apart, smooth |
+| GLASS SWEEP | PAD | A slow climb through the glass table, stepped, OSC 2 an octave up |
+| STEP BELLS | KEYS | Struck high in the glass table, falling back in audible steps |
+| HOLLOW BASS | BASS | A square from the pulse table with its sub, a short flick of the wave |
+| FRACTAL PAD | PAD | The random table scanned slowly by the LFO, smooth |
+| SWEEP LEAD | LEAD | The sync sweep on every note, with glide |
+| RESO STAB | STAB | The resonance table swept down fast, OSC 2 an octave under |
+| CRUNCH KEYS | KEYS | The harmonics building, at 6 bits |
+| STEP ORGAN | ORGAN | Organ registrations, the LFO stepping through them |
+
 ---
 
-## 11. The base engines
+## 12. The base engines
 
 Four of Clipper's engines stay in Forge Five as the ground the five are built on. Their sounds are Clipper's; their
 pages and controls are described in [CLIPPER-README.md](CLIPPER-README.md) and Clipper's QUICKSTART.
@@ -368,11 +437,13 @@ pages and controls are described in [CLIPPER-README.md](CLIPPER-README.md) and C
 
 (USER WT plays WAVE's user wavetable slot: empty until you send a table from the web editor.)
 
-## 12. Known limits
+## 13. Known limits
 
-- **The web editor** does not know LADDER, CHORD-D, BRASS or RIBBON yet: edit them on the FM-1. Their sounds are kept
-  in user presets and backups all the same.
-- **WAVE-P**, the fifth engine, is the next to come.
+- **The web editor** does not know LADDER, CHORD-D, BRASS, RIBBON or WAVE-P yet: edit them on the FM-1. Their sounds are
+  kept in user presets and backups all the same. WAVE-P's own tables cannot be replaced from the editor yet (WAVE's user
+  tables can).
+- **WAVE-P** reads 8-bit tables only (the spec's 12-bit option would take 96 KB more flash). High notes in STEP fold some
+  harmonics back: that grit is part of the sound (SMOOTH is cleaner).
 - **Later (Phase 7)**: MORPH between two versions of a sound for these engines, per-engine macro meanings, the encoder
   turned while a key is held as a per-note expression, an 8-slot modulation matrix, a full preset library, a Thai manual.
 
