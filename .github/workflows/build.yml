@@ -3,8 +3,7 @@
 # where the JieLi toolchain runs natively (no Docker, no Rosetta).
 #   push / PR to main, or run by hand (Actions > Build > Run workflow)
 # Artifact (a green run only): forge-five-<sha>: forge-five.fwsc, forge-five.bin, loader/ota.bin, SHA256SUMS, MANIFEST.txt,
-# the licence texts (tools/ff_dist.sh); a failed run: forge-five-FAILED-<sha> with its logs. A green build of main or
-# of a pull request: also the pre-release dev-main / dev-pr-<n> (its .fwsc, SHA256SUMS, MANIFEST.txt)
+# the licence texts (tools/ff_dist.sh); a failed run: forge-five-FAILED-<sha> with its logs
 name: Build
 
 on:
@@ -16,7 +15,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write    # releases on an ff-* tag (ff-0.2), and the development pre-releases
+  contents: write    # releases on an ff-* tag (ff-0.2)
 
 env:
   JIELI_TOOLCHAIN: ${{ github.workspace }}/../jieli/toolchain
@@ -128,28 +127,6 @@ jobs:
           name: forge-five-${{ github.sha }}
           path: build/dist/
           if-no-files-found: error
-
-      # Every green build of main or of a pull request is also kept as a pre-release, replaced by the next one of the
-      # same source: dev-main, dev-pr-<n>. Its .fwsc downloads straight from the release page (an artifact needs a
-      # GitHub login and comes zipped), and the build's commit carries the whole source (GPL-3.0-only).
-      - name: Development build (pre-release)
-        if: github.event_name != 'workflow_dispatch' && !startsWith(github.ref, 'refs/tags/')
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -e
-          if [ "${{ github.event_name }}" = pull_request ]; then
-            T="dev-pr-${{ github.event.pull_request.number }}"; SHA="${{ github.event.pull_request.head.sha }}"
-            WHAT="pull request #${{ github.event.pull_request.number }} (${{ github.head_ref }}, merged into main as CI builds it)"
-          else
-            T="dev-${GITHUB_REF_NAME//\//-}"; SHA="${{ github.sha }}"; WHAT="branch $GITHUB_REF_NAME"
-          fi
-          S="${SHA:0:7}"
-          cp build/dist/forge-five.fwsc "build/forge-five-$S.fwsc"
-          gh release delete "$T" --cleanup-tag -y 2>/dev/null || true
-          gh release create "$T" "build/forge-five-$S.fwsc" build/dist/SHA256SUMS build/dist/MANIFEST.txt \
-            --prerelease --target "${{ github.sha }}" --title "Forge Five development build: $WHAT, $S" \
-            --notes "A development build of Forge Five, $WHAT at commit $SHA (built as ${{ github.sha }}, run ${{ github.run_id }}: the build and the host tests passed). Not a release: it has not been tried on an FM-1. Source: https://github.com/${{ github.repository }}/tree/${{ github.sha }} (GPL-3.0-only). Install at your own risk: python3 tools/fm1_install.py forge-five-$S.fwsc"
 
       - name: Upload logs of a failed run
         if: failure()
