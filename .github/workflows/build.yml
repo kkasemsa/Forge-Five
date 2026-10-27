@@ -104,6 +104,7 @@ jobs:
           fi
           # (the memory budget as a notice: readable without the log)
           grep -o "image [0-9]* B; RAM .* of [0-9]*" build.log | sed 's/^/::notice title=Memory::/' || true
+          grep -o "flash app [0-9]* B of [0-9]* B (XIP), [0-9]* B free" build.log | sed 's/^/::notice title=Flash::/' || true
 
       - name: Host tests
         run: |

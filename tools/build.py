@@ -267,6 +267,11 @@ def check(img, syms, dis, rt):
     lowram = sym("_lr_end") - sym("_lr_start")    # the SRAM below the RAM region (app.ld .lowram), up to 0x01C07F00
     notes.append(f"image {len(img)} B; RAM .data+.bss {bss} B of 98304; lowram {lowram} B of "
                  f"{0x01C07F00 - sym('_lr_start')}; pool {pool} B of {0x54000}")
+    xm = re.search(r"XIP\s*\([a-z]+\)\s*:\s*ORIGIN\s*=\s*0x[0-9A-Fa-f]+,\s*LENGTH\s*=\s*(0x[0-9A-Fa-f]+)",
+                   (FW / "app.ld").read_text())
+    if xm:                                        # (the same line as Forge Phoenix's build prints)
+        xl = int(xm.group(1), 16)
+        notes.append(f"flash app {len(img)} B of {xl} B (XIP), {xl - len(img)} B free")
     if bss > 96 * 1024:
         errors.append("RAM region overflow")
     if 0x54000 - pool < 8192:                     # keep >= 8 KiB of the pool spare
