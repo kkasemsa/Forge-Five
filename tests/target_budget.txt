@@ -11,4 +11,6 @@ drums_mix 3491
 fm6_op_run 72
 fm6_op_fb 26
 fm6_render 387
-fm1_alnk0_irq 11858
+# FF 0.1.1 DEV: the audio ISR and TIMER5 as measured by CI (the stale Clipper figure 11858 replaced; TIMER5 new)
+fm1_alnk0_irq 239
+fm1_timer5_irq 227
