@@ -18,7 +18,7 @@ FUNCS = ["analog_render", "digital_render", "phase_render", "lofi_render", "samp
          "trio_render", "trio_pass", "drawbar_render", "drawbar_block",
          "grain_render", "grain_block", "slicer_track", "drums_mix",
          "fm6_op_run", "fm6_op_fb", "fm6_render",     # FM6 (SLOOP 2.4): the operator loops (noinline), the voice
-         "fm1_alnk0_irq"]
+         "fm1_alnk0_irq", "fm1_timer5_irq"]   # the audio ISR; TIMER5: the key / LED scan and the USB poll
 TOL = 0.10                      # exact (no noise): small edits pass, a grown render loop does not
 DIV_W = 8                       # a divide weighs 1 + 8 instructions
 NEST = 4                        # an instruction in a loop inside a loop weighs 4, two deep 16, ...
