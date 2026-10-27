@@ -24,12 +24,19 @@
 #undef main
 #include <assert.h>
 static uint16_t screen[240*240];
-static void lcd_sync(void) {}
+#ifndef UI_SYNC_HOOK
+#define UI_SYNC_HOOK() ((void)0)                    /* (tests/ff_screen_test.c: the panel's DMA in its clock) */
+#endif
+static void lcd_sync(void) { UI_SYNC_HOOK(); }
 static void lcd_blit(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint16_t *p)
 { uint32_t i,j; assert(x+w<=240 && y+h<=240); for(j=0;j<h;j++) for(i=0;i<w;i++) screen[(y+j)*240+x+i]=p[j*w+i]; }
 #include "../firmware/src/gfx.c"
 static void lcd_fill(uint32_t x,uint32_t y,uint32_t w,uint32_t h,uint16_t c)
-{ uint32_t i,j; assert(x+w<=240&&y+h<=240); for(j=0;j<h;j++)for(i=0;i<w;i++)screen[(y+j)*240+x+i]=swap16(c); }
+{ uint32_t i,j; assert(x+w<=240&&y+h<=240);
+#ifdef MIR_FILL
+  if (w && h) MIR_FILL(x, y, w, h, c);              /* (as lcd.c: the screen mirror sees every fill) */
+#endif
+  for(j=0;j<h;j++)for(i=0;i<w;i++)screen[(y+j)*240+x+i]=swap16(c); }
 static int32_t encs[7];
 static uint32_t fm1_ticks(void) { return fm1_ms * 1000u * 24u; }
 #define FM1_TICKS_PER_US 24u

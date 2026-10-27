@@ -524,6 +524,65 @@ reverb's TYPE (global 28) goes ROOM, PLATE, HALL, SHIMMER (0..3). A sound of an 
 patchByCount: the common values by place up to the older P_E0, the engine's 8 by theirs, the rest left as the device has
 them). UP_PUT carries P_COUNT values as before (126).
 
+## Forge Five 0.1.1: the FORGE extension, the screen mirror
+
+The device's screen to a host app over the same port: every canvas the UI sends to the panel and every solid fill also
+goes out as FG_RECT pushes, only what the host does not have yet (`firmware/src/fg_mirror.c`). The commands are those of
+the FORGE extension, a range shared by the Forge firmwares (FORGE ONE, Forge Phoenix, Forge Five): 112..127, append-only;
+a command there that a firmware lacks gets no reply, as any other. Forge Five answers FG_ID, FG_WATCH and FG_SCREEN and
+sends FG_RECT; the rest of the range (Forge Phoenix's generator, actions and playhead) is not this firmware's. Framing as
+above: `F0 7D 46 4C <cmd> ... F7`; "2 bytes" = 7 bits each, low first; **v14** = value + 8192 in 2 bytes.
+
+| Cmd | Name | Request | Reply |
+|---|---|---|---|
+| 112 | FG_ID | (none) | firmware (**3: Forge Five**; 1 FORGE ONE, 2 Forge Phoenix), lineage (**1: Clipper**; 0 Felucca), extension version (1), caps (v14), name (ASCII, 0-terminated: the version string) |
+| 118 | FG_WATCH | mask [, which] | the mask now set. Bit 3: the screen's pushes, the only bit this firmware takes. With `which`, only the bits in it change (two apps on one device, each its own) |
+| 122 | FG_SCREEN | op [, mode [, host]] | op, rc; op 3: then messages, bytes, drops, passes (5 bytes each, 7 bits, low first), the mode (1 byte), the leases (1 byte, bit h) |
+| 123 | FG_RECT (push) | | x, y, w, h, row (2 bytes each), flags, then pack7 of the RLE |
+
+- **caps** (what this firmware supports): bit 1 the screen mirror, bit 5 its leases and FG_RECT's mode bit, bit 6 it
+  heals its own losses. Forge Five: **98** (bits 1, 5, 6). Bits 0, 2, 3 (generator, input, playhead) stay clear.
+- **FG_SCREEN**: op 0 off, 1 on (mode 0: 240 x 240 pixels, 1: 120 x 120 half pixels, each the mean of a 2 x 2 block),
+  2 the whole screen at the next pass, 3 the counters. rc 0 ok, 1 bad arguments (op above 3, mode above 1, host 7 and
+  up, op 1 without a mode), 2 not now (op 2 or 3 while off).
+- **Leases** (two apps on one device, e.g. a companion app's screen page beside a separate mirror app): **host 1..6**
+  names an app. op 1 with a host takes that host's lease and sets the mode (the most recent op 1 wins; a mode change
+  sends the whole screen again, in the new mode); op 0 with a host gives back that host's lease only; any FG_SCREEN
+  with the host renews it; a lease ends **5 s after that host's last FG_SCREEN**. The mirror is on while any lease is
+  live. Without a host byte: lease 0, kept by any request within 5 s; op 0 turns the mirror off for every app. A USB
+  reset or unplug turns it off.
+- **FG_RECT**: the rect in the mode's pixels; `row` = the rect's row this message starts at, its pixels fill the
+  rect's rows from there, left to right. flags: bit 0 the rect's last message, bit 1 the end of a draw pass (show the
+  picture now; such a message may carry no rect: w = h = 0), bit 2 the stream is in mode 1 (on every message of it,
+  whoever chose the mode). A rect is at most 120 wide (wider draws go as strips).
+- **RLE** (at most 256 bytes a message, before pack7): a byte 0..63 = n + 1 pixels follow; 64..127 = the next pixel
+  n - 63 times. A pixel: 2 bytes, RGB565, high byte first. **pack7**: groups of up to 7 bytes, each led by a byte
+  holding their top bits (bit k = byte k's bit 7).
+- **What goes**: a draw pass at most every 33 ms, and only what the host does not have (a table of hashes of 15-pixel
+  blocks of each row); a pass with nothing new sends nothing. A draw that cannot go (the ring full) leaves its area
+  owed; the next draw of it sends it, and an area still owed once the drawing settles gets a whole redraw of the page
+  (at most twice a second), which also sends only what the host lacks. So an app should **not** send op 2 after the
+  drop counter rises (caps bit 6); op 2 every 10 s or more as a safety net is fine.
+- **Transport**: whole messages go into an 8 KB ring; the USB poll sends them after the editor's replies and pushes
+  and the MIDI out, never in the middle of either, and finishes a started message before anything else. The main loop
+  never waits for room beyond the panel's own transfer; nothing of it runs in the audio interrupt.
+- **Session**: FG_ID (caps bit 1), `FG_SCREEN 1, mode, host`, `FG_WATCH 8, 8`, `FG_SCREEN 2, 0, host`; apply every
+  FG_RECT, show the picture at flags bit 1 (size it from bit 2); `FG_SCREEN 3, 0, host` every second or two while
+  showing; `FG_SCREEN 0, 0, host` when done.
+
+Measured on the host (`tests/ff_screen_test.c`: the real UI, the real ring and pace, a link drained at 96 or 54 KB/s,
+5 s with the arpeggiator playing a held chord; an app renewing every 1.5 s, op 2 every 10 s):
+
+| page, mode | 96 KB/s: KB/s, pictures/s, B a picture, drops | 54 KB/s |
+|---|---|---|
+| HOME, 0 (240 x 240) | 75.4, 17.2, 4,385, 0 | 47.2, 11.0, 4,287, 1 |
+| HOME, 1 (120 x 120) | 32.5, 17.6, 1,844, 0 | 31.7, 17.6, 1,803, 0 |
+| the visualiser, 0 | 76.2, 16.4, 4,649, 0 | 48.6, 11.0, 4,414, 3 |
+| the visualiser, 1 | 32.0, 17.6, 1,817, 0 | 31.7, 17.6, 1,803, 0 |
+
+Once the load stops, the host's picture is the panel's (mode 0 every pixel, mode 1 every half pixel), on every page of
+a walk too, at either rate.
+
 ## Notes for the editor
 
 - **One request at a time.** Wait for the reply, about 10–50 ms, before sending the next.

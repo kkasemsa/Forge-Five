@@ -15,6 +15,20 @@
 #include "felucca_tables.h"
 
 #include "libc.c"
+#ifndef FELUCCA_MIRROR
+#define FELUCCA_MIRROR 1        /* the screen mirror (fg_mirror.c: FORGE extension FG_ID, FG_WATCH, FG_SCREEN, FG_RECT):
+                                 * the panel's draws to the host too; needs FELUCCA_OTA (the editor's SysEx) */
+#endif
+#if FELUCCA_MIRROR              /* (before lcd.c and gfx.c: their hooks; usb.c: the ring's drain) */
+static void mir_blit(uint32_t x, uint32_t y, uint32_t r0);
+static void mir_fill(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint16_t c);
+#define MIR_BLIT(x, y, r0) mir_blit(x, y, r0)
+#define MIR_FILL(x, y, w, h, c) mir_fill(x, y, w, h, c)
+static uint32_t mir_drain(uint8_t *b, uint32_t n, int may_start);   /* usb.c ep1_tx */
+static int mir_pending(void);
+static int mir_busy(void);
+static void mir_bus_reset(void);
+#endif
 #include "lcd.c"
 #include "gfx.c"
 #include "core.h"
@@ -186,8 +200,14 @@ static void ota_commit(const uint8_t *parm)
     fm1_enter_update(parm);                             /* record into RAM, core reset (fm1_sys.h) */
 }
 #endif
+#if FELUCCA_MIRROR && !FELUCCA_OTA
+#error "FELUCCA_MIRROR needs FELUCCA_OTA"
+#endif
 #if FELUCCA_OTA
 #include "editor.c"          /* web editor SysEx (needs the OTA SysEx plumbing) */
+#endif
+#if FELUCCA_MIRROR
+#include "fg_mirror.c"       /* the FORGE extension: FG_ID, FG_WATCH, the screen mirror (FG_SCREEN, FG_RECT) */
 #endif
 #if FELUCCA_CDC
 #include "console.c"

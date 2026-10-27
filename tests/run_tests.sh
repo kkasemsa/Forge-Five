@@ -128,6 +128,8 @@ run "Clipper synth: HOME, presets, keys, pages, one track, MIDI omni, no drums /
 mkdir -p "$OUT/ff"
 $SYN -o "$OUT/ff_arp_only_test" tests/ff_arp_only_test.c -lm
 run "Forge Five, the arp alone (FF_SEQ 0): no pattern plays, REC and SEQ do nothing, SEQ EDIT SEL GLO held free, ARP held repeats, no NOTES / PATTERN, the arp presets" "$OUT/ff_arp_only_test" "$OUT/ff"
+$SYN -o "$OUT/ff_screen_test" tests/ff_screen_test.c -lm
+run "Forge Five screen mirror (FORGE extension FG_ID, FG_WATCH, FG_SCREEN, FG_RECT): the commands, leases; every page of a walk and HOME / the visualiser under load, both modes, 96 / 54 KB/s: the host's picture the panel's" "$OUT/ff_screen_test" "$OUT/ff"
 $SYN -o "$OUT/clipper_stress" tests/stress_test.c -lm
 run "Clipper synth: stress (hard random use, clean stop)" "$OUT/clipper_stress" "${STRESS_FRAMES:-40000}"
 $SYN -o "$OUT/clipper_soak" tests/soak_test.c -lm

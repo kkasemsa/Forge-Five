@@ -652,6 +652,9 @@ static int ed_dsyn_handle(uint32_t cmd, const uint8_t *a, uint32_t na) { (void)c
 #include "editor_fmx.c"                               /* v12 (Clipper 0.6): the FMX patches (90..92; Forge Five: none), v13 the MOD SEQ, v14 TUNING */
 #endif
 
+#if FELUCCA_MIRROR
+static int fg_handle(uint32_t cmd, const uint8_t *a, uint32_t na);   /* the FORGE extension (fg_mirror.c) */
+#endif
 static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0 and F7 */
 {
     uint32_t cmd = f[3], i;
@@ -678,6 +681,13 @@ static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes between F0
     }
 #if CLIPPER_SYNTH
     if (ed_fmx_handle(cmd, a, na) || ed_mseq_handle(cmd, a, na)) {   /* v12: the FMX patches; v13: the MOD SEQ */
+        ed_send();
+        return;
+    }
+#endif
+#if FELUCCA_MIRROR
+    if (fg_handle(cmd, a, na)) {                           /* the FORGE extension (112..127: FG_ID, FG_WATCH,
+                                                            * FG_SCREEN; fg_mirror.c) */
         ed_send();
         return;
     }

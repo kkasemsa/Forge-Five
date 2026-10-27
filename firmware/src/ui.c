@@ -3,7 +3,7 @@
 /* Felucca user interface. Four columns map to KNOB 1..4. Rendering is lazy:
  * every element remembers what it last drew and is redrawn only on change. */
 #ifndef FELUCCA_VERSION
-#define FELUCCA_VERSION "FF 0.1 DEV"   /* Forge Five (based on Clipper 1.1, SLOOP, Felucca); tools/build.py --release X.Y: "FF X.Y" */
+#define FELUCCA_VERSION "FF 0.1.1 DEV"   /* Forge Five (based on Clipper 1.1, SLOOP, Felucca); tools/build.py --release X.Y: "FF X.Y" */
 #endif
 static void project_save(uint32_t slot);
 static void arrangement_save(void);

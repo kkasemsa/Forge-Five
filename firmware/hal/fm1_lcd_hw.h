@@ -58,6 +58,10 @@ static void fm1_lcd_wait(void)
 
 FM1_INLINE void fm1_lcd_deselect(void) { FM1_LCD_PC_OUT |= FM1_LCD_CS; }
 
+/* the running transfer is done (the SPI's done bit, as fm1_lcd_wait polls it): the screen mirror (fg_mirror.c) waits
+ * for room in its ring only while it is not */
+FM1_INLINE uint32_t fm1_lcd_done(void) { return (FM1_LCD_SPI_CON & 0x8000u) != 0u; }
+
 FM1_INLINE void fm1_lcd_send_cmd(uint8_t c)
 {
     FM1_LCD_PC_OUT &= ~FM1_LCD_DC;
