@@ -68,13 +68,21 @@ static void cv_begin(uint32_t w, uint32_t h, uint16_t bg)
         cv_px[i] = swap16(bg);
 }
 
-static void cv_blit(uint32_t x, uint32_t y) { lcd_blit(x, y, cv_w, cv_h, cv_px); }
+#ifndef MIR_BLIT
+#define MIR_BLIT(x, y, r0) ((void)0)    /* the screen mirror (fg_mirror.c): the canvas also to the host */
+#endif
+static void cv_blit(uint32_t x, uint32_t y)
+{
+    lcd_blit(x, y, cv_w, cv_h, cv_px);
+    MIR_BLIT(x, y, 0u);                 /* (while the DMA reads the same canvas) */
+}
 
 /* canvas rows r0 .. cv_h-1 only, to screen row y + r0 */
 static void cv_blit_from(uint32_t x, uint32_t y, uint32_t r0)
 {
     if (r0 < cv_h)
         lcd_blit(x, y + r0, cv_w, cv_h - r0, cv_px + r0 * cv_w);
+    MIR_BLIT(x, y, r0);
 }
 
 static inline void cv_pset(int32_t x, int32_t y, uint16_t c)

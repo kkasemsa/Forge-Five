@@ -104,11 +104,19 @@ jobs:
           fi
           # (the memory budget as a notice: readable without the log)
           grep -o "image [0-9]* B; RAM .* of [0-9]*" build.log | sed 's/^/::notice title=Memory::/' || true
+          grep -o "flash app [0-9]* B of [0-9]* B (XIP), [0-9]* B free" build.log | sed 's/^/::notice title=Flash::/' || true
 
       - name: Host tests
         run: |
           set -o pipefail
           sh tests/run_tests.sh 2>&1 | tee build/test.log
+
+      - name: Target costs as notices          # (the audio ISR and TIMER5: readable without the log, tests/target_budget.py)
+        if: always()
+        run: |
+          [ -f build/test.log ] || exit 0
+          l=$(grep -E "^target: +fm1_" build/test.log | sed -z 's/%/%25/g; s/\n/%0A/g')
+          [ -n "$l" ] && echo "::notice title=target fm1::$l" || true
 
       - name: Report build and test failures   # (as annotations: readable on the run page and through the API)
         if: failure()

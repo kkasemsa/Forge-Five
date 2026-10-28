@@ -342,7 +342,13 @@ static void fm1_main(void)
         ui_input();
         felucca_dbg.stage = 2;
         ui_leds();
+#if FELUCCA_MIRROR
+        mir_pass_begin();                             /* the screen mirror: this pass to the host or not (fg_mirror.c) */
+#endif
         ui_draw();
+#if FELUCCA_MIRROR
+        mir_pass_end();
+#endif
         felucca_dbg.stage = 8;
         autosave_tick();                                /* the working project into flash, when quiet */
 #if FELUCCA_ARRANGER

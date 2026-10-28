@@ -917,10 +917,18 @@ static void ota_frame_done(void)
 }
 #endif
 
+#if FELUCCA_MIRROR
+#define MIR_BUSY() mir_busy()
+#else
+#define MIR_BUSY() 0
+#endif
 static void ep1_tx(void)
 {
     uint32_t csr, n = 0;
-#if FELUCCA_OTA
+#if FELUCCA_MIRROR
+    if (mo_w == mo_r && so_w == so_r && !mir_pending())
+        return;
+#elif FELUCCA_OTA
     if (mo_w == mo_r && so_w == so_r)
         return;
 #else
@@ -933,8 +941,11 @@ static void ep1_tx(void)
         return;                                         /* previous packet still pending */
     if (csr & 0x80u)
         sie_wr(S_TXCSR1, csr & ~0x80u);
+#if FELUCCA_MIRROR
+    n = mir_drain(ep1tx, 0, 0);                         /* a screen message part sent: finished first, never split */
+#endif
 #if FELUCCA_OTA
-    while (so_r != so_w && n < 64u) {                   /* SysEx first, never split by notes */
+    while (!MIR_BUSY() && so_r != so_w && n < 64u) {    /* SysEx first, never split by notes */
         uint32_t pkt = sx_out_q[so_r % SXQ];
         ep1tx[n] = (uint8_t)pkt;
         ep1tx[n + 1] = (uint8_t)(pkt >> 8);
@@ -943,7 +954,7 @@ static void ep1_tx(void)
         n += 4u;
         so_r++;
     }
-    while (!sx_busy && so_r == so_w && mo_r != mo_w && n < 64u) {
+    while (!MIR_BUSY() && !sx_busy && so_r == so_w && mo_r != mo_w && n < 64u) {
 #else
     while (mo_r != mo_w && n < 64u) {
 #endif
@@ -958,6 +969,10 @@ static void ep1_tx(void)
         RING_PUBLISH();
         mo_r++;
     }
+#if FELUCCA_MIRROR
+    if (!sx_busy && so_r == so_w && mo_r == mo_w)       /* the screen last: after the editor and the MIDI out */
+        n = mir_drain(ep1tx, n, 1);
+#endif
     if (!n)
         return;
     fm1_usb_ep_send(1, ep1tx, n);
@@ -1274,6 +1289,9 @@ static void usb_poll(void)                              /* TIMER5 ISR, 2 kHz */
 #if FELUCCA_OTA
         so_r = so_w;
         sx_collect = 0;
+#endif
+#if FELUCCA_MIRROR
+        mir_bus_reset();                                /* (no half message for the next host) */
 #endif
         usb.e0_tx = 0;
         usb.has_pend_addr = 0;

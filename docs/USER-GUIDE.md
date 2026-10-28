@@ -1,6 +1,6 @@
 # Forge Five — User Guide
 
-Forge Five `FF 0.1 DEV` · for the M-VAVE FM-1 · based on [Clipper](https://github.com/isod89/clipper-fm1)
+Forge Five `FF 0.1.1 DEV` · for the M-VAVE FM-1 · based on [Clipper](https://github.com/isod89/clipper-fm1)
 
 Forge Five turns the FM-1 into a synthesizer with engines built for particular kinds of music, each with a front panel of
 its own, on **two parts** that can layer or split the keyboard. It is made to be played from Ableton Move or any MIDI
